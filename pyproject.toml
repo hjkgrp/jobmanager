@@ -3,7 +3,7 @@ name = 'jobmanager'
 version = '0.0.1'
 description = 'Package manage quantum chemistry calculations on high performance computing cluster.'
 authors = []
-dependencies = ['numpy', 'pandas', 'iodata']
+dependencies = ['numpy', 'pandas']
 
 [build-system]
 requires = ["setuptools>=61.0"]
