@@ -19,7 +19,7 @@ jobs:
         python-version: 3.7
     - name: Conda info
       run: |
-        conda env update -n test -f devtools/conda_envs/jobmanager.yaml
+        conda env update -n test -f tools/conda_envs/jobmanager.yaml
         conda info
     - name: Install package
       run: |
