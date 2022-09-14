@@ -1,8 +1,10 @@
 import subprocess
-import pytest
 
 
 def test_cli_call():
-    output = subprocess.run(['jobmanager'])
-    print(output)
-    assert False
+    # TODO: there might be a more elegant way of checking that the entry
+    # point is registered correctly.
+    output = subprocess.run(["jobmanager"])
+    # This is expected to fail because the jobmanager does not
+    # recognize the machine it is running on which we check using
+    assert "ValueError: Machine Unknown to Job Manager" in output.stderr
