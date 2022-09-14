@@ -1,6 +1,9 @@
 import subprocess
+import pytest
 
 
 def test_cli_call():
-    output = subprocess.run(['jobmanager'])
-    assert output.returncode == 0
+    # Expecting an "unknown machine" value error if the command line
+    # script is working correctly
+    with pytest.raises(ValueError):
+        subprocess.run(['jobmanager'])
