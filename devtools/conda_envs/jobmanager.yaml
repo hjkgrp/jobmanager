@@ -1,0 +1,9 @@
+name: jobmanager
+channels:
+  - psi4
+  - theochem
+  - hjkgroup
+dependencies:
+  - psi4
+  - iodata
+  - molsimplify

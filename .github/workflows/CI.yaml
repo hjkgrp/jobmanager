@@ -19,9 +19,7 @@ jobs:
         python-version: 3.7
     - name: Conda info
       run: |
-        conda install -c psi4 psi4
-        conda install -c theochem iodata
-        conda install -c conda-forge molsimplify
+        conda env update -n test -f devtools/conda_envs/jobmanager.yaml
         conda info
     - name: Install package
       run: |
