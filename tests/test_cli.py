@@ -7,4 +7,4 @@ def test_cli_call():
     output = subprocess.run(["jobmanager"], capture_output=True)
     # This is expected to fail because the jobmanager does not
     # recognize the machine it is running on:
-    assert "ValueError: Machine Unknown to Job Manager" in output.stderr
+    assert b"ValueError: Machine Unknown to Job Manager" in output.stderr
