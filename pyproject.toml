@@ -11,3 +11,6 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 jobmanager = "jobmanager.resub:main"
+
+[project.optional-dependencies]
+tests = ["pytest", "pytest-cov", "pytest-resource-path"]
