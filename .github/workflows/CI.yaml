@@ -1,0 +1,34 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  CI:
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: test
+        python-version: 3.7
+    - name: Conda info
+      run: |
+        conda install -c conda-forge molsimplify
+        conda info
+    - name: Install package
+      run: |
+        pip install -e ".[tests]"
+    - name: Run tests
+      run: |
+        pytest --cov=jobmanager --cov-report=xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        files: ./coverage.xml
+        verbose: true
