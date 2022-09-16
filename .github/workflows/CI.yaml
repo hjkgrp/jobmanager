@@ -16,7 +16,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: test
-        python-version: 3.10
+        python-version: 3.7
     - name: Conda info
       run: |
         conda env update -n test -f tools/conda_envs/jobmanager.yaml
