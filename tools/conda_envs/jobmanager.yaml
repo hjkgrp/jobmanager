@@ -1,9 +1,14 @@
 name: jobmanager
 channels:
+  - defaults
   - psi4
   - theochem
   - hjkgroup
 dependencies:
+  - python=3.10
   - psi4
   - iodata
   - molsimplify
+  - pip
+  - pip:
+    - -e ../../
