@@ -6,7 +6,7 @@ channels:
   - hjkgroup
 dependencies:
   - python=3.10
-  - psi4
+  - psi4=1.6.1
   - iodata
   - molsimplify
   - pip
