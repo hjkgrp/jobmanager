@@ -1,3 +1,41 @@
+# Configure file options
+## Dependent jobs
+### Lists
+- `solvent`
+- `functionalsSP`
+### Boolean
+- `vertEA`
+- `vertIP`
+- `thermo`
+- `dissociation`
+- `hfx_resample`
+- `mbe`
+### Multiple lines
+- `dissociated_ligand_charge`
+- `dissociated_ligand_spinmult`
+
+## jobmanager settings
+- `sleep`
+- `max_jobs`
+- `max_resub`
+- `hard_job_limit`
+- `job_recovery`
+- `geo_check`
+- `ss_cutoff`
+- `use_molcontrol`
+
+## Calculation settings
+- `levela`
+- `levelb`
+- `method`
+- `hfx`
+- `dispersion`
+
+## Other run types
+Provide json file path after :
+- `general_sp`
+- `run_psi4`
+
 # Psuedocode Procedure
 `resub.main`
 Read `configure` and
