@@ -1,5 +1,6 @@
 # Configure file options
 ## Dependent jobs
+Invoked if present
 ### Lists
 - `solvent`
 - `functionalsSP`
@@ -19,10 +20,17 @@
 - `max_jobs`
 - `max_resub`
 - `hard_job_limit`
-- `job_recovery`
-- `geo_check`
-- `ss_cutoff`
-- `use_molcontrol`
+## checks and recovery
+- `geo_check`: (default = False) supports oct, bidentate_oct, tridentate_oct, and tetrahedral checks. Only used if 'bad_geo' provided to `job_recovery`
+- `ss_cutoff`: (default = 1.0) maximum deviation of S<sup>2</sup>. Only used if 'spin_contaminated' provided to `job_recovery`
+- `job_recovery`: (default = []) modes of recovery
+  - `scf`
+    - if oscillating (standard deviation of energy > 1) resubmit with precision double, dftgrid 5, and dynamicgrid no
+    - otherwise resubmit calc with `levela` = 1.0 and `levelb` = 0.1
+  - `bad_geo`: resubmits bad geometries from initial geometry with frozen metal-ligand distances
+  - `spin_contaminated`: resubmits spin contaminated calculations with BLYP
+  - `thermo_grad_error`: resubmits calcs with 'Maximum component of gradient is too large' message using tighter convergence criteria
+- `use_molscontrol`: (default = 0) integer determining whether or not to use molscontrol
 
 ## Calculation settings
 - `levela`
