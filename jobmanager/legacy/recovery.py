@@ -3,7 +3,7 @@ import os
 import shutil
 import glob
 import numpy as np
-import . import tools, moltools, manager_io
+from . import tools, moltools, manager_io
 from .classes import resub_history
 
 
