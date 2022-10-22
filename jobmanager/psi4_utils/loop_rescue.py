@@ -2,7 +2,7 @@ import os
 import json
 import shutil
 import numpy as np
-from jobmanager.psi4_utils.run import run_general_hfx
+from .run import run_general_hfx
 
 psi4_config = {'bashrc': '/home/crduan/.bashrc',
                'conda_env': '/home/crduan/miniconda/envs/mols_py36'}

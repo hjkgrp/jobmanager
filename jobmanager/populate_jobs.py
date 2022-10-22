@@ -6,7 +6,7 @@ import subprocess
 
 from molSimplifyAD.utils.pymongo_tools import connect2db, query_lowestE_converged
 
-from jobmanager.tools import manager_io
+from .tools import manager_io
 
 
 def isCSD(job):

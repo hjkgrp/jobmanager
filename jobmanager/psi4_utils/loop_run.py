@@ -1,6 +1,6 @@
 import os
 import json
-from jobmanager.psi4_utils.run import run_b3lyp, run_general
+from .run import run_b3lyp, run_general
 
 psi4_config = {'bashrc': '/home/crduan/.bashrc',
                'conda_env': '/home/crduan/miniconda/envs/mols_py36'}

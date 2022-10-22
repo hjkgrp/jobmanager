@@ -4,8 +4,8 @@ import numpy as np
 import shutil
 import subprocess
 import iodata
-from jobmanager.psi4_utils.molden2psi4wfn import tcmolden2psi4wfn_ao_mapping
-from jobmanager.psi4_utils.molden2psi4wfn_spherical import tcmolden2psi4wfn_ao_mapping_spherical
+from .molden2psi4wfn import tcmolden2psi4wfn_ao_mapping
+from .molden2psi4wfn_spherical import tcmolden2psi4wfn_ao_mapping_spherical
 from pkg_resources import resource_filename, Requirement
 
 

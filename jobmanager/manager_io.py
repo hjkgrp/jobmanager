@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from jobmanager.classes import textfile
+from .classes import textfile
 import json
 
 

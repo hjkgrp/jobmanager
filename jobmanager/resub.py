@@ -4,11 +4,8 @@ import numpy as np
 import time
 import sys
 import json
-import jobmanager.tools as tools
-import jobmanager.moltools as moltools
-import jobmanager.recovery as recovery
-import jobmanager.manager_io as manager_io
-from jobmanager.psi4_utils.run import write_jobscript, run_bash
+from . import tools, moltools, recovery, manager_io
+from .psi4_utils.run import write_jobscript, run_bash
 
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):

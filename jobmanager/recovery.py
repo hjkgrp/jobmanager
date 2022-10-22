@@ -3,10 +3,9 @@ import os
 import shutil
 import glob
 import numpy as np
-import jobmanager.tools as tools
-import jobmanager.moltools as moltools
-from jobmanager.classes import resub_history
-import jobmanager.manager_io as manager_io
+import . import tools, moltools, manager_io
+from .classes import resub_history
+
 
 
 def load_history(PATH):

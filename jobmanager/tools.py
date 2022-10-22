@@ -7,8 +7,8 @@ import subprocess
 import pandas as pd
 import shutil
 import time
-from jobmanager.classes import resub_history, textfile
-import jobmanager.manager_io as manager_io
+from .classes import resub_history, textfile
+from . import manager_io
 
 
 def ensure_dir(dirpath):
