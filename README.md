@@ -21,7 +21,27 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    ```
 
 ## Usage
-The configure file (labeled configure, NOT configure.txt) contains all of the info about what needs to happen to the runs. 
+Job manager reads the configure at the job run time as well as the root directory.
+
+Must be in the directory of the configure, and then call `jobmanager` -- this will follow the configure file and execute on the working tree as described below.
+
+The folder hierarchy is as follows:
+```
+base_directory/
+   |--configure
+   |--unique_name1/
+   |--unique_name2/
+   |--unique_name3/
+      |--unique_name3.in
+      |--unique_name3.xyz
+      |--unique_name3_jobscript
+```
+*Note*: The output file generated via the jobscript must also follow the naming convention (i.e. must be `unique_name3.out` for the above example).
+
+### Configuration
+The configure file (labeled `configure`, NOT `configure.txt`) contains all of the info about what needs to happen to the runs.
+
+The configure file can live within subdirectories, if derivative jobs are only necessary for a subset of jobs.
 
 It can be modified on the fly to add info (if you want to add thermo or solvent, or HFX resample). 
 
@@ -29,28 +49,15 @@ If the geo_check:oct is in the configure file, then jobs that are completed are 
 
 If job_recovery is not desired, that line should not be there. 
 
-The folder hierarchy is as follows:
-
-    base_directory
-        |----configure
-        |----unique_name1
-        |----unique_name2
-        |----unique_name3
-                |----unique_name3.in
-                |----unique_name3.xyz
-                |----unique_name3_jobscript
-
-The configure file can live within subdirectories, if derivative jobs are only necessary for a subset of jobs.
-
-Job manager reads the configure at the job run time as well as the root directory.
-
-Must be in the directory of the configure, and then call jobmanager/resub.py -- this will follow the configure file and execute on the working tree as described above.
-
+### In Python scripts
 If loading the module (in a python script), do the following:
 
+```python
 import jobmanager.resub as resub
 resub.main()
+```
 
+### Notes on running
 The job manager uses the unique name as a queue identifier. Thus, it will not submit a job with a specific unique name, if that unique name is already in the queue. This will prevent the same job from being resubmitted while it is still running. 
 
 Killing the job manager by using ctrl-c should be ok to stop the manager from running. By default, it cycles with a sleep period of 2 hr.
