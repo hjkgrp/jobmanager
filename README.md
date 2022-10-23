@@ -13,7 +13,7 @@ We currently recommend installation via the [Conda](https://conda.io/docs/) pack
    git clone https://github.com/hjkgrp/jobmanager.git
    ```
 
-3. Go to the folder root folder for jobmanager, create the conda environment from the yaml file (`tools/conda_envs/jobmanager.yaml`). You can specify a different name for this environment at the first line of the yaml file.
+3. Go to the folder root folder for jobmanager, create the conda environment from the yaml file (`tools/conda_envs/jobmanager.yaml`). You can specify a different name for this environment at the first line of the yaml file. If you would like to use the most recent version of molSimplify, delete the line with `molsimplify` in the yaml file and follow the [molSimplify installation instructions](https://github.com/hjkgrp/molSimplify#installation)
 
    ```bash
    cd jobmanager/tools/conda_envs
