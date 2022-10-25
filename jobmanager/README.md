@@ -68,7 +68,7 @@ Read `configure` and
     i. Read in all lines
     ii. Check all lines for keywords `TeraChem` and `ORCA`
     iii. Check all lines for other keywords and output information
-4. Get active jobs using bash
+4. Get active jobs using bash & `qstat` or `squeue`
 5. Categorize jobs by completion and errors
-6. Get active jobs by finding all `_jobscript` files
+6. Get jobs without output by finding all `_jobscript` files
 7. Sort out active/finished conflicts
