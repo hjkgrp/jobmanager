@@ -398,13 +398,10 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
 
     def check_active(path, active_jobs=active_jobs):
         # Given a path, checks if it's in the queue currently:
-        name = os.path.split(path)[-1]
+        name = os.path.basename(path)
         name = name.rsplit('.', 1)[0]
-        if name in active_jobs:
-            return True
-        else:
-            return False
-
+        return any([x.startswith(name) for x in active_jobs])
+            
     def check_needs_resub(path):
         if os.path.isfile(path.rsplit('.', 1)[0] + '.pickle'):
             history = resub_history()
@@ -499,6 +496,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     priority_list_names = ['Active', 'Chronic_errors', 'Waiting', 'Thermo_grad_error',
                            'oscillating_scf_errors', 'SCF_Error', 'Error', 'Spin_contaminated', 'Needs_resub',
                            'Finished']
+    # return (priority_list, priority_list_names)
     priority_list = priority_sort(priority_list)
 
     results = dict()
