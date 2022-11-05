@@ -131,7 +131,7 @@ def save_run(outfile_path, rewrite_inscr=True, save_scr_flag=True):
     history = resub_history()
     history.read(outfile_path)
 
-    with open(outfile_path, 'r') as f:
+    with open(outfile_path, 'r', errors='ignore') as f:
         out_lines = f.readlines()
     history.outfiles.append(out_lines)
 
