@@ -416,7 +416,7 @@ def write_jobscript(psi4_config):
             fo.write("source /etc/profile\n")
             fo.write("source ~/.profile\n")
             fo.write("source ~/.bashrc\n")
-            fo.write("conda activate mols_py37\n")
+            fo.write(f"conda activate {psi4_config['conda_env']\n")
             fo.write("export PSI_SCRATCH='./'\n\n")
             fo.write("subdir=$PWD\n")
             fo.write("echo subdir: $subdir\n")
