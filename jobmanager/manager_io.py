@@ -138,7 +138,7 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                 if ('failed' in scf) and ('converge' in scf) and ('iterations,' in scf) and ('ADIIS' in scf):
                     scf = scf[5]
                     scf = int(scf.split('+')[0])
-                    if scf > 5000:
+                    if scf > 3500:
                         scf_error = [True, scf]
         if long_output:
             nbo_start, nbo_end = output.wordgrab(['NATURAL POPULATIONS:  Natural atomic orbital occupancies',
@@ -495,7 +495,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 guess=False, custom_line=None, levelshifta=0.25, levelshiftb=0.25,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
-                parallel_environment=4, precision='dynamic', dftgrid=1, dynamicgrid='yes',
+                parallel_environment=4, precision='dynamic', dftgrid=2, dynamicgrid='yes',
                 machine='gibraltar'):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
@@ -554,6 +554,7 @@ def write_terachem_input(infile_dictionary):
             'charge ' + str(infile['charge']) + '\n',
             'method ' + str(infile['method']) + '\n',
             'precision ' + str(infile['precision']) + '\n',
+            'watcheindiis yes\n'
             'dftgrid ' + str(infile['dftgrid']) + '\n',
             'dynamicgrid ' + str(infile['dynamicgrid']) + '\n',
             'new_minimizer yes\n',
