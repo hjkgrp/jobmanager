@@ -252,7 +252,7 @@ def resub(directory='in place'):
         active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
         for job in jobscripts:
             jobdir, jobname = os.path.split(job.rsplit('_', 1)[0])
-            outfile = os.path.join(jobdir, jobname + '.out'
+            outfile = os.path.join(jobdir, jobname + '.out')
             if not os.path.isfile(outfile) and not any([x.startswith(jobname) for x in active_jobs]):
                 to_submit.append(job)
 
