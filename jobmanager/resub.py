@@ -112,6 +112,7 @@ def resub(directory='in place'):
     all_scf_errors = completeness['SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
     scf_errors_to_kill = [scf_err for scf_err in all_scf_errors if scf_err not in scf_errors]
     names_to_kill = [os.path.split(scf_err)[-1].rsplit('.', 1)[0] for scf_err in scf_errors_to_kill]
+    names_to_kill.extend([name + '_jobscript' for name in names_to_kill])
     kill_jobs(names_to_kill, message1='Job: ', message2=' appears to have an scf error. Killing this job early')
     # Prep derivative jobs such as thermo single points, vertical IP, and ligand dissociation energies
     needs_derivative_jobs = list(filter(tools.check_original, finished))
