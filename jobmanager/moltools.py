@@ -184,7 +184,7 @@ def apply_geo_check(job_outfile_path, geometry):
                 return False
 
         elif geometry.capitalize() in ['Tetrahedral', 'Tetra']:
-            if len(mol.getBondedAtoms(mol.findMetal())) == 4:
+            if len(mol.getBondedAtoms(mol.findMetal()[0])) == 4:
                 return True
             else:
                 return False
