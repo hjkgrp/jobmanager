@@ -600,7 +600,7 @@ def check_original(job):
     name = name.split('_')
 
     dependent_jobs = ['solvent', 'vertEA', 'vertIP', 'thermo', 'kp', 'rm', 'ultratight', 'HFXresampling',
-                      'functional', 'mbe', 'metal']
+                      'functional', 'mbe', 'metal','sse']
     if any(j in name for j in dependent_jobs):
         return False
     else:
