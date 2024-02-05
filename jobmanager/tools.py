@@ -963,6 +963,80 @@ def prep_vertical_ea(path):
     os.chdir(home)
     return jobscripts
 
+def prep_ad_spin(path):
+    """This function prepares an adiabatic spin-splitting calculation.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+
+    Returns
+    -------
+        jobscripts : list
+            List of paths for jobscripts of vertical EA jobs.
+
+    """
+    # Given a path to the outfile of a finished run, this preps the files for a corresponding adiabatic spin-splitting calculation
+    # Returns a list of the PATH(s) to the jobscript(s) to start the calculations(s)
+    home = os.getcwd()
+    path = convert_to_absolute_path(path)
+
+    results = manager_io.read_outfile(path)
+    if not results['finished']:
+        raise Exception('This calculation does not appear to be complete! Aborting...')
+
+    infile_dict = manager_io.read_infile(path)
+
+    if infile_dict['spinmult'] == 1:
+        new_spin = [3, 5]
+    elif infile_dict['spinmult'] == 2:
+        new_spin = [4, 6]
+    else:
+        print(f'Skipping spin-splitting calculation requested for {path:s}')
+        return 0
+
+    base = os.path.split(path)[0]
+
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    extract_optimized_geo(optimxyz)
+
+    sseName = results['name'] + '_sse'
+    adsse_base_path = os.path.join(base, sseName)
+    if os.path.isdir(adsse_base_path):
+        return ['Directory for spin-splitting calc already exists']
+    os.mkdir(adsse_base_path)
+    os.chdir(adsse_base_path)
+
+    jobscripts = []
+    for calc in new_spin:
+        if calc < 7:
+            name = sseName + '_s' + str(calc)
+            PATH = os.path.join(adsse_base_path, str(calc))
+            if os.path.isdir(PATH):
+                jobscripts.append('File for spin-splitting ' + str(name) + 'already exists')
+            else:
+                os.mkdir(PATH)
+                os.chdir(PATH)
+                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+
+                local_infile_dict = copy.copy(infile_dict)
+                local_infile_dict['charge'], local_infile_dict['guess'] = infile_dict['charge'], False
+                local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'minimize', calc
+                local_infile_dict['name'] = name
+                local_infile_dict['coordinates'] = name+'.xyz'
+                local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
+                local_infile_dict['machine'] = get_machine()
+
+                manager_io.write_input(local_infile_dict)
+                manager_io.write_jobscript(name, machine=get_machine())
+                jobscripts.append(os.path.join(PATH, name + '_jobscript'))
+    os.chdir(home)
+    return jobscripts
+
 def prep_solvent_sp(path, solvents=[78.9]):
     """This function prepares a solvent job for a base job.
 

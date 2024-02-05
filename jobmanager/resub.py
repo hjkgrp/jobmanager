@@ -75,6 +75,8 @@ def prep_derivative_jobs(directory, list_of_outfiles):
         if configure_dict['mbe']:
             moltools.prep_mbe_calc(job)  # needs to be generalized, not just for Fe
             # moltools.prep_mbe_calc(job, metal_charge = configure_dict['metal_charge'])
+        if configure_dict['spinSplitting']:
+            tools.prep_ad_spin(job)
         if bool(configure_dict['general_sp']):
             tools.prep_general_sp(job, general_config=configure_dict['general_sp'])
 

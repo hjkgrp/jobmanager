@@ -340,8 +340,10 @@ def read_configure(home_directory, outfile_path):
     else:
         local_configure = []
     # Determine which derivative jobs are requested
-    solvent, vertEA, vertIP, thermo, dissociation, hfx_resample, functionalsSP, mbe = False, False, False, False, False, False, False, False
+    solvent, vertEA, vertIP, thermo, dissociation, hfx_resample, functionalsSP, mbe, spinSplitting = False, False, False, False, False, False, False, False, False
     for line in home_configure + local_configure:
+        if 'spinSplitting' in line:
+            spinSplitting = True
         if 'solvent' in line or 'Solvent' in line:
             solvent = [float(p) for p in line.split()[1:]]
         if 'vertEA' in line or 'VertEA' in line:
@@ -450,7 +452,7 @@ def read_configure(home_directory, outfile_path):
             'dissociated_ligand_spinmults': dissociated_ligand_spinmults,
             'dissociated_ligand_charges': dissociated_ligand_charges,
             "use_molscontrol": use_molscontrol, "general_sp": general_sp,
-            "run_psi4": run_psi4, "psi4_config": psi4_config, 'mbe': mbe}
+            "run_psi4": run_psi4, "psi4_config": psi4_config, 'mbe': mbe, 'spinSplitting': spinSplitting}
 
 
 def read_charges(PATH):
