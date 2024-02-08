@@ -18,7 +18,6 @@ def try_float(obj):
 def convert_to_absolute_path(path):
     if path[0] != '/':
         path = os.path.join(os.getcwd(), path)
-
     return path
 
 
@@ -205,10 +204,53 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     return return_dict
 
 
+def read_terachem_input(input_textfile):
+    # Takes a textfile class object of a Terachem input file
+    # Returns a dictionary of the options
+    tc_dict = {}
+    lines = iter(input_textfile.lines)
+    for line in lines:
+        # remove whitespace
+        line = line.strip()
+        if not line: continue  # skip blank lines
+        if line.startswith('#'): continue  # skip comments
+        if line.startswith('end'): break  # end
+        # skip block values
+        if line.startswith('$'):
+            while not line.startswith('$'):
+                line = next(lines)
+        else:
+            key, val = line.split()
+            if key in tc_dict:
+                print(f'{key:s} specified multiple times. Ignoring value {val:s}')
+            else:
+                tc_dict[key] = val
+    # second read through for block options
+    lines = iter(input_textfile.lines)
+    for line in lines:
+        # remove whitespace
+        line = line.strip()
+        if not line.startswith('$'):
+            continue
+        else:
+            key = line
+            val = []
+            line = next(lines)
+            while not line.startswith('$'):
+                val.append(str(line))
+                line = next(lines)
+            tc_dict[key] = val
+    return tc_dict
+
+def terachem2gen_inp(d):
+    # Takes a dictionary of Terachem settings
+    # Outputs a dictionary of general job settings
+    return d  # needs implementation
+
+
 def read_infile(outfile_path):
     # Takes the path to either the outfile or the infile of a job
     # Returns a dictionary of the job settings included in that infile
-
     root = outfile_path.rsplit('.', 1)[0]
     unique_job_name = os.path.split(root)[-1]
     inp = textfile(root + '.in')
@@ -218,50 +260,11 @@ def read_infile(outfile_path):
         qm_code = 'terachem'
 
     if qm_code == 'terachem':
-        # account for multiple keywords for dispersion
-        disp0 = inp.wordgrab(['dispersion '], [1], last_line=True)
-        disp1 = inp.wordgrab(['dftd '], [1], last_line=True)
-        if disp0 != [None]:
-            dispersion = disp0[0]
-        else:
-            dispersion = disp1[0]
-        charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx, basis, coordinates, guess = inp.wordgrab(
-            ['charge ', 'spinmult ', 'epsilon ',
-             'run ', 'levelshiftvala ',
-             'levelshiftvalb ', 'method ',
-             'HFX ', 'basis ', 'coordinates ', 'guess '],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            last_line=True)
-        charge, spinmult = int(charge), int(spinmult)
-        if guess:
-            guess = True
-        else:
-            guess = False
-        if method[0] == 'u':
-            method = method[1:]
+        tc_dict = read_terachem_input(inp)
+        return_dict = terachem2gen_inp(tc_dict)
+        return return_dict
 
-        convergence_thresholds = inp.wordgrab(
-            ['min_converge_gmax ', 'min_converge_grms ', 'min_converge_dmax ', 'min_converge_drms ', 'min_converge_e ',
-             'convthre '],
-            [1] * 6, last_line=True)
-        if not convergence_thresholds[0]:
-            convergence_thresholds = None
 
-        multibasis = inp.wordgrab(['$multibasis', '$end'], [0, 0], last_line=True, matching_index=True)
-        if not multibasis[0]:
-            multibasis = False
-        else:
-            multibasis = inp.lines[multibasis[0] + 1:multibasis[1]]
-
-        constraints = inp.wordgrab(['$constraint_freeze', '$end'], [0, 0], last_line=True, matching_index=True)
-        if not constraints[0]:
-            constraints = False
-        else:
-            constraints = inp.lines[constraints[0] + 1:constraints[1]]
-
-        if constraints and multibasis:
-            raise Exception(
-                'The current implementation of tools.read_infile() is known to behave poorly when an infile specifies both a multibasis and constraints')
 
     elif qm_code == 'orca':
         ligand_basis, run_type, method, parallel_environment, charge, spinmult, coordinates = inp.wordgrab(
