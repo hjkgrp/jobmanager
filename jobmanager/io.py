@@ -277,10 +277,10 @@ def tc2gen_inp(tc_dict):
     if "$multibasis" in tc_dict:
         d['multibasis'] = temp.pop('$multibasis')
 
-    ## charge needd to be integer 
+    ## charge needs to be integer 
     temp['charge'] = int(temp['charge'])
     ## spinmult needs to be defined (as integer) for jobmanager (but not for Terachem)
-    if temp['spinmult']:
+    if 'spinmult' in temp:
         temp['spinmult'] = int(temp['spinmult'])
     else:
         temp['spinmult'] = 1
@@ -295,7 +295,7 @@ def tc2gen_inp(tc_dict):
                 d['convergence_thresholds'][i] = temp.pop(key)
 
     # convert other recognized options
-    for key in tc_dict:
+    for key in list(temp.keys()):
         if key.lower() in keywords and key :
             d[keywords[key.lower()]] = temp.pop(key)
 
