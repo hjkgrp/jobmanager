@@ -12,3 +12,5 @@ dependencies:
   - pip
   - pip:
     - -e ../../
+    - pytest
+    - pytest-resource-path

@@ -8,7 +8,7 @@ import pandas as pd
 import shutil
 import time
 from jobmanager.classes import resub_history, textfile
-import jobmanager.manager_io as manager_io
+import jobmanager.io as io
 
 
 def ensure_dir(dirpath):
@@ -210,7 +210,7 @@ def create_summary(directory='in place'):
 
     outfiles = find('*.out', directory)
     outfiles = list(filter(check_valid_outfile, outfiles))
-    results = list(map(manager_io.read_outfile, outfiles))
+    results = list(map(io.read_outfile, outfiles))
     summary = pd.DataFrame(results)
 
     return summary
@@ -380,7 +380,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     outfiles = find('*.out', directory)
     outfiles = list(filter(check_valid_outfile, outfiles))
 
-    results_tmp = [manager_io.read_outfile(outfile, short_ouput=True) for outfile in outfiles]
+    results_tmp = [io.read_outfile(outfile, short_ouput=True) for outfile in outfiles]
     results_tmp = list(zip(outfiles, results_tmp))
     results_dict = dict()
     for outfile, tmp in results_tmp:
@@ -803,7 +803,7 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
     # Write a jobscript for the job bundle
     home = os.getcwd()
     os.chdir(os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1)))
-    manager_io.write_terachem_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)) + '_' + identifier,
+    io.write_terachem_jobscript(str('bundle_' + str(max(existing_bundle_numbers) + 1)) + '_' + identifier,
                                         terachem_line=False, time_limit='12:00:00', machine=get_machine())
     shutil.move('bundle_' + str(max(existing_bundle_numbers) + 1) + '_' + identifier + '_jobscript',
                 'bundle_' + str(max(existing_bundle_numbers) + 1))
@@ -838,11 +838,11 @@ def prep_vertical_ip(path):
     home = os.getcwd()
     path = convert_to_absolute_path(path)
 
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
 
     if infile_dict['spinmult'] == 1:
         new_spin = [2]
@@ -884,8 +884,8 @@ def prep_vertical_ip(path):
                 local_infile_dict['coordinates'] = name+'.xyz'
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
-                manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name, machine=get_machine())
+                io.write_input(local_infile_dict)
+                io.write_jobscript(name, machine=get_machine())
 
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
 
@@ -911,11 +911,11 @@ def prep_vertical_ea(path):
     home = os.getcwd()
     path = convert_to_absolute_path(path)
 
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
 
     if infile_dict['spinmult'] == 1:
         new_spin = [2]
@@ -957,8 +957,8 @@ def prep_vertical_ea(path):
                 local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
 
-                manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name, machine=get_machine())
+                io.write_input(local_infile_dict)
+                io.write_jobscript(name, machine=get_machine())
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
     return jobscripts
@@ -982,11 +982,11 @@ def prep_ad_spin(path):
     home = os.getcwd()
     path = convert_to_absolute_path(path)
 
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
 
     if infile_dict['spinmult'] == 1:
         new_spin = [3, 5]
@@ -1028,11 +1028,10 @@ def prep_ad_spin(path):
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'minimize', calc
                 local_infile_dict['name'] = name
                 local_infile_dict['coordinates'] = name+'.xyz'
-                local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
                 local_infile_dict['machine'] = get_machine()
 
-                manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name, machine=get_machine())
+                io.write_input(local_infile_dict)
+                io.write_jobscript(name, machine=get_machine())
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
     return jobscripts
@@ -1059,11 +1058,11 @@ def prep_solvent_sp(path, solvents=[78.9]):
     home = os.getcwd()
     path = convert_to_absolute_path(path)
 
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
 
     base = os.path.split(path)[0]
 
@@ -1097,13 +1096,13 @@ def prep_solvent_sp(path, solvents=[78.9]):
         if infile_dict['spinmult'] == 1:
             if os.path.isfile(os.path.join(base, 'scr', 'c0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                manager_io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+                io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
                 guess = True
         else:
             if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+                io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
                 guess = True
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['solvent'], local_infile_dict['guess'] = sol_val, guess
@@ -1113,7 +1112,7 @@ def prep_solvent_sp(path, solvents=[78.9]):
         local_infile_dict['levelshifta'], local_infile_dict['levelshiftb'] = 0.25, 0.25
         local_infile_dict['machine'] = get_machine()
 
-        manager_io.write_input(local_infile_dict)
+        io.write_input(local_infile_dict)
 
         os.chdir(home)
         jobscripts.append(os.path.join(PATH, name + '_jobscript'))
@@ -1138,11 +1137,11 @@ def prep_functionals_sp(path, functionalsSP):
     """
     home = os.getcwd()
     path = convert_to_absolute_path(path)
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
     base = os.path.split(path)[0]
 
     if infile_dict['run_type'] == 'minimize':
@@ -1174,13 +1173,13 @@ def prep_functionals_sp(path, functionalsSP):
         if infile_dict['spinmult'] == 1:
             if os.path.isfile(os.path.join(base, 'scr', 'c0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                manager_io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+                io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
                 guess = True
         else:
             if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
                 shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
                 shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+                io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
                 guess = True
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['guess'] = guess
@@ -1191,7 +1190,7 @@ def prep_functionals_sp(path, functionalsSP):
         local_infile_dict['method'] = func
         local_infile_dict['machine'] = get_machine()
 
-        manager_io.write_input(local_infile_dict)
+        io.write_input(local_infile_dict)
 
         with open('configure', 'w') as fil:
             fil.write('method:' + func)
@@ -1232,11 +1231,11 @@ def prep_general_sp(path, general_config):
     # ----sanity check for dependent job-----
     home = os.getcwd()
     path = convert_to_absolute_path(path)
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
     # -----make base directory for general jobs---
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
     base = os.path.split(path)[0]
     if infile_dict['run_type'] == 'minimize':
         optimxyz = os.path.join(base, 'scr', 'optim.xyz')
@@ -1285,8 +1284,8 @@ def prep_general_sp(path, general_config):
                     local_infile_dict['solvent'] = float(config['solvent'])
                 else:
                     local_infile_dict['solvent'] = False
-                manager_io.write_input(local_infile_dict)
-                manager_io.write_jobscript(name, machine=get_machine())
+                io.write_input(local_infile_dict)
+                io.write_jobscript(name, machine=get_machine())
                 with open('configure', 'w')as fil:
                     fil.write('method:%s\n' % config['functional'])
                     solvent = float(config['solvent']) if config['solvent'] else False
@@ -1305,13 +1304,13 @@ def prep_general_sp(path, general_config):
             if infile_dict['spinmult'] == 1:
                 if os.path.isfile(os.path.join(base, 'scr', 'c0')):
                     shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                    manager_io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+                    io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
                     guess = True
             else:
                 if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
                     shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
                     shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                    manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+                    io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
                     guess = True
             local_infile_dict = copy.copy(infile_dict)
             local_infile_dict['guess'] = guess
@@ -1327,7 +1326,7 @@ def prep_general_sp(path, general_config):
                 local_infile_dict['solvent'] = float(config['solvent'])
             else:
                 local_infile_dict['solvent'] = False
-            manager_io.write_input(local_infile_dict)
+            io.write_input(local_infile_dict)
             with open('configure', 'w')as fil:
                 fil.write('method:%s\n' % config['functional'])
                 solvent = float(config['solvent']) if config['solvent'] else False
@@ -1358,8 +1357,8 @@ def prep_thermo(path):
     home = os.getcwd()
     path = convert_to_absolute_path(path)
 
-    results = manager_io.read_outfile(path)
-    infile_dict = manager_io.read_infile(path)
+    results = io.read_outfile(path)
+    infile_dict = io.read_infile(path)
 
     base = os.path.split(path)[0]
 
@@ -1386,14 +1385,14 @@ def prep_thermo(path):
     local_infile_dict['name'] = name
     local_infile_dict['machine'] = get_machine()
 
-    manager_io.write_input(local_infile_dict)
+    io.write_input(local_infile_dict)
     if infile_dict['spinmult'] == 1:
         shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-        manager_io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+        io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
     if infile_dict['spinmult'] != 1:
         shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
         shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-        manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+        io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
 
     os.chdir(home)
     return [os.path.join(PATH, name + '_jobscript')]
@@ -1419,11 +1418,11 @@ def prep_ultratight(path):
     home = os.getcwd()
     path = convert_to_absolute_path(path)
 
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
 
     base = os.path.split(path)[0]
 
@@ -1447,11 +1446,11 @@ def prep_ultratight(path):
         shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
         if infile_dict['spinmult'] == 1:
             shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-            manager_io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+            io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
         elif infile_dict['spinmult'] != 1:
             shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
             shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-            manager_io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+            io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
 
         criteria = ['2.25e-04', '1.5e-04', '0.9e-03', '0.6e-03', '0.5e-06', '1.5e-05']
 
@@ -1462,7 +1461,7 @@ def prep_ultratight(path):
         local_infile_dict['coordinates'] = name+'.xyz'
         local_infile_dict['machine'] = get_machine()
 
-        manager_io.write_input(local_infile_dict)
+        io.write_input(local_infile_dict)
 
         # Make an empty .out file to prevent the resubmission module from mistakenly submitting this job twice
         with open(name + '.out', 'w') as _:
@@ -1474,7 +1473,7 @@ def prep_ultratight(path):
 
     else:  # This has been run before, further tighten the convergence criteria
         os.chdir(PATH)
-        infile_dict = manager_io.read_infile(os.path.join(PATH, name + '.out'))
+        infile_dict = io.read_infile(os.path.join(PATH, name + '.out'))
         criteria = [str(float(i) / 2.) for i in infile_dict['convergence_thresholds']]
 
         local_infile_dict = copy.copy(infile_dict)
@@ -1483,7 +1482,7 @@ def prep_ultratight(path):
         local_infile_dict['name'] = name
         local_infile_dict['coordinates'] = name+'.xyz'
         local_infile_dict['machine'] = get_machine()
-        manager_io.write_input(local_infile_dict)
+        io.write_input(local_infile_dict)
 
         extract_optimized_geo(os.path.join(PATH, 'scr', 'optim.xyz'))
         shutil.copy(os.path.join(PATH, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
@@ -1516,12 +1515,12 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
     path = convert_to_absolute_path(path)
     base = os.path.split(path)[0]
 
-    results = manager_io.read_outfile(path)
+    results = io.read_outfile(path)
     if not results['finished']:
         raise Exception('This calculation does not appear to be complete! Aborting...')
 
     # Check the state of the calculation and ensure than hfx resampling is valid
-    infile_dict = manager_io.read_infile(path)
+    infile_dict = io.read_infile(path)
     if infile_dict['method'] != 'b3lyp':
         raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
     if not infile_dict['hfx']:
@@ -1559,7 +1558,7 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         subname = name + '_' + str(hfx)
         outfile_path = os.path.join(existing, subname + '.out')
         if os.path.exists(outfile_path):
-            if manager_io.read_outfile(outfile_path)['finished']:
+            if io.read_outfile(outfile_path)['finished']:
                 hfx_values_to_generate.append(hfx - 5)
                 hfx_values_to_generate.append(hfx + 5)
 
@@ -1592,11 +1591,11 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         shutil.copy(os.path.join(source_dir, 'scr', 'optimized.xyz'), subname + '.xyz')
         if infile_dict['spinmult'] == 1:
             shutil.copy(os.path.join(source_dir, 'scr', 'c0'), 'c0')
-            manager_io.write_jobscript(subname, custom_line='# -fin c0', machine=get_machine())
+            io.write_jobscript(subname, custom_line='# -fin c0', machine=get_machine())
         elif infile_dict['spinmult'] != 1:
             shutil.copyfile(os.path.join(source_dir, 'scr', 'ca0'), os.path.join('ca0'))
             shutil.copyfile(os.path.join(source_dir, 'scr', 'cb0'), os.path.join('cb0'))
-            manager_io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
+            io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
                                        machine=get_machine())
 
         local_infile_dict = copy.copy(infile_dict)
@@ -1605,7 +1604,7 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         local_infile_dict['name'] = subname
         local_infile_dict['coordinates'] = subname+'.xyz'
         local_infile_dict['machine'] = get_machine()
-        manager_io.write_input(local_infile_dict)
+        io.write_input(local_infile_dict)
         jobscripts.append(os.path.join(os.getcwd(), subname + '_jobscript'))
 
     os.chdir(home)

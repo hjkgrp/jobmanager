@@ -1,10 +1,10 @@
-from jobmanager import manager_io
+from jobmanager import io
 from jobmanager import classes
 
 def test_read_terachem_infile_constraint(resource_path_root):
     in_file = str(resource_path_root / "inputs" / "infiles" / "tc_constraint.in")
     in_file = classes.textfile(in_file)
-    d = manager_io.read_terachem_input(in_file)
+    d = io.read_terachem_input(in_file)
     ref_d = {
         "run" : "minimize",
         "gpus" : "1", 
