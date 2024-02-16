@@ -4,6 +4,20 @@ from jobmanager.classes import textfile
 import json
 
 
+CONVERGENCE_KEYS = ['min_converge_gmax', 'min_converge_grms', 'min_converge_dmax', 'min_converge_drms', 'min_converge_e','convthre']
+
+# list of recognized options as {terachem_key:internal_key}
+TC2GEN_KEYS = {
+    'dftd':'dispersion', 'dispersion':'dispersion', 
+    'charge':'charge', 'spinmult':'spinmult', 
+    'epsilon':'solvent', 'run':'run_type', 
+    'levelshiftvala':'levelshifta', 'levelshiftvalb':'levelshiftb',
+    'method':'method', 'basis':'basis', 'coordinates':'coordinates','guess':'guess',
+    'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid'
+    }
+
+GEN2TC_KEYS = {val:key for key, val in TC2GEN_KEYS.items()}
+
 def try_float(obj):
     # Converts an object to a floating point if possible
     try:
@@ -257,17 +271,6 @@ def tc2gen_inp(tc_dict):
     # copy dictionary so there is no chance of affecting upstream variables
     temp = tc_dict.copy()
 
-    # list of recognized options as {terachem_key:internal_key}
-    keywords = {
-        'dftd':'dispersion', 'dispersion':'dispersion', 
-        'charge':'charge', 'spinmult':'spinmult', 
-        'epsilon':'solvent', 'run':'run_type', 
-        'levelshiftvala':'levelshifta', 'levelshiftvalb':'levelshiftb',
-        'method':'method', 'basis':'basis', 'coordinates':'coordinates','guess':'guess',
-        'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid'
-        }
-    
-
     d = {}
     if tc_dict['method'].lower().startswith('u'):
         d['restricted'] = False
@@ -287,22 +290,59 @@ def tc2gen_inp(tc_dict):
     
 
     ## required for how jobmanager currently treats convergence thresholds
-    convergence_keys = ['min_converge_gmax', 'min_converge_grms', 'min_converge_dmax', 'min_converge_drms', 'min_converge_e','convthre']
-    if any([key in tc_dict for key in convergence_keys]):
+    if any([key in tc_dict for key in CONVERGENCE_KEYS]):
         d['convergence_thresholds'] = [None] * 6
-        for i, key in enumerate(convergence_keys):
+        for i, key in enumerate(CONVERGENCE_KEYS):
             if key in tc_dict:
                 d['convergence_thresholds'][i] = temp.pop(key)
 
     # convert other recognized options
     for key in list(temp.keys()):
-        if key.lower() in keywords and key :
-            d[keywords[key.lower()]] = temp.pop(key)
+        if key.lower() in TC2GEN_KEYS and key:
+            d[TC2GEN_KEYS[key.lower()]] = temp.pop(key)
 
     # save unrecognized options
     d['unrecognized_terachem'] = temp
 
     return d
+
+
+def gen2tc_inp(inp_dict):
+    '''
+    Returns a Terachem input dictionary from a general one.
+    '''
+    temp = inp_dict.copy()
+    tc_dict = temp.pop('unrecognized_terachem')
+
+    ## required for how jobmanager currently treats convergence thresholds
+    if 'convergence_thresholds' in temp and temp['convergence_thresholds']:
+        temp_list = temp.pop('convergence_thresholds')
+        for i, key in enumerate(CONVERGENCE_KEYS):
+            if temp_list[i]:
+                tc_dict[key] = temp_list[i]
+    
+    if 'multibasis' in temp:
+        tc_dict['$multibasis'] = temp.pop('multibasis')
+
+    if 'constraints' in temp:
+        tc_dict["$constraint_freeze"] = temp.pop('constraints')
+
+    # convert method for terachem
+    if temp['spinmult'] == 1 and 'restricted' in temp and not temp['restricted']:
+        tc_dict['method'] = 'u' + temp.pop('method')
+    elif temp['spinmult'] > 1 and 'restricted' in temp and temp['restricted']:
+        tc_dict['method'] = 'ro' + temp.pop('method')
+    elif temp['spinmult'] > 1:
+        tc_dict['method'] = 'u' + temp.pop('method')
+    elif temp['spinmult'] == 1:
+        tc_dict['method'] = temp.pop('method')
+    
+    for key in GEN2TC_KEYS:
+        if key in temp:
+            tc_dict[GEN2TC_KEYS[key]] = temp.pop(key)
+    
+    return tc_dict
+
 
 
 def read_infile(outfile_path):
@@ -561,7 +601,6 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 machine='gibraltar'):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
-
     infile = dict()
     # If the input_dictionary exists,parse it and set the parameters, overwritting other specifications
     for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
@@ -571,7 +610,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                                ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method',
                                 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
-                                'coordinates', 'guess', 'custom_line', 'qm_code', 'parallel_environment', 'name',
+                                'coordinates', 'guess', 'unrecognized_terachem', 'qm_code', 'parallel_environment', 'name',
                                 'precision', 'dftgrid', 'dynamicgrid', 'machine']):
         if prop_name in list(input_dictionary.keys()):
             infile[prop_name] = input_dictionary[prop_name]
@@ -590,97 +629,84 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
         raise Exception('Spin and Charge should both be integers!')
 
     if infile['qm_code'] == 'terachem':
-        write_terachem_input(infile)
+        write_terachem_input(infile['name'] + '.in', gen2tc_inp(infile))
     elif infile['qm_code'] == 'orca':
         write_orca_input(infile)
     else:
         raise Exception('QM code: ' + infile['qm_code'] + ' not recognized!')
 
 
-def write_terachem_input(infile_dictionary):
-    infile = infile_dictionary
+def write_terachem_input(infile_path, tc_dict):
+    '''
+    Write a Terachem input file (infile_path) using a Terachem dictionary
+    '''
+    GENERAL_PARAMETERS = ['jobname', 'scrdir', 'run', 'gpus']
+    CHEMICAL_METHODS = ['method', 'dispersion', 'dftd', 'hfx']
+    SYSTEM_INFO = ['coordinates', 'qmmm', 'charge', 'spinmult']
+    COMPUTATIONAL_METHOD = ['basis', 'dftgrid', 'dynamicgrid', 'precision']
+    OPTIMIZER = ['new_minimizer', 'nstep', 'opt_maxiter']
+    SCF_CONVERGENCE = ['scf', 'maxit', 'watcheindiis', 'start_diis', 'levelshift', 'levelshiftvala', 'levelshiftvalb']
+    OUTPUTS = ['timings', 'nbo', 'ml_prop', 'poptype', 'bond_order_list']
 
-    if infile['spinmult'] != 1:
-        infile['method'] = 'u' + infile['method']
+    temp_dict = tc_dict.copy()
 
-    text = ['levelshiftvalb ' + str(infile['levelshiftb']) + '\n',
-            'levelshiftvala ' + str(infile['levelshifta']) + '\n',
-            'run ' + infile['run_type'] + '\n',
-            'scf diis+a\n',
-            'coordinates ' + infile['coordinates'] + '\n',
-            'levelshift yes\n',
-            'spinmult ' + str(infile['spinmult']) + '\n',
-            'scrdir ./scr\n',
-            'basis ' + infile['basis'] + '\n',
-            'timings yes\n',
-            'charge ' + str(infile['charge']) + '\n',
-            'method ' + str(infile['method']) + '\n',
-            'precision ' + str(infile['precision']) + '\n',
-            'watcheindiis yes\n'
-            'dftgrid ' + str(infile['dftgrid']) + '\n',
-            'dynamicgrid ' + str(infile['dynamicgrid']) + '\n',
-            'new_minimizer yes\n',
-            'ml_prop yes\n',
-            'poptype mulliken\n',
-            'bond_order_list yes\n',
-            'end']
+    with open(infile_path, 'w') as fout:
+        fout.write('## General ##\n')
+        for key in GENERAL_PARAMETERS:
+            if key in temp_dict:
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
 
-    if infile['custom_line']:
-        text = text[:15] + [infile['custom_line'] + '\n'] + text[15:]
-    if infile['guess']:
-        if type(infile['guess']) == bool:
-            if infile['spinmult'] == 1:
-                infile['guess'] = 'c0'
-            else:
-                infile['guess'] = 'ca0 cb0'
-        text = text[:-1] + ['guess ' + infile['guess'] + '\n',
-                            'end']
-    if infile['run_type'] != 'ts':
-        text = text[:-1] + ['maxit 500\n',
-                            'end']
+        fout.write('## System ##\n')
+        for key in SYSTEM_INFO:
+            if key in temp_dict:
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
 
-    if type(infile['convergence_thresholds']) == list:
-        if infile['convergence_thresholds'][0]:
-            thresholds = [line if line.endswith('\n') else line + '\n' for line in infile['convergence_thresholds']]
-            tight_thresholds = ("min_converge_gmax " + thresholds[0] + "min_converge_grms "
-                                + thresholds[1] + "min_converge_dmax " + thresholds[2]
-                                + "min_converge_drms " + thresholds[3] + "min_converge_e "
-                                + thresholds[4] + "convthre " + thresholds[5])
-            text = text[:-1] + ['\n', tight_thresholds, 'end']
+        fout.write('## Chemical Method ##\n')
+        for key in CHEMICAL_METHODS:
+            if key in temp_dict:
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
 
-    if infile['dispersion']:
-        text = text[:-1] + ['dispersion ' + infile['dispersion'] + '\n', 'end']
+        fout.write('## Computational Method ##\n')
+        for key in COMPUTATIONAL_METHOD:
+            if key in temp_dict:
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
 
-    if infile['multibasis']:
-        multibasis = [line if line.endswith('\n') else line + '\n' for line in infile['multibasis']]
-        text = text[:-1] + ['\n', '$multibasis\n'] + multibasis + ['$end\n', 'end']
+        fout.write('# Optimizer #\n')
+        for key in OPTIMIZER:
+            if key in temp_dict:
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
 
-    if infile['constraints']:
-        constraints = [line if line.endswith('\n') else line + '\n' for line in infile['constraints']]
-        text = text[:-1] + ['\n', '$constraint_freeze\n'] + constraints + ['$end\n', 'end']
+        fout.write('# SCF Convergence #\n')
+        for key in SCF_CONVERGENCE:
+            if key in temp_dict:
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
 
-    if type(infile['hfx']) == int or type(infile['hfx']) == float:
-        text = text[:-1] + ['\n',
-                            'HFX ' + str(infile['hfx']) + '\n',
-                            'end']
+        fout.write('## Outputs ##\n')
+        for key in OUTPUTS:
+            if key in temp_dict:
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
 
-    if infile['solvent']:  # Adds solvent correction, if requested
-        text = text[:-1] + ['\n',
-                            'pcm cosmo\n',
-                            'epsilon %.2f\n' % float(infile['solvent']),
-                            'pcm_radii read\n',
-                            'pcm_radii_file /home/harperd/pcm_radii\n',
-                            'end']
-    if infile['machine'] in ['gibraltar', 'bridges']:
-        text = text[:-1] + ['nbo yes\n', 'gpus 1\n', 'end']
-    elif infile['machine'] in ['comet']:
-        text = text[:-1] + ['gpus 2\n', 'end']
-    else:
-        raise ValueError('Machine not known!')
+        fout.write('## Uncategorzied ##\n')
+        for key in list(temp_dict.keys()):
+            if temp_dict[key] and not key.startswith('$'):
+                fout.write(f'{key} {temp_dict.pop(key)}\n')
+        fout.write('\n')
+        fout.write('end\n')
 
-    with open(infile['name'] + '.in', 'w') as fout:
-        for lines in text:
-            fout.write(lines)
+        for key in temp_dict:
+            if temp_dict[key]:
+                fout.write(f'{key}\n')
+                fout.writelines(temp_dict[key])
+                fout.write('\n$end\n')
+
+        
 
 
 def write_orca_input(infile_dictionary):
