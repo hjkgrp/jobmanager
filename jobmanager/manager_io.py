@@ -242,10 +242,67 @@ def read_terachem_input(input_textfile):
             tc_dict[key] = val
     return tc_dict
 
-def terachem2gen_inp(d):
+
+def is_valid(tc_dict):
+    req_keys = ['coordinates', 'basis', 'charge', 'method']
+    for key in req_keys:
+        if key not in tc_dict:
+            return False
+    return True
+
+
+def tc2gen_inp(tc_dict):
     # Takes a dictionary of Terachem settings
     # Outputs a dictionary of general job settings
-    return d  # needs implementation
+    # copy dictionary so there is no chance of affecting upstream variables
+    temp = tc_dict.copy()
+
+    # list of recognized options as {terachem_key:internal_key}
+    keywords = {
+        'dftd':'dispersion', 'dispersion':'dispersion', 
+        'charge':'charge', 'spinmult':'spinmult', 
+        'epsilon':'solvent', 'run':'run_type', 
+        'levelshiftvala':'levelshifta', 'levelshiftvalb':'levelshiftb',
+        'method':'method', 'basis':'basis', 'coordinates':'coordinates','guess':'guess',
+        'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid'
+        }
+    
+
+    d = {}
+    if tc_dict['method'].lower().startswith('u'):
+        d['restricted'] = False
+        temp['method'] = temp['method'][1:]
+    if "$constraint_freeze" in tc_dict:
+        d['constraints'] = temp.pop('$constraint_freeze')
+    if "$multibasis" in tc_dict:
+        d['multibasis'] = temp.pop('$multibasis')
+
+    ## charge needd to be integer 
+    temp['charge'] = int(temp['charge'])
+    ## spinmult needs to be defined (as integer) for jobmanager (but not for Terachem)
+    if temp['spinmult']:
+        temp['spinmult'] = int(temp['spinmult'])
+    else:
+        temp['spinmult'] = 1
+    
+
+    ## required for how jobmanager currently treats convergence thresholds
+    convergence_keys = ['min_converge_gmax', 'min_converge_grms', 'min_converge_dmax', 'min_converge_drms', 'min_converge_e','convthre']
+    if any([key in tc_dict for key in convergence_keys]):
+        d['convergence_thresholds'] = [None] * 6
+        for i, key in enumerate(convergence_keys):
+            if key in tc_dict:
+                d['convergence_thresholds'][i] = temp.pop(key)
+
+    # convert other recognized options
+    for key in tc_dict:
+        if key.lower() in keywords and key :
+            d[keywords[key.lower()]] = temp.pop(key)
+
+    # save unrecognized options
+    d['unrecognized_terachem'] = temp
+
+    return d
 
 
 def read_infile(outfile_path):
@@ -261,7 +318,7 @@ def read_infile(outfile_path):
 
     if qm_code == 'terachem':
         tc_dict = read_terachem_input(inp)
-        return_dict = terachem2gen_inp(tc_dict)
+        return_dict = tc2gen_inp(tc_dict)
         return return_dict
 
 
