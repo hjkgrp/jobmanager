@@ -70,11 +70,8 @@ def read_geometry_section(lines) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     pseudo_numbers = []
 
     for line in lines:
-        if not line:  # Empty line
-            break
         sp = line.split()
         if len(sp) != 6:
-            # Rewind line iter
             break
         numbers.append(int(amassdict[sp[0]][1]))
         pseudo_numbers.append(int(sp[2]))
