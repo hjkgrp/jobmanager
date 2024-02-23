@@ -30,3 +30,13 @@ def test_read_terachem_infile_constraint(resource_path_root):
         "$constraint_freeze" : ["bond 1_22"]
     }
     assert ref_d == d
+
+
+def test_spinchargeChecker(resource_path_root):
+    in_file = str(resource_path_root / 'inputs' / 'infiles' / 'terachem.in')
+    in_file_class = classes.textfile(in_file)
+    tc_dict = io.read_terachem_input(in_file_class)
+    spin_charge_bool = io.spinchargeChecker(tc_dict, in_file)
+    ref_boolean = True
+    assert ref_boolean == spin_charge_bool
+

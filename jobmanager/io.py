@@ -47,7 +47,7 @@ def spinchargeChecker(tc_dict, path):
 
     #read xyz file
     xyz_file_name = tc_dict['coordinates']
-    with open (os.path.join(path, xyz_file_name), 'r') as f:
+    with open (os.path.join(os.path.dirname(path), xyz_file_name), 'r') as f:
         xyz_lines = f.readlines()
 
     #elements sorted by atom numbers
@@ -60,7 +60,7 @@ def spinchargeChecker(tc_dict, path):
             electron_count += elementsbynum[line.split()[0]]
 
     #charge spin validity check
-    if (electron_count + spinmult)%2 ==0:
+    if (electron_count + spinmult)%2 != 0:
         return True
     else:
         return False
