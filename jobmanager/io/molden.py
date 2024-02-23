@@ -2,6 +2,7 @@ import numpy as np
 from typing import Dict, Tuple
 from jobmanager.constants import angstrom2bohr
 from molSimplify.Classes.globalvars import amassdict
+from warnings import warn
 
 
 _shell_labels = ["s", "p", "d", "f", "sp", "g"]
@@ -56,6 +57,10 @@ def load_molden(filename: str) -> Dict:
     # I think the permutation field is only for internal use in iodata and
     # set to None here
     results["permutation"] = None
+
+    if results["title"] != "Written by TeraChem":
+        warn("This function has only been tested for TeraChem molden files."
+             "Please double-check that your file was parsed correctly.")
     return results
 
 
