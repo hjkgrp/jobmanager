@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List, Any
 from jobmanager.constants import angstrom2bohr
 from molSimplify.Classes.globalvars import amassdict
 from warnings import warn
@@ -8,7 +8,7 @@ from warnings import warn
 _shell_labels = ["s", "p", "d", "f", "sp", "g"]
 
 
-def load_molden(filename: str) -> Dict:
+def load_molden(filename: str) -> Dict[str, Any]:
     """Follows the specification defined in:
     https://www.theochem.ru.nl/molden/molden_format.html
     """
@@ -16,8 +16,8 @@ def load_molden(filename: str) -> Dict:
         lines = fin.readlines()
 
     # Split the lines into "sections"
-    sections = []  # List of all sections
-    section = []  # Current section
+    sections: List[List[str]] = []  # List of all sections
+    section: List[str] = []  # Current section
     for line in lines:
         if line.startswith("["):
             # Add current section to the list
@@ -29,17 +29,16 @@ def load_molden(filename: str) -> Dict:
     # Append last section
     sections.append(section)
     # Parse the individual sections into a dictionary
-    results = {}
+    results: Dict[str, Any] = {}
 
     for section in sections:
         name = section[0].lower()
         if name.startswith("[title]"):
             results["title"] = "\n".join(section[1:])
         elif name.startswith("[atoms]"):
+            length_unit = 1.0
             if "angs" in name:
                 length_unit = angstrom2bohr
-            elif "au" in name:
-                length_unit = 1.0
             (coordinates, numbers,
              pseudo_numbers) = read_geometry_section(section[1:])
             results["coordinates"] = coordinates * length_unit
@@ -64,7 +63,8 @@ def load_molden(filename: str) -> Dict:
     return results
 
 
-def read_geometry_section(lines) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def read_geometry_section(
+        lines: List[str]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     coordinates = []
     numbers = []
     pseudo_numbers = []
@@ -77,20 +77,17 @@ def read_geometry_section(lines) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         pseudo_numbers.append(int(sp[2]))
         coordinates.append([float(x) for x in sp[3:6]])
     # Convert to numpy arrays
-    coordinates = np.array(coordinates)
-    numbers = np.array(numbers)
-    pseudo_numbers = np.array(pseudo_numbers)
-    return coordinates, numbers, pseudo_numbers
+    return np.array(coordinates), np.array(numbers), np.array(pseudo_numbers)
 
 
-def read_gto_section(lines) -> Dict:
-    obasis = {}
+def read_gto_section(lines: List[str]) -> Dict[str, Any]:
+    obasis: Dict[str, Any] = {}
 
     shell_map = []
     nprims = []
     shell_types = []
     alphas = []
-    con_coeffs = []  # Contraction coefficients
+    con_coeffs: List[float] = []  # Contraction coefficients
 
     line_iter = iter(lines)
     for line in line_iter:
@@ -120,18 +117,18 @@ def read_gto_section(lines) -> Dict:
     return obasis
 
 
-def read_mo_section(lines) -> Dict:
-    orb_alpha_energies = []
-    orb_beta_energies = []
-    orb_alpha_occs = []
-    orb_beta_occs = []
+def read_mo_section(lines: List[str]) -> Dict[str, Any]:
+    orb_alpha_energies: List[float] = []
+    orb_beta_energies: List[float] = []
+    orb_alpha_occs: List[float] = []
+    orb_beta_occs: List[float] = []
     orb_alpha_coeffs = []
     orb_beta_coeffs = []
 
-    current_spin = None
-    current_energy = None
-    current_occ = None
-    current_coeffs = []
+    current_spin = "None"
+    current_energy = 0.0
+    current_occ = 0.0
+    current_coeffs: List[float] = []
     for line in lines:
         sp = line.split()
         if len(sp) == 0:
@@ -142,7 +139,7 @@ def read_mo_section(lines) -> Dict:
                     orb_alpha_energies.append(current_energy)
                     orb_alpha_occs.append(current_occ)
                     orb_alpha_coeffs.append(current_coeffs)
-                else:
+                elif current_spin.lower() == "beta":
                     orb_beta_energies.append(current_energy)
                     orb_beta_occs.append(current_occ)
                     orb_beta_coeffs.append(current_coeffs)
@@ -166,22 +163,20 @@ def read_mo_section(lines) -> Dict:
         orb_beta_occs.append(current_occ)
         orb_beta_coeffs.append(current_coeffs)
 
-    orb_alpha_coeffs = np.array(orb_alpha_coeffs).T
     results = {
-        "orb_alpha": orb_alpha_coeffs.shape,
+        "orb_alpha": np.shape(orb_alpha_coeffs),
         "orb_alpha_energies": np.array(orb_alpha_energies),
         "orb_alpha_occs": np.array(orb_alpha_occs),
-        "orb_alpha_coeffs": orb_alpha_coeffs,
+        "orb_alpha_coeffs": np.array(orb_alpha_coeffs).T,
     }
     if orb_beta_energies:  # Not empty
-        orb_beta_coeffs = np.array(orb_beta_coeffs).T
-        results["orb_beta"] = orb_beta_coeffs.shape
+        results["orb_beta"] = np.shape(orb_beta_coeffs)
         results["orb_beta_energies"] = np.array(orb_beta_energies)
         results["orb_beta_occs"] = np.array(orb_beta_occs)
-        results["orb_beta_coeffs"] = orb_beta_coeffs
+        results["orb_beta_coeffs"] = np.array(orb_beta_coeffs).T
     else:
         # If the calculation is restricted ensure that the
         # occupation is only 1.0 instead of 2.0 for
         # compatibility with iodata
-        results["orb_alpha_occs"] /= 2.0
+        results["orb_alpha_occs"] /= 2.0  # type: ignore
     return results
