@@ -9,6 +9,7 @@ dependencies:
   - psi4
   - iodata
   - molsimplify
+  - importlib_resources
   - pip
   - pip:
     - -e ../../
