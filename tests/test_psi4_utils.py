@@ -4,7 +4,10 @@ from jobmanager.psi4_utils.run import run_bash
 
 def test_run_bash(tmpdir):
     command = "touch test.txt"
-    rundir = os.mkdir(tmpdir / "run")
+    rundir = tmpdir / "run"
+    # Create the run dir
+    os.mkdir(rundir)
+    # Actually execute run_bash
     run_bash(command, tmpdir, rundir)
     # Check that the command "touch test.txt" was executed
     assert os.path.isfile(rundir / "test.txt")
