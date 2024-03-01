@@ -269,10 +269,15 @@ def resub(directory='in place'):
 
         submitted = []
         for job in to_submit:
-            if ((len(submitted) + nactive + np.sum(resubmitted)) >= max_jobs) or (
-                    (tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)) >= hard_job_limit):
+            # update the number of running + submitted jobs (from this instance of jobmanager)
+            dynamic_nactive = (len(submitted) + nactive + np.sum(resubmitted))
+            # update the number of jobs the user is currently running
+            user_nactive = tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)
+            # make sure we don't exceed set job limits
+            if (dynamic_nactive >= max_jobs) or (user_dynamic_nactive >= hard_job_limit):
                 hit_queue_limit = True
                 continue
+            ## For Davut ADD check for (1) is it a terachem job? (2) if yes, is it a valid terachem job? (3) if yes, submit the job as done below, if not add to list of invalid jobs
             print(('Initial submission for job: ' + os.path.split(job)[-1]))
             tools.qsub(job)
             submitted.append(True)
