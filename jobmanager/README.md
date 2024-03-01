@@ -2,29 +2,36 @@
 
 
 ## `Manager`
-- Spawns and manages `Run` instances
+- Carry out the steps between generating inputs & getting results
+  - Manage `Job` instances and interfaces with queue system
+  - Recovery/resubmission attempts
 
-## `Run`
-- Runs a `Job` instance using queue system or local machine
 
 ## `Job` 
-- Contains information about the calculation(s) to run (independent of queue system)
-  - quantum chemistry software to use
-  - dependent calculations
-  - 
+- Organize calculation(s) to run (independent of queue system)
+  - Run history
+  - Dependent calculation structure
+  - Batch jobs
+
 
 ## `Calc` 
-- Contains information about a single calculation (independent of software)
+- Interface with software/write inputs
+- Contains information about a single calculation
   - `type` (single point, minimization, TS search)
 
 
 ## `System`
-- Contains information about a chemical system & methods to generate via molSimplify
+- Interface with molSimplify
+  - Generate/check geometries
+- Contains information about a chemical system
   - `spin`
   - `charge`
-  - `props` - ligands, geometry, metal
+  - `props` - Properties/possible variables (e.g. ligands, geometry, metal)
 
 
 ## `Project`
-- Create `Calc` and `Job` instances
+- Generate inputs from desired goal
+  - Create and operate on `System` instances
 - Compile/summarize results
+
+
