@@ -4,9 +4,10 @@ import numpy as np
 import shutil
 import subprocess
 import iodata
+import json
 from jobmanager.psi4_utils.molden2psi4wfn import tcmolden2psi4wfn_ao_mapping
 from jobmanager.psi4_utils.molden2psi4wfn_spherical import tcmolden2psi4wfn_ao_mapping_spherical
-from pkg_resources import resource_filename, Requirement
+from importlib_resources import files as resource_files
 
 
 def lacvps(mol, role):
@@ -516,11 +517,11 @@ def write_jobscript(psi4_config):
 
 def run_bash(cmd, basedir, rundir):
     os.chdir(rundir)
-    infile = resource_filename(Requirement.parse("molSimplify"), "molSimplify/job_manager/psi4_utils/loop_run.py")
+    infile = resource_files("jobmanager").joinpath("psi4_utils/loop_run.py")
     shutil.copy(infile, "./")
-    infile_rescue = resource_filename(Requirement.parse("molSimplify"), "molSimplify/job_manager/psi4_utils/loop_rescue.py")
+    infile_rescue = resource_files("jobmanager").joinpath("psi4_utils/loop_rescue.py")
     shutil.copy(infile_rescue, "./")
-    infile_deriv = resource_filename(Requirement.parse("molSimplify"), "molSimplify/job_manager/psi4_utils/loop_derivative_jobs.py")
+    infile_deriv = resource_files("jobmanager").joinpath("psi4_utils/loop_derivative_jobs.py")
     shutil.copy(infile_deriv, "./")
     print("Executing: ", cmd, "at: ", rundir)
     subprocess.call(cmd, shell=True)

@@ -1,5 +1,6 @@
 import os
 import operator
+from typing import List
 
 
 def get_subfolders(path: str = "./") -> list:
@@ -13,7 +14,7 @@ def get_subfolders(path: str = "./") -> list:
 
 def sanity_check(folders: list, trigger: str = "_derivNo_") -> dict:
     trigger_appear = False
-    basename = list()
+    basename: List[str] = list()
     folders_ignored = list()
     jobs = dict()
     for folder in folders:

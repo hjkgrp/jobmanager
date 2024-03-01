@@ -401,7 +401,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
         name = os.path.basename(path)
         name = name.rsplit('.', 1)[0]
         return any([x.startswith(name) for x in active_jobs])
-            
+
     def check_needs_resub(path):
         if os.path.isfile(path.rsplit('.', 1)[0] + '.pickle'):
             history = resub_history()
