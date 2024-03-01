@@ -9,7 +9,7 @@ import jobmanager.moltools as moltools
 import jobmanager.recovery as recovery
 import jobmanager.io as io
 from jobmanager.psi4_utils.run import write_jobscript, run_bash
-
+import jobmanager.classes as classes
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
     """This function takes a list of job names and kills the jobs associated with them, if the jobs are active
@@ -268,6 +268,8 @@ def resub(directory='in place'):
         to_submit = bundled_jobscripts + long_jobs_to_submit
 
         submitted = []
+        invalid_jobs = []
+
         for job in to_submit:
             # update the number of running + submitted jobs (from this instance of jobmanager)
             dynamic_nactive = (len(submitted) + nactive + np.sum(resubmitted))
@@ -277,10 +279,33 @@ def resub(directory='in place'):
             if (dynamic_nactive >= max_jobs) or (user_dynamic_nactive >= hard_job_limit):
                 hit_queue_limit = True
                 continue
-            ## For Davut ADD check for (1) is it a terachem job? (2) if yes, is it a valid terachem job? (3) if yes, submit the job as done below, if not add to list of invalid jobs
-            print(('Initial submission for job: ' + os.path.split(job)[-1]))
-            tools.qsub(job)
-            submitted.append(True)
+
+            #get the path to input file
+            inp_file_path = job.rsplit('_',1)[0]+'.in'
+            inp_file = classes.textfile(inp_file_path)
+
+            #read lines of input file
+            inp_lines = inp_lines.lines
+
+
+            #check if Terachem or ORCA
+            terachem = True
+            for line in inp_lines:
+                if line[0] == '!':
+                    terachem = False
+                    break
+
+            #if terachem, check validity: if valid, submit, else add to invalid jobs list
+            if terachem:
+                tc_dict = io.read_terachem_input(inp_file)
+                if io.spinchargeChecker(tc_dict,inp_file_path):
+                    print(('Initial submission for job: ' + os.path.split(job)[-1]))
+                    tools.qsub(job)
+                    submitted.append(True)
+                else:
+                    invalid_jobs.append(job)
+                    print('Invalid job ......')
+
     else:
         print('==== Hit the queue limit for the user, not submitting any more jobs. ====')
         hit_queue_limit = True

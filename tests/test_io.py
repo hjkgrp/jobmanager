@@ -7,8 +7,8 @@ def test_read_terachem_infile_constraint(resource_path_root):
     d = io.read_terachem_input(in_file)
     ref_d = {
         "run" : "minimize",
-        "gpus" : "1", 
-        "method" : "ub3lyp", 
+        "gpus" : "1",
+        "method" : "ub3lyp",
         "dispersion" : "no",
         "basis" : "lacvps_ecp",
         "dftgrid" : "2",
@@ -33,10 +33,9 @@ def test_read_terachem_infile_constraint(resource_path_root):
 
 
 def test_spinchargeChecker(resource_path_root):
-    in_file = str(resource_path_root / 'inputs' / 'infiles' / 'terachem.in')
-    in_file_class = classes.textfile(in_file)
-    tc_dict = io.read_terachem_input(in_file_class)
-    spin_charge_bool = io.spinchargeChecker(tc_dict, in_file)
+    in_file_path = str(resource_path_root / 'inputs' / 'infiles' / 'terachem.in')
+    in_file = classes.textfile(in_file_path)
+    tc_dict = io.read_terachem_input(in_file) #takes file as an input
+    spin_charge_bool = io.spinchargeChecker(tc_dict, in_file_path) #takes path as an input
     ref_boolean = True
     assert ref_boolean == spin_charge_bool
-
