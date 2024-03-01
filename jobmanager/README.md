@@ -52,7 +52,7 @@ Read `configure` and
 
 `resub.resub`
 1. Read `configure`
-2. Check on all jobs with `moltools.check_completeness` 
+2. Check on all jobs with `moltools.check_completeness`
 3. Kill running jobs with SCF errors
 4. Check for and submit dependent (derivative) jobs of finished jobs
 5. Resubmit/recover jobs based on errors and `configure`
