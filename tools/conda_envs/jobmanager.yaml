@@ -4,6 +4,7 @@ channels:
   - psi4
   - theochem
   - hjkgroup
+  - conda-forge
 dependencies:
   - python=3.8
   - psi4=1.6
