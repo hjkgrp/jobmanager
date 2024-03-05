@@ -5,9 +5,8 @@ channels:
   - theochem
   - hjkgroup
 dependencies:
-  - python=3.7
-  - psi4
-  - iodata
+  - python=3.8
+  - psi4=1.6
   - molsimplify
   - importlib_resources
   - pip
