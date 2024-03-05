@@ -21,6 +21,7 @@ jobs:
       run: |
         conda env update -n test -f tools/conda_envs/jobmanager.yaml
         conda info
+        conda list
     - name: Install package
       run: |
         pip install -e ".[tests]"
