@@ -8,6 +8,7 @@ channels:
 dependencies:
   - python=3.8
   - psi4=1.6
+  - pydantic=1.10
   - molsimplify
   - importlib_resources
   - pip
