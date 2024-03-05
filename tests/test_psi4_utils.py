@@ -15,7 +15,6 @@ def test_psi4():
 
     assert abs(e + 76.0266327351) < 0.00001
 
-
 def test_run_bash(tmpdir):
     command = "touch test.txt"
     rundir = tmpdir / "run"
