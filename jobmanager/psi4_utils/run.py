@@ -3,7 +3,7 @@ import os
 import numpy as np
 import shutil
 import subprocess
-import iodata
+from jobmanager.io.molden import load_molden
 import json
 from jobmanager.psi4_utils.molden2psi4wfn import tcmolden2psi4wfn_ao_mapping
 from jobmanager.psi4_utils.molden2psi4wfn_spherical import tcmolden2psi4wfn_ao_mapping_spherical
@@ -143,7 +143,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
             e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
         wfn.to_file("wfn-1step.180")
         # Get converged WFN
-        d_molden = iodata.molden.load_molden(psi4_config["moldenfile"])
+        d_molden = load_molden(psi4_config["moldenfile"])
         restricted = True if any(x in psi4_config["ref"] for x in ["r", "R"]) else False
         if not psi4_config["basis"] == "def2-tzvp":
             Ca, Cb, mapping = tcmolden2psi4wfn_ao_mapping(d_molden, restricted=restricted)
