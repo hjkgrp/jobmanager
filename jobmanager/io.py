@@ -357,6 +357,13 @@ def gen2tc_inp(inp_dict):
 
     if 'constraints' in temp:
         tc_dict["$constraint_freeze"] = temp.pop('constraints')
+    if 'dispersion' in temp:
+        dispersion = temp.pop('dispersion')
+        if not dispersion:
+            tc_dict['dispersion'] = 'no'
+        else:
+            tc_dict['dispersion'] = dispersion
+
 
     # convert method for terachem
     if temp['spinmult'] == 1 and 'restricted' in temp and not temp['restricted']:
