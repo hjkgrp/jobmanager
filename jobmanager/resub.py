@@ -285,7 +285,7 @@ def resub(directory='in place'):
             inp_file = classes.textfile(inp_file_path)
 
             #read lines of input file
-            inp_lines = inp_lines.lines
+            inp_lines = inp_file.lines
 
 
             #check if Terachem or ORCA
