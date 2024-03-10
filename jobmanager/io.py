@@ -8,9 +8,9 @@ CONVERGENCE_KEYS = ['min_converge_gmax', 'min_converge_grms', 'min_converge_dmax
 
 # list of recognized options as {terachem_key:internal_key}
 TC2GEN_KEYS = {
-    'dftd':'dispersion', 'dispersion':'dispersion', 
-    'charge':'charge', 'spinmult':'spinmult', 
-    'epsilon':'solvent', 'run':'run_type', 
+    'dftd':'dispersion', 'dispersion':'dispersion',
+    'charge':'charge', 'spinmult':'spinmult',
+    'epsilon':'solvent', 'run':'run_type',
     'levelshiftvala':'levelshifta', 'levelshiftvalb':'levelshiftb',
     'method':'method', 'basis':'basis', 'coordinates':'coordinates','guess':'guess',
     'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid'
@@ -111,6 +111,11 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     scf_error = False
     time = None
     thermo_grad_error = False
+
+    #terminated and no scf cycles were ran
+    terminated = False
+    no_scf = False
+
     implicit_solvation_energy = None
     geo_opt_cycles = None
     thermo_vib = None
@@ -171,6 +176,17 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
         if is_finished:  # for hydrogen optimization
             if is_finished[0] == 'Total' and is_finished[1] == 'processing':
                 finished = True
+
+        #terminated
+        is_terminated = output.wordgrab(['terminated:'],'whole_line',last_line=True)[0]
+        if is_terminated: #
+            if is_terminated[0] == 'Job' and is_terminated[1]== 'terminated:':
+                terminated = True
+
+        #is_no_scf
+        is_no_scf = output.wordgrab(['*** Start SCF Iterations ***'], 'whole_line')[0]
+        if is_no_scf[0] == None:
+            no_scf = True
 
         is_scf_error = output.wordgrab('DIIS', 5, matching_index=True)[0]
         if is_scf_error[0]:
@@ -246,6 +262,11 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     return_dict['orbital_occupation'] = orbital_occupation
     return_dict['oscillating_scf_error'] = oscillating_scf_error
     return_dict['outfile_path'] = outfile_path
+
+    #
+    return_dict['terminated'] = terminated
+    return_dict['no_scf'] = no_scf
+
     return return_dict
 
 
@@ -311,14 +332,14 @@ def tc2gen_inp(tc_dict):
     if "$multibasis" in tc_dict:
         d['multibasis'] = temp.pop('$multibasis')
 
-    ## charge needs to be integer 
+    ## charge needs to be integer
     temp['charge'] = int(temp['charge'])
     ## spinmult needs to be defined (as integer) for jobmanager (but not for Terachem)
     if 'spinmult' in temp:
         temp['spinmult'] = int(temp['spinmult'])
     else:
         temp['spinmult'] = 1
-    
+
 
     ## required for how jobmanager currently treats convergence thresholds
     if any([key in tc_dict for key in CONVERGENCE_KEYS]):
@@ -351,7 +372,7 @@ def gen2tc_inp(inp_dict):
         for i, key in enumerate(CONVERGENCE_KEYS):
             if temp_list[i]:
                 tc_dict[key] = temp_list[i]
-    
+
     if 'multibasis' in temp:
         tc_dict['$multibasis'] = temp.pop('multibasis')
 
@@ -367,11 +388,11 @@ def gen2tc_inp(inp_dict):
         tc_dict['method'] = 'u' + temp.pop('method')
     elif temp['spinmult'] == 1:
         tc_dict['method'] = temp.pop('method')
-    
+
     for key in GEN2TC_KEYS:
         if key in temp:
             tc_dict[GEN2TC_KEYS[key]] = temp.pop(key)
-    
+
     return tc_dict
 
 
@@ -737,7 +758,7 @@ def write_terachem_input(infile_path, tc_dict):
                 fout.writelines(temp_dict[key])
                 fout.write('\n$end\n')
 
-        
+
 
 
 def write_orca_input(infile_dictionary):
