@@ -393,9 +393,9 @@ def write_jobscript(psi4_config):
             if "trigger" in psi4_config:
                 fo.write("python -u loop_derivative_jobs.py  > $SGE_O_WORKDIR/deriv_nohup1.out\n")
             else:
-                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup1.out\n")
-                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup2.out\n")
-                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup3.out\n")
+                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup3.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                 if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
                     fo.write("echo rescuing...\n")
                     fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup1.out\n")
