@@ -18,8 +18,8 @@ conda activate /home/crduan/miniconda/envs/mols_py36
 export PSI_SCRATCH='./'
 
 echo 'psi4 scr: ' $PSI_SCRATCH
-python -u loop_run.py  > $SGE_O_WORKDIR/nohup1.out
-python -u loop_run.py  > $SGE_O_WORKDIR/nohup2.out
-python -u loop_run.py  > $SGE_O_WORKDIR/nohup3.out
+python -u loop_run.py  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err
+python -u loop_run.py  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err
+python -u loop_run.py  > $SGE_O_WORKDIR/nohup3.out 2> $SGE_O_WORKDIR/nohup1.err
 
 mv * $SGE_O_WORKDIR
