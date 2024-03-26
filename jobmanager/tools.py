@@ -11,6 +11,49 @@ from jobmanager.classes import resub_history, textfile
 import jobmanager.io as io
 
 
+FILE_ENDINGS = {
+    '.in': 'input',
+    '_jobscript': 'jobscript',
+    '.out': 'output'
+}
+
+
+def find_calcs(dirpath, topdown=True, extension='.xyz'):
+    """Find calculations that need to be run by extension.
+    Based on os.walk https://github.com/python/cpython/blob/a372a7/Lib/os.py#L344
+
+    Parameters
+    ----------
+        dirpath : str
+            The name of the parent/top directory.
+        topdown : bool
+            Whether or not to search via topdown or bottom up order.
+
+    Returns
+    -------
+        gen : generator
+            Generator which returns the next calculation to be done.
+    """
+    walk_dirs = []
+    calc_paths = []
+    for entry in os.scandir(dirpath):
+        # do not check in hidden directories or scratch directories
+        if entry.is_dir() and not entry.name.startswith('.') and not entry.name.startswith('scr'):
+            walk_dirs.append(entry.path)
+        elif entry.name.endswith(extension):
+            calc_paths.append(entry.path)
+    if topdown:
+        for path in calc_paths:
+            yield path
+        for new_path in walk_dirs:
+            yield from find_calcs(new_path)
+    else:
+        for new_path in walk_dirs:
+            yield from find_calcs(new_path)
+        for path in calc_paths:
+            yield path
+
+
 def ensure_dir(dirpath):
     """Make sure a directory exists. Makes directory if not.
 
