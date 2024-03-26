@@ -18,9 +18,9 @@ FILE_ENDINGS = {
 }
 
 
-def find_calcs(dirpath, topdown=True, extension='.xyz'):
+def find_calcs(dirpath, extension='.xyz', original=None):
     """Find calculations that need to be run by extension.
-    Based on os.walk https://github.com/python/cpython/blob/a372a7/Lib/os.py#L344
+    Based on os.walk https://github.com/python/cpython/blob/a372a7d/Lib/os.py#L344
 
     Parameters
     ----------
@@ -42,16 +42,17 @@ def find_calcs(dirpath, topdown=True, extension='.xyz'):
             walk_dirs.append(entry.path)
         elif entry.name.endswith(extension):
             calc_paths.append(entry.path)
-    if topdown:
-        for path in calc_paths:
-            yield path
-        for new_path in walk_dirs:
-            yield from find_calcs(new_path)
-    else:
-        for new_path in walk_dirs:
-            yield from find_calcs(new_path)
-        for path in calc_paths:
-            yield path
+
+    for new_path in walk_dirs:
+        if original:
+            yield from find_calcs(new_path, original=original)
+        else:
+            yield from find_calcs(new_path, original=dirpath)
+    for path in calc_paths:
+        if original:
+            yield path[len(original)+1:]
+        else:
+            yield path[len(dirpath)+1:]
 
 
 def ensure_dir(dirpath):

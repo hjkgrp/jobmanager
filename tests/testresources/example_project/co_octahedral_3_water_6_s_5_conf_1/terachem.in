@@ -1,0 +1,13 @@
+# file created with molSimplify
+run minimize
+timings yes
+maxit 500
+scrdir ./scr
+method B3LYP
+basis lacvps_ecp
+spinmult 5
+charge 3
+gpus 1
+coordinates co_octahedral_3_water_6_s_5_conf_1.xyz
+new_minimizer yes
+end
