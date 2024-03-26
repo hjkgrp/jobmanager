@@ -358,6 +358,13 @@ def get_total_queue_usage():
 
     return len(jobs)
 
+def check_terminated_no_scf(path, results_dict):
+        results = results_dict[path]
+        if results['terminated'] and results['no_scf']:
+            return True
+        else:
+            return False
+
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     """Checks whether or not a directory is completed by the job manager.
 
@@ -463,12 +470,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
             return False
 
     ########
-    def check_terminated_no_scf(path, results_dict =results_dict):
-        results = results_dict[path]
-        if results['terminated'] and results['no_scf']:
-            return True
-        else:
-            return False
+
 
     def check_thermo_grad_error(path, results_dict=results_dict):
         results = results_dict[path]
