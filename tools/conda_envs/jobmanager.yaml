@@ -4,10 +4,11 @@ channels:
   - psi4
   - theochem
   - hjkgroup
+  - conda-forge
 dependencies:
-  - python=3.7
-  - psi4
-  - iodata
+  - python=3.8
+  - psi4=1.6
+  - pydantic=1.10
   - molsimplify
   - importlib_resources
   - pip
