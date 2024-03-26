@@ -7,7 +7,7 @@ import json
 import jobmanager.tools as tools
 import jobmanager.moltools as moltools
 import jobmanager.recovery as recovery
-import jobmanager.io as io
+from jobmanager.io import io
 from jobmanager.psi4_utils.run import write_jobscript, run_bash
 import jobmanager.classes as classes
 

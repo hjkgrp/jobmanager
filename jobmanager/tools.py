@@ -8,7 +8,7 @@ import pandas as pd
 import shutil
 import time
 from jobmanager.classes import resub_history, textfile
-import jobmanager.io as io
+from jobmanager.io import io
 
 
 FILE_ENDINGS = {

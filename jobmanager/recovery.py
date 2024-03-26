@@ -6,7 +6,7 @@ import numpy as np
 import jobmanager.tools as tools
 import jobmanager.moltools as moltools
 from jobmanager.classes import resub_history
-import jobmanager.io as io
+from jobmanager.io import io
 
 
 def load_history(PATH):
