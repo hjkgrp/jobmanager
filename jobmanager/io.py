@@ -8,9 +8,9 @@ CONVERGENCE_KEYS = ['min_converge_gmax', 'min_converge_grms', 'min_converge_dmax
 
 # list of recognized options as {terachem_key:internal_key}
 TC2GEN_KEYS = {
-    'dftd':'dispersion', 'dispersion':'dispersion', 
-    'charge':'charge', 'spinmult':'spinmult', 
-    'epsilon':'solvent', 'run':'run_type', 
+    'dftd':'dispersion', 'dispersion':'dispersion',
+    'charge':'charge', 'spinmult':'spinmult',
+    'epsilon':'solvent', 'run':'run_type',
     'levelshiftvala':'levelshifta', 'levelshiftvalb':'levelshiftb',
     'method':'method', 'basis':'basis', 'coordinates':'coordinates','guess':'guess',
     'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid'
@@ -311,14 +311,14 @@ def tc2gen_inp(tc_dict):
     if "$multibasis" in tc_dict:
         d['multibasis'] = temp.pop('$multibasis')
 
-    ## charge needs to be integer 
+    ## charge needs to be integer
     temp['charge'] = int(temp['charge'])
     ## spinmult needs to be defined (as integer) for jobmanager (but not for Terachem)
     if 'spinmult' in temp:
         temp['spinmult'] = int(temp['spinmult'])
     else:
         temp['spinmult'] = 1
-    
+
 
     ## required for how jobmanager currently treats convergence thresholds
     if any([key in tc_dict for key in CONVERGENCE_KEYS]):
@@ -351,7 +351,7 @@ def gen2tc_inp(inp_dict):
         for i, key in enumerate(CONVERGENCE_KEYS):
             if temp_list[i]:
                 tc_dict[key] = temp_list[i]
-    
+
     if 'multibasis' in temp:
         tc_dict['$multibasis'] = temp.pop('multibasis')
 
@@ -374,11 +374,11 @@ def gen2tc_inp(inp_dict):
         tc_dict['method'] = 'u' + temp.pop('method')
     elif temp['spinmult'] == 1:
         tc_dict['method'] = temp.pop('method')
-    
+
     for key in GEN2TC_KEYS:
         if key in temp:
             tc_dict[GEN2TC_KEYS[key]] = temp.pop(key)
-    
+
     return tc_dict
 
 
@@ -744,7 +744,7 @@ def write_terachem_input(infile_path, tc_dict):
                 fout.writelines(temp_dict[key])
                 fout.write('\n$end\n')
 
-        
+
 
 
 def write_orca_input(infile_dictionary):

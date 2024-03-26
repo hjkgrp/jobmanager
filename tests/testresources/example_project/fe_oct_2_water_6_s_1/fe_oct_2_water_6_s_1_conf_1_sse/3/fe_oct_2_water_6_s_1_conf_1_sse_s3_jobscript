@@ -1,0 +1,17 @@
+#$ -S /bin/bash
+#$ -N fe_oct_2_water_6_s_1_conf_1_sse_s3
+#$ -cwd
+#$ -R y
+#$ -l h_rt=96:00:00
+#$ -l h_rss=8G
+#$ -q gpus|gpusnew
+#$ -l gpus=1
+#$ -pe smp 1
+# -fin fe_oct_2_water_6_s_1_conf_1_sse_s3.in
+# -fin fe_oct_2_water_6_s_1_conf_1_sse_s3.xyz
+# -fout scr/
+source /etc/profile.d/modules.sh
+module load terachem/tip
+export OMP_NUM_THREADS=1
+terachem fe_oct_2_water_6_s_1_conf_1_sse_s3.in > $SGE_O_WORKDIR/fe_oct_2_water_6_s_1_conf_1_sse_s3.out
+sleep 30

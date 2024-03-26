@@ -1,0 +1,25 @@
+levelshiftvalb 0.25
+levelshiftvala 0.25
+run minimize
+scf diis+a
+coordinates fe_oct_2_water_6_s_1_conf_1_sse_s5.xyz
+levelshift yes
+spinmult 5
+scrdir ./scr
+basis lacvps_ecp
+timings yes
+charge 2
+method ub3lyp
+precision dynamic
+watcheindiis yes
+dftgrid 2
+dynamicgrid yes
+new_minimizer yes
+ml_prop yes
+poptype mulliken
+bond_order_list yes
+maxit 500
+dispersion no
+nbo yes
+gpus 1
+end
