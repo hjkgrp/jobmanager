@@ -1,4 +1,4 @@
-from jobmanager import io
+from jobmanager.io import io
 from jobmanager import classes
 
 def test_read_terachem_infile_constraint(resource_path_root):
