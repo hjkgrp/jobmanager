@@ -1,0 +1,19 @@
+#$ -S /bin/bash
+#$ -cwd
+#$ -l h_rt=240:00:00
+#$ -l h_rss=20G
+#$ -l gpus=1
+#$ -q small|gpusnew|gpus
+#$ -pe smp 2
+# -fin *.in
+# -fin *.xyz
+# -fout scr/
+
+module load cuda
+module load terachem
+
+export OMP_NUM_THREADS=2
+
+terachem fe_oct_2_water_6_s_1_conf_1.in > $SGE_O_WORKDIR/fe_oct_2_water_6_s_1_conf_1.out
+
+sleep 20

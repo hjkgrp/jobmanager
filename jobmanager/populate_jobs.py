@@ -6,7 +6,7 @@ import subprocess
 
 from molSimplifyAD.utils.pymongo_tools import connect2db, query_lowestE_converged
 
-from jobmanager.tools import manager_io
+from jobmanager.tools import io
 
 
 def isCSD(job):
@@ -188,8 +188,8 @@ def populate_single_job(basedir, job, db, safe_filenames=True):
         if tmcdoc is not None:
             generate_fake_results_from_db(rundir, jobname, tmcdoc)
         else:
-            manager_io.write_input(name=jobname, coordinates=jobname + '.xyz', charge=charge, spinmult=int(job["spin"]), run_type='minimize', solvent=False)
-            manager_io.write_jobscript(jobname)
+            io.write_input(name=jobname, coordinates=jobname + '.xyz', charge=charge, spinmult=int(job["spin"]), run_type='minimize', solvent=False)
+            io.write_jobscript(jobname)
     elif os.path.isdir(rundir) or os.path.isdir(rundir_p3):
         print("folder exist.")
         populated = False
