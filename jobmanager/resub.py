@@ -291,7 +291,9 @@ def resub(directory='in place'):
             #check if Terachem or ORCA
             terachem = True
             for line in inp_lines:
-                if line[0] == '!':
+                if not line.strip():
+                    continue
+                if line.strip()[0] == '!':
                     terachem = False
                     break
 
