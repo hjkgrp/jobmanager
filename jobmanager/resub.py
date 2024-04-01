@@ -306,7 +306,7 @@ def resub(directory='in place'):
                     submitted.append(True)
                 else:
                     invalid_jobs.append(job)
-                    print(f'Invalid job: {os.path.split(job)[-1])}')
+                    print(f'Invalid job: {os.path.split(job)[-1]}')
             else:  # have not implemented spin/charge checker for ORCA
                 print(('Initial submission for job: ' + os.path.split(job)[-1]))
                 tools.qsub(job)
