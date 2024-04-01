@@ -306,7 +306,11 @@ def resub(directory='in place'):
                     submitted.append(True)
                 else:
                     invalid_jobs.append(job)
-                    print('Invalid job ......')
+                    print(f'Invalid job: {job}')
+            else:  # have not implemented spin/charge checker for ORCA
+                print(('Initial submission for job: ' + os.path.split(job)[-1]))
+                tools.qsub(job)
+                submitted.append(True)
 
     else:
         print('==== Hit the queue limit for the user, not submitting any more jobs. ====')
