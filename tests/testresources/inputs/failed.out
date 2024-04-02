@@ -25,9 +25,9 @@ Startfile from command line: minimal_input.in
  Job started   Fri Mar  8 11:11:31 2024
  On gibraltar-38 (available memory: 120346 MB)
 ######################################### RUNTIME INFO ##########################################
-terachem minimal_input.in 
+terachem minimal_input.in
 NVRM version: NVIDIA UNIX x86_64 Kernel Module  450.51.05  Sun Jun 28 10:33:40 UTC 2020
-GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC) 
+GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC)
     linux-vdso.so.1 =>  (0x00007ffdfddfb000)
     libcurl.so.4 => /lib64/libcurl.so.4 (0x00007f03b639f000)
     libdftbplus.so => /opt/terachem/062819/lib/libdftbplus.so (0x00007f03b5e7f000)
