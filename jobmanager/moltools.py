@@ -6,7 +6,7 @@ import copy
 import numpy as np
 import pandas as pd
 import jobmanager.tools as tools
-import jobmanager.io as io
+from jobmanager.io import io
 from molSimplify.Classes.mol3D import mol3D
 from molSimplify.Classes.ligand import ligand_breakdown
 

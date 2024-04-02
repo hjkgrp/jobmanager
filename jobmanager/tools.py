@@ -8,7 +8,51 @@ import pandas as pd
 import shutil
 import time
 from jobmanager.classes import resub_history, textfile
-import jobmanager.io as io
+from jobmanager.io import io
+
+
+FILE_ENDINGS = {
+    '.in': 'input',
+    '_jobscript': 'jobscript',
+    '.out': 'output'
+}
+
+
+def find_calcs(dirpath, extension='.xyz', original=None):
+    """Find calculations that need to be run by extension.
+    Based on os.walk https://github.com/python/cpython/blob/a372a7d/Lib/os.py#L344
+
+    Parameters
+    ----------
+        dirpath : str
+            The name of the parent/top directory.
+        topdown : bool
+            Whether or not to search via topdown or bottom up order.
+
+    Returns
+    -------
+        gen : generator
+            Generator which returns the next calculation to be done.
+    """
+    walk_dirs = []
+    calc_paths = []
+    for entry in os.scandir(dirpath):
+        # do not check in hidden directories or scratch directories
+        if entry.is_dir() and not entry.name.startswith('.') and not entry.name.startswith('scr'):
+            walk_dirs.append(entry.path)
+        elif entry.name.endswith(extension):
+            calc_paths.append(entry.path)
+
+    for new_path in walk_dirs:
+        if original:
+            yield from find_calcs(new_path, original=original)
+        else:
+            yield from find_calcs(new_path, original=dirpath)
+    for path in calc_paths:
+        if original:
+            yield path[len(original)+1:]
+        else:
+            yield path[len(dirpath)+1:]
 
 
 def ensure_dir(dirpath):

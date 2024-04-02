@@ -43,11 +43,11 @@ The configure file (labeled `configure`, NOT `configure.txt`) contains all of th
 
 The configure file can live within subdirectories, if derivative jobs are only necessary for a subset of jobs.
 
-It can be modified on the fly to add info (if you want to add thermo or solvent, or HFX resample). 
+It can be modified on the fly to add info (if you want to add thermo or solvent, or HFX resample).
 
 If the geo_check:oct is in the configure file, then jobs that are completed are checked for good geometries before spawning any derivative jobs.
 
-If job_recovery is not desired, that line should not be there. 
+If job_recovery is not desired, that line should not be there.
 
 ### In Python scripts
 If loading the module (in a python script), do the following:
@@ -58,6 +58,6 @@ resub.main()
 ```
 
 ### Notes on running
-The job manager uses the unique name as a queue identifier. Thus, it will not submit a job with a specific unique name, if that unique name is already in the queue. This will prevent the same job from being resubmitted while it is still running. 
+The job manager uses the unique name as a queue identifier. Thus, it will not submit a job with a specific unique name, if that unique name is already in the queue. This will prevent the same job from being resubmitted while it is still running.
 
 Killing the job manager by using ctrl-c should be ok to stop the manager from running. By default, it cycles with a sleep period of 2 hr.

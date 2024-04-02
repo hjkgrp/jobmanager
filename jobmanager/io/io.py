@@ -286,7 +286,7 @@ def read_terachem_input(input_textfile):
             while not line.startswith('$'):
                 line = next(lines)
         else:
-            key, val = line.split()
+            key, val = line.split(maxsplit=1)
             if key in tc_dict:
                 print(f'{key:s} specified multiple times. Ignoring value {val:s}')
             else:
@@ -378,6 +378,13 @@ def gen2tc_inp(inp_dict):
 
     if 'constraints' in temp:
         tc_dict["$constraint_freeze"] = temp.pop('constraints')
+    if 'dispersion' in temp:
+        dispersion = temp.pop('dispersion')
+        if not dispersion:
+            tc_dict['dispersion'] = 'no'
+        else:
+            tc_dict['dispersion'] = dispersion
+
 
     # convert method for terachem
     if temp['spinmult'] == 1 and 'restricted' in temp and not temp['restricted']:

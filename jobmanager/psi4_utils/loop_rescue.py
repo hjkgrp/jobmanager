@@ -19,7 +19,6 @@ for ii, functional in enumerate(psi4_config["functional"]):
         txt = "".join(fo.readlines())
     if 'PsiException: Could not converge SCF iterations' in txt or txt == "":
         success = False
-        e_dict = {}
         e0 = np.nan
         for jj, alpha in enumerate(alphalist):
             print(alpha)

@@ -7,7 +7,7 @@ import json
 import jobmanager.tools as tools
 import jobmanager.moltools as moltools
 import jobmanager.recovery as recovery
-import jobmanager.io as io
+from jobmanager.io import io
 from jobmanager.psi4_utils.run import write_jobscript, run_bash
 import jobmanager.classes as classes
 
@@ -276,7 +276,7 @@ def resub(directory='in place'):
             # update the number of jobs the user is currently running
             user_nactive = tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)
             # make sure we don't exceed set job limits
-            if (dynamic_nactive >= max_jobs) or (user_dynamic_nactive >= hard_job_limit):
+            if (dynamic_nactive >= max_jobs) or (user_nactive >= hard_job_limit):
                 hit_queue_limit = True
                 continue
 
@@ -291,7 +291,9 @@ def resub(directory='in place'):
             #check if Terachem or ORCA
             terachem = True
             for line in inp_lines:
-                if line[0] == '!':
+                if not line.strip():
+                    continue
+                if line.strip()[0] == '!':
                     terachem = False
                     break
 
@@ -304,7 +306,11 @@ def resub(directory='in place'):
                     submitted.append(True)
                 else:
                     invalid_jobs.append(job)
-                    print('Invalid job ......')
+                    print(f'Invalid job: {os.path.split(job)[-1]}')
+            else:  # have not implemented spin/charge checker for ORCA
+                print(('Initial submission for job: ' + os.path.split(job)[-1]))
+                tools.qsub(job)
+                submitted.append(True)
 
     else:
         print('==== Hit the queue limit for the user, not submitting any more jobs. ====')

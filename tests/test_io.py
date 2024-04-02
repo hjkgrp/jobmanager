@@ -1,4 +1,4 @@
-from jobmanager import io
+from jobmanager.io import io
 from jobmanager import classes
 
 def test_read_terachem_infile_constraint(resource_path_root):
@@ -37,5 +37,4 @@ def test_spinchargeChecker(resource_path_root):
     in_file = classes.textfile(in_file_path)
     tc_dict = io.read_terachem_input(in_file) #takes file as an input
     spin_charge_bool = io.spinchargeChecker(tc_dict, in_file_path) #takes path as an input
-    ref_boolean = True
-    assert ref_boolean == spin_charge_bool
+    assert spin_charge_bool
