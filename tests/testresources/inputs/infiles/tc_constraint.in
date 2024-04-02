@@ -1,0 +1,40 @@
+## General ##
+run minimize
+gpus 1
+
+## Chemical Method ##
+method ub3lyp
+dispersion no
+
+## Computational Method ##
+basis lacvps_ecp
+dftgrid 2
+
+## Optimization ##
+new_minimizer yes
+nstep 500
+
+## SCF Convergence ##
+scf diis+a
+maxit 500
+watcheindiis yes
+start_diis 0.001
+
+levelshift yes
+levelshiftvala 0.25
+levelshiftvalb 0.25
+
+precision double
+
+## outputs
+scrdir scr
+timings yes
+
+## system
+coordinates init_geo.xyz
+charge 2
+spinmult 2
+end
+$constraint_freeze
+bond 1_22
+$end

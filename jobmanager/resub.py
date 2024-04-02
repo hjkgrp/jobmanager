@@ -7,9 +7,9 @@ import json
 import jobmanager.tools as tools
 import jobmanager.moltools as moltools
 import jobmanager.recovery as recovery
-import jobmanager.manager_io as manager_io
+from jobmanager.io import io
 from jobmanager.psi4_utils.run import write_jobscript, run_bash
-
+import jobmanager.classes as classes
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
     """This function takes a list of job names and kills the jobs associated with them, if the jobs are active
@@ -56,7 +56,7 @@ def prep_derivative_jobs(directory, list_of_outfiles):
 
     """
     for job in list_of_outfiles:
-        configure_dict = manager_io.read_configure(directory, job)
+        configure_dict = io.read_configure(directory, job)
         if configure_dict['solvent']:
             tools.prep_solvent_sp(job, configure_dict['solvent'])
         if configure_dict['functionalsSP']:
@@ -91,7 +91,7 @@ def resub(directory='in place'):
 
     """
     # Takes a directory, resubmits errors, scf failures, and spin contaminated cases
-    configure_dict = manager_io.read_configure(directory, None)
+    configure_dict = io.read_configure(directory, None)
     max_resub = configure_dict['max_resub']
     max_jobs = configure_dict['max_jobs']
     hard_job_limit = configure_dict['hard_job_limit']
@@ -143,7 +143,7 @@ def resub(directory='in place'):
                 (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = manager_io.read_configure(directory, None)
+        local_configure = io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_oscillating_scf(error)
             if resub_tmp:
@@ -158,7 +158,7 @@ def resub(directory='in place'):
                 (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = manager_io.read_configure(directory, None)
+        local_configure = io.read_configure(directory, None)
         if 'scf' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_scf(error)
             if resub_tmp:
@@ -173,7 +173,7 @@ def resub(directory='in place'):
                 (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = manager_io.read_configure(directory, None)
+        local_configure = io.read_configure(directory, None)
         if 'bad_geo' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_bad_geo(error, directory)
             if resub_tmp:
@@ -188,7 +188,7 @@ def resub(directory='in place'):
                 (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = manager_io.read_configure(directory, None)
+        local_configure = io.read_configure(directory, None)
         if 'spin_contaminated' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_spin(error)
             if resub_tmp:
@@ -215,7 +215,7 @@ def resub(directory='in place'):
                 (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
             hit_queue_limit = True
             continue
-        local_configure = manager_io.read_configure(directory, None)
+        local_configure = io.read_configure(directory, None)
         if 'thermo_grad_error' in local_configure['job_recovery']:
             resub_tmp = recovery.resub_tighter(error)
             if resub_tmp:
@@ -239,7 +239,7 @@ def resub(directory='in place'):
             history = recovery.load_history(job)
             history.waiting = None
             history.save()
-            results_for_this_job = manager_io.read_outfile(job)
+            results_for_this_job = io.read_outfile(job)
             if results_for_this_job['thermo_grad_error']:
                 resubmitted.append(recovery.resub_thermo(job))
             else:
@@ -268,14 +268,50 @@ def resub(directory='in place'):
         to_submit = bundled_jobscripts + long_jobs_to_submit
 
         submitted = []
+        invalid_jobs = []
+
         for job in to_submit:
-            if ((len(submitted) + nactive + np.sum(resubmitted)) >= max_jobs) or (
-                    (tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)) >= hard_job_limit):
+            # update the number of running + submitted jobs (from this instance of jobmanager)
+            dynamic_nactive = (len(submitted) + nactive + np.sum(resubmitted))
+            # update the number of jobs the user is currently running
+            user_nactive = tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)
+            # make sure we don't exceed set job limits
+            if (dynamic_nactive >= max_jobs) or (user_nactive >= hard_job_limit):
                 hit_queue_limit = True
                 continue
-            print(('Initial submission for job: ' + os.path.split(job)[-1]))
-            tools.qsub(job)
-            submitted.append(True)
+
+            #get the path to input file
+            inp_file_path = job.rsplit('_',1)[0]+'.in'
+            inp_file = classes.textfile(inp_file_path)
+
+            #read lines of input file
+            inp_lines = inp_file.lines
+
+
+            #check if Terachem or ORCA
+            terachem = True
+            for line in inp_lines:
+                if not line.strip():
+                    continue
+                if line.strip()[0] == '!':
+                    terachem = False
+                    break
+
+            #if terachem, check validity: if valid, submit, else add to invalid jobs list
+            if terachem:
+                tc_dict = io.read_terachem_input(inp_file)
+                if io.spinchargeChecker(tc_dict,inp_file_path):
+                    print(('Initial submission for job: ' + os.path.split(job)[-1]))
+                    tools.qsub(job)
+                    submitted.append(True)
+                else:
+                    invalid_jobs.append(job)
+                    print(f'Invalid job: {os.path.split(job)[-1]}')
+            else:  # have not implemented spin/charge checker for ORCA
+                print(('Initial submission for job: ' + os.path.split(job)[-1]))
+                tools.qsub(job)
+                submitted.append(True)
+
     else:
         print('==== Hit the queue limit for the user, not submitting any more jobs. ====')
         hit_queue_limit = True
@@ -319,7 +355,7 @@ def resub_psi4(psi4_config):
 
 def main():
     counter = 0
-    configure_dict = manager_io.read_configure('in place', None)
+    configure_dict = io.read_configure('in place', None)
     print("configure_dict: ", configure_dict)
     if not configure_dict["run_psi4"]:
         while True:

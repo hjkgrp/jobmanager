@@ -1,0 +1,10 @@
+max_jobs:10
+hard_job_limit:200
+max_resub:5
+levela:0.25
+levelb:0.25
+method:b3lyp
+hfx:0.2
+sleep:1000
+geo_check:oct
+job_recovery:[bad_geo,spin_contaminated,scf]
