@@ -265,7 +265,7 @@ def read_terachem_input(input_textfile):
             while not line.startswith('$'):
                 line = next(lines)
         else:
-            key, val = line.split(None, 1)
+            key, val = line.split(maxsplit=1)
             if key in tc_dict:
                 print(f'{key:s} specified multiple times. Ignoring value {val:s}')
             else:
