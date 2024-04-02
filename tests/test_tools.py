@@ -1,5 +1,5 @@
 import jobmanager.tools as tools
-import jobmanager.io as io
+from jobmanager.io import io
 import os
 
 
