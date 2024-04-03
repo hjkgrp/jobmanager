@@ -111,6 +111,11 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     scf_error = False
     time = None
     thermo_grad_error = False
+
+    #terminated and no scf cycles were ran
+    terminated = False
+    no_scf = False
+
     implicit_solvation_energy = None
     geo_opt_cycles = None
     thermo_vib = None
@@ -171,6 +176,17 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
         if is_finished:  # for hydrogen optimization
             if is_finished[0] == 'Total' and is_finished[1] == 'processing':
                 finished = True
+
+        #terminated
+        is_terminated = output.wordgrab(['terminated:'],'whole_line',last_line=True)[0]
+        if is_terminated: #
+            if is_terminated[0] == 'Job' and is_terminated[1]== 'terminated:':
+                terminated = True
+
+        #is_no_scf
+        is_no_scf = output.wordgrab(['*** Start SCF Iterations ***'], 'whole_line')[0]
+        if is_no_scf[0] == None:
+            no_scf = True
 
         is_scf_error = output.wordgrab('DIIS', 5, matching_index=True)[0]
         if is_scf_error[0]:
@@ -246,6 +262,11 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     return_dict['orbital_occupation'] = orbital_occupation
     return_dict['oscillating_scf_error'] = oscillating_scf_error
     return_dict['outfile_path'] = outfile_path
+
+    #
+    return_dict['terminated'] = terminated
+    return_dict['no_scf'] = no_scf
+
     return return_dict
 
 

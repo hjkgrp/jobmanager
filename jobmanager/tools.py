@@ -402,6 +402,13 @@ def get_total_queue_usage():
 
     return len(jobs)
 
+def check_terminated_no_scf(path, results_dict):
+        results = results_dict[path]
+        if results['terminated'] and results['no_scf']:
+            return True
+        else:
+            return False
+
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     """Checks whether or not a directory is completed by the job manager.
 
@@ -506,6 +513,9 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
         else:
             return False
 
+    ########
+
+
     def check_thermo_grad_error(path, results_dict=results_dict):
         results = results_dict[path]
         if results['thermo_grad_error']:
@@ -524,6 +534,9 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     chronic_errors = list(filter(check_chronic_failure, outfiles))
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     scf_errors = list(filter(check_scf_error, errors))
+
+    ######
+    terminated_no_scf = list(filter(check_terminated_no_scf,outfiles))
 
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)
@@ -551,6 +564,9 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     waiting = [{i: grab_waiting(i)} for i in waiting]
     results['Waiting'] = waiting
     results['SCF_Errors_Including_Active'] = all_scf_errors
+
+    #
+    results['Terminated_No_SCF_cycle'] = terminated_no_scf
 
     return results
 
