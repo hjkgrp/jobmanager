@@ -13,7 +13,8 @@ TC2GEN_KEYS = {
     'epsilon':'solvent', 'run':'run_type',
     'levelshiftvala':'levelshifta', 'levelshiftvalb':'levelshiftb',
     'method':'method', 'basis':'basis', 'coordinates':'coordinates','guess':'guess',
-    'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid'
+    'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid',
+    'scf':'scf', 'maxit':'maxscf'
     }
 
 GEN2TC_KEYS = {val:key for key, val in TC2GEN_KEYS.items()}
@@ -661,7 +662,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
                 parallel_environment=1, precision='dynamic', dftgrid=2, dynamicgrid='yes',
-                machine='gibraltar', debug=False):
+                machine='gibraltar', debug=False, scf='diis+a', maxscf=500):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
     infile = dict()
@@ -669,12 +670,12 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates,
                                 guess, custom_line, qm_code, parallel_environment, name, precision, dftgrid,
-                                dynamicgrid, machine],
+                                dynamicgrid, machine, scf, maxscf],
                                ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method',
                                 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'unrecognized_terachem', 'qm_code', 'parallel_environment', 'name',
-                                'precision', 'dftgrid', 'dynamicgrid', 'machine']):
+                                'precision', 'dftgrid', 'dynamicgrid', 'machine', 'scf', 'maxscf']):
         if prop_name in list(input_dictionary.keys()):
             infile[prop_name] = input_dictionary[prop_name]
         else:
@@ -693,7 +694,10 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     if debug:
         print(infile)
     if infile['qm_code'] == 'terachem':
-        write_terachem_input(infile['name'] + '.in', gen2tc_inp(infile))
+        tc_dict = gen2tc_inp(infile)
+        if tc_dict['levelshiftvala'] or tc_dict['levelshiftvalb']:
+            tc_dict['levelshift'] = 'yes'
+        write_terachem_input(infile['name'] + '.in', tc_dict)
     elif infile['qm_code'] == 'orca':
         write_orca_input(infile)
     else:
