@@ -1,0 +1,494 @@
+Startfile from command line: refcode_ANIBUV_charge_2_spin_1.in
+
+
+       ***********************************************************
+       *                    TeraChem v1.9-2018.11-dev            *
+       *                 Hg Version:                             *
+       *                   Development Version                   *
+       *                Compiled without textures                *
+       *           Chemistry at the Speed of Graphics!           *
+       ***********************************************************
+       * This program may only be used in connection with        *
+       * a valid license from PetaChem, LLC. Use of this program *
+       * or results thereof indicates acceptance of all terms    *
+       * and conditions stated in the license and that a valid   *
+       * license agreement between the user and PetaChem, LLC    *
+       * exists. PetaChem, LLC does not warrant the correctness  *
+       * of results or their suitability for any purpose.        *
+       * Please email bugs, suggestions, and comments to         *
+       *                  help@petachem.com                      *
+       *                                                         *
+       ***********************************************************
+
+
+       ***********************************************************
+       *  Compiled by crduan       Thu Nov 29 14:42:14 EST 2018  *
+       *  Supported architectures: sm_35 sm_50 sm_52 sm_61       *
+       *  Cuda compilation tools, release 8.0, V8.0.61           *
+       ***********************************************************
+
+
+ Job started   Fri Apr  5 15:47:43 2024
+ On gibraltar-37 (available memory: 14109 MB)
+
+######################################### RUNTIME INFO ##########################################
+terachem refcode_ANIBUV_charge_2_spin_1.in 
+
+NVRM version: NVIDIA UNIX x86_64 Kernel Module  430.14  Wed May  8 01:10:53 UTC 2019
+GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-39) (GCC) 
+
+	linux-vdso.so.1 =>  (0x00007ffe04df7000)
+	libcurl.so.4 => /lib64/libcurl.so.4 (0x00002ac51bfe3000)
+	libdftbplus.so => /opt/terachem/120318-cuda8-intel16/lib/libdftbplus.so (0x00002ac51c24d000)
+	libfsockets.so => /opt/terachem/120318-cuda8-intel16/lib/libfsockets.so (0x00002ac51c76c000)
+	libxmlf90.so => /opt/terachem/120318-cuda8-intel16/lib/libxmlf90.so (0x00002ac51c96f000)
+	libOpenMM.so => /opt/OpenMM-7.1.1/lib/libOpenMM.so (0x00002ac51cb94000)
+	libintbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libintbox.so.1 (0x00002ac51d0b5000)
+	libthcbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libthcbox.so.1 (0x00002ac538359000)
+	libgridbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libgridbox.so.1 (0x00002ac539a7b000)
+	libdftbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libdftbox.so.1 (0x00002ac539f3f000)
+	libcibox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libcibox.so.1 (0x00002ac53a224000)
+	libcuda.so.1 => /lib64/libcuda.so.1 (0x00002ac53a5a1000)
+	libcudart.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcudart.so.8.0 (0x00002ac53b710000)
+	libcublas.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcublas.so.8.0 (0x00002ac53b976000)
+	libcufft.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcufft.so.8.0 (0x00002ac53e40e000)
+	libcusparse.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcusparse.so.8.0 (0x00002ac54725d000)
+	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00002ac549d78000)
+	libssl.so.10 => /lib64/libssl.so.10 (0x00002ac54a1db000)
+	libm.so.6 => /lib64/libm.so.6 (0x00002ac54a44d000)
+	libcilkrts.so.5 => /opt/terachem/120318-cuda8-intel16/lib/libcilkrts.so.5 (0x00002ac54a74f000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00002ac54a990000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00002ac54ac97000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00002ac54aead000)
+	libc.so.6 => /lib64/libc.so.6 (0x00002ac54b0c9000)
+	/lib64/ld-linux-x86-64.so.2 (0x00002ac51bdbf000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00002ac54b497000)
+	libidn.so.11 => /lib64/libidn.so.11 (0x00002ac54b69b000)
+	libssh2.so.1 => /lib64/libssh2.so.1 (0x00002ac54b8ce000)
+	libssl3.so => /lib64/libssl3.so (0x00002ac54bafb000)
+	libsmime3.so => /lib64/libsmime3.so (0x00002ac54bd54000)
+	libnss3.so => /lib64/libnss3.so (0x00002ac54bf7c000)
+	libnssutil3.so => /lib64/libnssutil3.so (0x00002ac54c2ab000)
+	libplds4.so => /lib64/libplds4.so (0x00002ac54c4db000)
+	libplc4.so => /lib64/libplc4.so (0x00002ac54c6df000)
+	libnspr4.so => /lib64/libnspr4.so (0x00002ac54c8e4000)
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00002ac54cb22000)
+	libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00002ac54cd6f000)
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00002ac54d058000)
+	libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00002ac54d28b000)
+	liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00002ac54d48f000)
+	libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00002ac54d69e000)
+	libz.so.1 => /lib64/libz.so.1 (0x00002ac54d8f3000)
+	libmkl_intel_lp64.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_intel_lp64.so (0x00002ac54db09000)
+	libmkl_intel_thread.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_intel_thread.so (0x00002ac54e447000)
+	libmkl_core.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_core.so (0x00002ac54f79e000)
+	libiomp5.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libiomp5.so (0x00002ac551083000)
+	libifport.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libifport.so.5 (0x00002ac5513c4000)
+	libifcoremt.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libifcoremt.so.5 (0x00002ac5515f3000)
+	libimf.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libimf.so (0x00002ac551985000)
+	libsvml.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libsvml.so (0x00002ac551e7d000)
+	libintlc.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libintlc.so.5 (0x00002ac552d3c000)
+	librt.so.1 => /lib64/librt.so.1 (0x00002ac552f9b000)
+	libnvidia-fatbinaryloader.so.430.14 => /lib64/libnvidia-fatbinaryloader.so.430.14 (0x00002ac5531a3000)
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00002ac5533f1000)
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00002ac553601000)
+	libresolv.so.2 => /lib64/libresolv.so.2 (0x00002ac553805000)
+	libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00002ac553a1e000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00002ac553c3b000)
+	libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00002ac553e62000)
+	libpcre.so.1 => /lib64/libpcre.so.1 (0x00002ac554099000)
+	libfreebl3.so => /lib64/libfreebl3.so (0x00002ac5542fb000)
+#################################################################################################
+
+  _________________________________
+ |         DFTD3 V3.0 Rev 2        |
+ | S.Grimme, University Bonn       |
+ |           Aug  2013             |
+  _________________________________
+ 
+ Please cite DFT-D3 work done with this code as:
+ S. Grimme, J. Antony, S. Ehrlich and H. Krieg,
+ J. Chem. Phys. 132 (2010), 154104
+ If used with BJ-damping cite also
+ S. Grimme, S. Ehrlich and L. Goerigk,
+ J. Comput. Chem. 32 (2011), 1456-1465
+ For DFT-D2 the reference is
+ S. Grimme, J. Comput. Chem., 27 (2006), 1787-1799
+ 
+Cannot find license.dat file in the TeraChem installation directory /opt/terachem/120318-cuda8-intel16
+
+
+TRYING THE NETWORK LICENSE...
+Connecting to license server '54.208.252.40' port '8877'...
+Connected!
+Checking your license...
+
+**************************************************************
+  Greetings, Martinez Group! You have 1000 licenses in total
+  IN USE: 15
+  AVAILABLE: 985
+**************************************************************
+
+Scratch directory: ./scr
+Random number seed: 542078041
+
+XYZ coordinates refcode_ANIBUV_charge_2_spin_1.xyz
+Molden File Output: ./scr/refcode_ANIBUV_charge_2_spin_1.molden
+Using basis set: lacvps_ecp
+dmrgstart not found
+Spin multiplicity: 1
+DIIS will use up to 10 vectors.
+WF convergence threshold: 3.00e-05
+Using DIIS algorithm to converge WF
+Maximum number of SCF iterations: 100
+Incremental fock with rebuild every 8 iterations
+Will switch to conventional Fock if diffuse functions are detected
+X-matrix tolerance: 1.00e-04
+PRECISION: DYNAMIC
+DFT Functional requested: b3lyp
+Method: B3LYP  with dispersion correction
+  Hartree-Fock exact exchange:          0.20 
+  Slater exchange functional:           0.80 
+  Becke 1988 exchange functional:       0.72 
+  Lee-Yang-Parr correlation functional: 0.81 
+  VWN(I) correlation functional:        0.19 
+Wavefunction: RESTRICTED
+DFT grid type: 2
+Using dynamic DFT grids.
+Initial guess generated by maximum overlap
+
+********************************************
+******* RUNNING GEOMETRY OPTMIZATION *******
+********************************************
+
+Geometry optimization parameters:
+Max number of optimization cycles: 1000
+Convergence threshold (Max grad component): 4.50e-04
+Convergence threshold (energy change): 1.00e-06
+Maximum of RMSD change allowed between steps is 0.500000
+using L-BFGS method
+Optimization checkpoint file will be dumped every 10 cycles
+Atomic displacement in finite-difference Hessian (Bohr) 0.003000
+Each step will be scaled by 1.00
+Maximum step size in internal coordinates 0.50
+Minimization SCF guess will be regenerated every 10 steps
+Job started from scratch
+SCF:   Initial guess is taken from previous step
+
+using 1 out of 1 CUDA devices
+   Device 0:  GeForce GTX 1080 Ti, 11178MB, CC 6.1 -- CPU THREAD 0
+-------------------------------------------------------------------
+Compiled with MAGMA support.  MAGMA parameters:
+    Matrices larger than 5000 square will be treated with MAGMA
+       (Change by setting the MagmaMinN environment variable)
+    Magma will use 1 out of 1 GPUs
+       (Change by setting the MagmaNGPUs environment variable)
+-------------------------------------------------------------------
+ CPU Memory Available: 16081.75 MegaWords 
+ GPU Memory Available: 1141.31 MegaWords 
+ Maximum recommended basis set size: 12200 basis functions
+ (limited by GPU memory)
+-------------------------------------------------------------------
+Using d-functions. Configuring GPUs accordingly.
+0: CUBLAS initialized, available GPU memory: 8263MB
+
+
+Basis set:       lacvps_ecp
+Total atoms:     61
+Total charge:    2
+Total electrons: 260 (130-alpha, 130-beta)
+Number electrons modeled by ECPs: 10
+Total orbitals:  612
+Total AO shells: 272 (159 S-shells; 75 P-shells; 38 D-shells; 0 F-shells; 0 G-shells)
+Spin multiplicity: 1
+Nuclear repulsion energy (QM atoms): 4545.297422941700 a.u.
+
+
+No optimization coordinates found in the configuration file
+Determining the type of coordinates based on the number of individual fragments...
+Analyzing structure...
+Found 61 atoms, 69 bonds
+Building HDLC residues...
+Found 1 HDLC residues
+done.
+Optimization will be performed in DLC coordinates
+
+-------------------------------------------------------
+0 additional frames found in refcode_ANIBUV_charge_2_spin_1.xyz
+-------------------------------------------------------
+***********************************************************************
+**                                                                   **
+**                              DL-FIND                              **
+**                       Geometry Optimisation                       **
+**               written by Johannes Kaestner, in 2006               **
+**               Copyright:  STFC Daresbury Laboratory               **
+**                           Revision:  406 $                        **
+**                                                                   **
+***********************************************************************
+Residue member list:
+    0 :     1    1    1    1    1    1    1    1    1    1
+   10 :     1    1    1    1    1    1    1    1    1    1
+   20 :     1    1    1    1    1    1    1    1    1    1
+   30 :     1    1    1    1    1    1    1    1    1    1
+   40 :     1    1    1    1    1    1    1    1    1    1
+   50 :     1    1    1    1    1    1    1    1    1    1
+   60 :     1
+
+Generating new HDLC for    1 residues
+
+Located a new residue for HDLC
+   Residue number is    1
+   Number of atoms it contains    61
+   Atoms:      1     2     3     4     5     6     7     8     9    10
+   Atoms:     11    12    13    14    15    16    17    18    19    20
+   Atoms:     21    22    23    24    25    26    27    28    29    30
+   Atoms:     31    32    33    34    35    36    37    38    39    40
+   Atoms:     41    42    43    44    45    46    47    48    49    50
+   Atoms:     51    52    53    54    55    56    57    58    59    60
+   Atoms:     61
+   Generating HDLC for residue    1
+       Dot-product about     1 is  -0.08937954
+       Dot-product about     2 is   0.99170155
+       System near planar - making improper
+       Dot-product about     3 is   0.99870905
+       System near planar - making improper
+       Dot-product about     4 is   0.99966013
+       System near planar - making improper
+       Dot-product about     5 is   0.97721610
+       System near planar - making improper
+       Dot-product about     6 is   0.97148383
+       System near planar - making improper
+       Dot-product about     7 is   0.99043770
+       System near planar - making improper
+       Dot-product about     8 is   0.99999851
+       System near planar - making improper
+       Dot-product about    10 is   0.99999947
+       System near planar - making improper
+       Dot-product about    12 is   0.99998728
+       System near planar - making improper
+       Dot-product about    14 is   0.99999059
+       System near planar - making improper
+       Dot-product about    16 is   0.99999990
+       System near planar - making improper
+       Dot-product about    18 is   0.99999834
+       System near planar - making improper
+       Dot-product about    20 is   0.99999996
+       System near planar - making improper
+       Dot-product about    22 is   0.99999912
+       System near planar - making improper
+       Dot-product about    24 is   0.99992386
+       System near planar - making improper
+       Dot-product about    25 is   0.99999900
+       System near planar - making improper
+       Dot-product about    26 is   0.99999693
+       System near planar - making improper
+       Dot-product about    28 is   0.99999953
+       System near planar - making improper
+       Dot-product about    30 is   0.99999794
+       System near planar - making improper
+       Dot-product about    32 is   0.99998529
+       System near planar - making improper
+       Dot-product about    34 is   0.99999829
+       System near planar - making improper
+       Dot-product about    36 is   0.99999889
+       System near planar - making improper
+       Dot-product about    38 is   0.99999993
+       System near planar - making improper
+       Dot-product about    40 is   1.00000000
+       System near planar - making improper
+       Dot-product about    42 is   0.99774731
+       System near planar - making improper
+       Dot-product about    43 is   0.99995769
+       System near planar - making improper
+       Dot-product about    44 is   0.99999748
+       System near planar - making improper
+       Dot-product about    46 is   0.99999298
+       System near planar - making improper
+       Dot-product about    48 is   0.99998443
+       System near planar - making improper
+       Dot-product about    50 is   0.99999705
+       System near planar - making improper
+       Dot-product about    52 is   0.99999624
+       System near planar - making improper
+       Dot-product about    54 is   0.99999358
+       System near planar - making improper
+       Dot-product about    56 is   0.99999750
+       System near planar - making improper
+       Dot-product about    58 is   0.99999945
+       System near planar - making improper
+       Dot-product about    60 is   0.99962338
+       System near planar - making improper
+       Dot-product about    61 is   0.99715643
+       System near planar - making improper
+
+     The system has   177 degrees of freedom, and   177 non-zero eigenvalues
+
+ call dlf_formstep_init...
+ needhessian =  F
+
+DL-FIND Report:
+===============
+Optimisation algorithm: L-BFGS
+Number of steps in L-BFGS memory ...............         50
+ 
+Trust radius based on energy
+Maximum step length ............................  5.000E-01
+ 
+Coordinate system: Delocalised internal coordinates (DLC)
+ 
+Number of atoms ................................         61
+Number of input geometries .....................          2
+Variables to be optimised ......................        177
+Restart information is written every ...........         10 steps
+This run has not been restarted.
+Maximum number of steps ........................       1000
+Maximum number of energy evaluations ...........     100000
+ 
+DFTD Energy:    -0.1906275 hartree
+Setting up the DFT grid...
+time to set the grid = 0.04 s
+DFT grid points: 60583 (993 points/atom)
+Setting up the DFT grid...
+time to set the grid = 0.20 s
+DFT grid points: 374095 (6132 points/atom)
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy           Energy        Time(s)
+----------------------------------------------------------------------------------------------------------
+         >>> Purifying P... IDMP = 1.68e-14 <<<
+THRESPDP set to 1.00e+00
+                >>> SWITCHING TO GRID 2 <<<
+   1     0.3208515964   -1597.0531268060   259.9982148485  -176.0330425080   -1597.0531268060     2.47  
+                >>> SWITCHING TO GRID 0 <<<
+   2     0.4115997762      +6.7666688631   259.9951674564  -191.9877384263   -1590.2864579429     1.69  
+   3     0.7520641766     +45.2644171192   259.9925466110  -183.2996683723   -1545.0220408236     1.73  
+   4     0.5158326375     -53.4908909385   259.9904418562  -183.1024888345   -1598.5129317621     1.71  
+   5     0.4288549917      -0.4492699812   259.9909703897  -187.0513344813   -1598.9622017433     1.62  
+   6     0.2260505544      -7.5181835383   259.9913403971  -185.6748194116   -1606.4803852816     1.65  
+   7     0.2861199450      +3.1662064913   259.9920816154  -186.2907483880   -1603.3141787903     1.62  
+   8     0.2926637760      -0.3425972544   259.9920092789  -186.2577832324   -1603.6567760447     1.47  
+THRESPDP set to 1.00e-03
+   9     0.2958654540      +0.0333364901   259.9919547706  -186.2688739929   -1603.6234395546     2.30  
+  10     0.2941755597      -0.5345265113   259.9918575162  -186.1947900161   -1604.1579660660     1.85  
+  11     0.2302759652      -2.5787630221   259.9920502309  -185.4999863869   -1606.7367290881     2.01  
+  12     0.2934443052      +2.1964383448   259.9916029325  -185.7208305643   -1604.5402907432     3.34  
+  13     0.2709253417      -0.3910679652   259.9912780582  -185.3654561854   -1604.9313587085     1.96  
+  14     0.2113400830      -2.0542292299   259.9914422512  -184.8821366261   -1606.9855879384     2.02  
+  15     0.6547039015     +15.0260608234   259.9907529998  -182.4574951066   -1591.9595271149     2.33  
+  16     0.3791810156      -8.2365522749   259.9920445611  -186.7224472321   -1600.1960793898     2.30  
+THRESPDP set to 4.27e-02
+  17     0.3019155357      -3.4831692255   259.9920265100  -186.1919751098   -1603.6792486153     1.97  
+  18     0.2665997596      +0.1139495397   259.9922298097  -186.1436111877   -1603.5652990756     1.68  
+  19     0.2936294082      -0.3863100335   259.9924405016  -186.1117857947   -1603.9516091092     1.71  
+  20     0.2893364362      +0.0694100670   259.9923612449  -186.1094308860   -1603.8821990421     1.70  
+  21     0.3223436688      +1.5846372304   259.9918685421  -186.3669431934   -1602.2975618117     3.22  
+  22     0.3228153912      -0.5788188190   259.9918558955  -186.3272800670   -1602.8763806307     1.78  
+  23     0.3202275399      -0.1254350430   259.9920391937  -186.2584193615   -1603.0018156737     1.73  
+  24     0.3494821951      +1.9424841455   259.9916145392  -186.4768921285   -1601.0593315282     1.80  
+THRESPDP set to 3.78e-02
+  25     0.3519668925      -1.4671595491   259.9912241606  -185.9416652208   -1602.5264910773     1.93  
+  26     1.4948330649    +141.4804440080   260.0011565023  -179.7341145855   -1461.0460470693     2.15  
+  27     0.7065627955    -132.2219091117   259.9918989804  -182.4002629269   -1593.2679561811     2.25  
+  28     0.3986343749      -6.9090243098   259.9927124579  -186.5866369246   -1600.1769804909     1.94  
+  29     0.3176473698      -2.9684457646   259.9917386585  -185.9644531545   -1603.1454262555     1.90  
+  30     0.3585365797      +1.9091339550   259.9925360825  -186.4970187135   -1601.2362923005     1.82  
+  31     0.3189793828      -1.7841440236   259.9923676027  -186.0118034168   -1603.0204363241     1.87  
+  32     0.3225828785      +0.0211678062   259.9923234658  -186.1062494278   -1602.9992685179     1.78  
+THRESPDP set to 3.36e-02
+  33     0.3146853138      -0.2903697403   259.9921183455  -186.0253336870   -1603.2896382583     1.98  
+  34     0.3157331960      +0.0107593623   259.9920927878  -186.0173701941   -1603.2788788959     1.64  
+  35     0.3638951389      +2.1784095394   259.9922471538  -186.5535533460   -1601.1004693565     1.89  
+  36     0.3449410957      -1.4996457840   259.9919840146  -186.1685366295   -1602.6001151406     1.89  
+  37     0.3310893461      -0.6641126885   259.9919138128  -185.9831665177   -1603.2642278290     1.79  
+  38     1.5223691283    +125.6236415938   260.0022613417  -178.7797672808   -1477.6405862352     2.13  
+  39     0.6767012377    -117.3558135412   259.9910566990  -182.7452724707   -1594.9963997765     1.96  
+  40     0.4471444873      -1.2871319534   259.9913782924  -186.8081053025   -1596.2835317299     1.95  
+THRESPDP set to 5.47e-02
+  41     0.4395979916      -3.5733215910   259.9921534202  -186.6413768549   -1599.8568533209     1.96  
+  42     0.4285156416      +0.9738340240   259.9915535532  -186.6736085927   -1598.8830192969     1.69  
+  43     0.4258157584      -0.2304887240   259.9915500406  -186.6599263939   -1599.1135080209     1.61  
+  44     0.4204745570      -0.4163532859   259.9913752285  -186.5933401168   -1599.5298613068     1.68  
+  45     0.4117629554      +0.5466054041   259.9918128224  -186.7031320122   -1598.9832559028     1.78  
+  46     0.4211213768      -0.1461161976   259.9913046971  -186.6528119161   -1599.1293721004     1.76  
+  47     0.4238398957      -0.4659344198   259.9913765181  -186.5880973743   -1599.5953065202     1.61  
+  48     0.4265842857      -0.1534808443   259.9922939078  -186.6650447888   -1599.7487873645     1.79  
+THRESPDP set to 5.09e-02
+  49     0.4062308684      -1.1909531751   259.9918578435  -186.4064587319   -1600.9397405396     1.94  
+  50     1.7690653735     +73.5291889622   259.9915591141  -180.6611827249   -1527.4105515774     2.00  
+THRESPDP set to 4.46e-01
+  51     0.5485788908     -69.7301039195   259.9933027137  -182.5946103358   -1597.1406554969     1.91  
+THRESPDP set to 7.40e-02
+  52     0.4004754182      -1.2461224491   259.9923832285  -186.8035117895   -1598.3867779459     1.98  
+THRESPDP set to 4.64e-02
+  53     0.4028482847      -1.9657221007   259.9920915086  -186.6804961682   -1600.3525000466     1.98  
+  54     0.4008216578      +0.8945590091   259.9917289880  -186.6582780647   -1599.4579410375     2.02  
+  55     0.4042735474      -0.4640815846   259.9918760839  -186.5508611732   -1599.9220226221     1.98  
+  56     0.3985201551      +0.2807618703   259.9918601754  -186.6346172195   -1599.6412607518     1.99  
+  57     0.3963999107      -0.0277146655   259.9918543378  -186.6327262272   -1599.6689754173     1.93  
+  58     0.3975242790      -0.7725242703   259.9918433698  -186.6532395535   -1600.4414996875     1.95  
+  59     0.4139433307      +0.1649918338   259.9920129728  -186.6631071794   -1600.2765078537     1.94  
+THRESPDP set to 4.86e-02
+  60     0.4169229208      -0.0208759783   259.9921345661  -186.6454673537   -1600.2973838321     2.01  
+  61     0.3403491796      -2.9842366186   259.9913521792  -185.9330628449   -1603.2816204506     1.92  
+  62     1.5845815744    +110.7547399585   259.9878324328  -179.8560523794   -1492.5268804921     2.01  
+  63     0.6318076877    -103.0140702571   259.9921336675  -182.5747832677   -1595.5409507492     1.93  
+  64     0.4221523539      +9.6941213149   259.9947949313  -186.8650760193   -1585.8468294344     1.92  
+  65     0.4232232769     -13.3585072400   259.9938086568  -186.7722268060   -1599.2053366744     1.80  
+  66     0.4304229502      +0.7121705145   259.9931457984  -186.7684426541   -1598.4931661598     1.80  
+  67     0.4277204486      -0.9754465540   259.9934108565  -186.7428143983   -1599.4686127139     1.67  
+  68     0.4287018783      -0.0458408852   259.9933645213  -186.7398350844   -1599.5144535991     1.47  
+THRESPDP set to 5.13e-02
+  69     0.4237110216      +0.0134884488   259.9933452704  -186.7565279928   -1599.5009651503     1.90  
+  70     0.4230332704      +0.0440552640   259.9933133742  -186.7596921117   -1599.4569098863     1.60  
+  71     0.4174609899      -0.0496577362   259.9935887849  -186.7332177104   -1599.5065676225     1.63  
+  72     0.4450578924      +0.0901587949   259.9921355986  -186.7164792960   -1599.4164088276     1.77  
+  73     0.4143747128      -1.2349631016   259.9930484334  -186.4458389393   -1600.6513719292     1.75  
+  74     1.5511784226     +98.5910784359   259.9963322735  -180.1747692596   -1502.0602934933     2.00  
+  75     0.6137181109     -95.0125074752   259.9918463520  -182.7104510701   -1597.0728009685     2.00  
+  76     0.4502224043      -1.9265067001   259.9918035824  -186.7918356401   -1598.9993076686     1.92  
+THRESPDP set to 5.51e-02
+  77     0.4303785310      +0.2375059184   259.9926170667  -186.7512758977   -1598.7618017502     1.93  
+  78     0.4313268412      -1.1599061238   259.9920875477  -186.7091473268   -1599.9217078740     1.65  
+  79     0.4237884363      +0.1370689901   259.9917434819  -186.7095054917   -1599.7846388840     1.63  
+  80     0.4261113680      -0.1940929792   259.9918332569  -186.6988574593   -1599.9787318631     1.60  
+  81     0.4302870732      +0.0180576752   259.9916271593  -186.6773812918   -1599.9606741879     1.55  
+  82     0.4491358656      +0.3130534673   259.9912970824  -186.6746189557   -1599.6476207206     1.77  
+  83     0.4379345370      -0.0841131508   259.9915430597  -186.7046087732   -1599.7317338713     1.66  
+  84     0.4576774782      +0.1245930046   259.9926211819  -186.6412759482   -1599.6071408667     1.83  
+THRESPDP set to 5.65e-02
+  85     0.4144196645      -1.2371190091   259.9913756729  -186.4840483645   -1600.8442598758     1.94  
+  86     1.6371262439     +88.8640787790   259.9877195843  -180.1819670221   -1511.9801810968     1.95  
+  87     0.6177511001     -83.8004344471   259.9908103132  -182.5471748957   -1595.7806155439     1.92  
+  88     0.4094698352      -2.9630619095   259.9919802380  -186.7456344782   -1598.7436774534     1.82  
+  89     0.4191982084      -1.3521649916   259.9917893620  -186.6803840448   -1600.0958424451     1.70  
+  90     0.4174566411      -0.0685380964   259.9917570901  -186.6750028927   -1600.1643805414     1.58  
+  91     0.4170787702      +0.0027593483   259.9917633516  -186.6764872454   -1600.1616211932     1.42  
+  92     0.4163268535      -0.0232553584   259.9917939537  -186.6762779446   -1600.1848765515     1.51  
+THRESPDP set to 4.91e-02
+  93     0.4186677532      -0.0094845867   259.9916937086  -186.6647131111   -1600.1943611382     1.92  
+  94     0.4213774023      +0.0838525343   259.9920384270  -186.6644055659   -1600.1105086039     1.59  
+  95     0.4096093052      +0.0100499874   259.9914374340  -186.6672174024   -1600.1004586165     1.64  
+  96     0.4430574505      +0.2646657887   259.9917694321  -186.6270369205   -1599.8357928279     1.66  
+  97     0.4137797844      -0.6723581126   259.9915543883  -186.5847651385   -1600.5081509405     1.66  
+  98     1.6103198280     +91.9962815593   259.9915462994  -180.3841269048   -1508.5118693812     1.94  
+  99     0.6197866446     -87.1479966293   259.9926428645  -182.5365878472   -1595.6598660105     1.92  
+ 100     0.4089014255      -1.6443798056   259.9928969697  -186.7703651585   -1597.3042458161     1.93  
+THRESPDP set to 4.79e-02
+ 101     0.4107380501      -2.9667186814   259.9927664966  -186.6440980762   -1600.2709644975     1.80  
+Reached max number of SCF iterations (maxit = 100)
+SCF did not converge
+Try to decrease the coulomb and exchange integral screening thresholds by setting
+'threall' to 1.0e-12 or even 1.0e-13. If it does not help, try pure double precision
+instead of mixed (default) or single precision
+Also try 'scf diis+a' convergence algorithm if you're using the default.
+Writing out molden info
+----------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -1600.2709644975 a.u.
+WARNING: Final energy is higher than the lowest energy by       6.7146.
+DISPERSION CONTRIBUTION TO ENERGY: -0.1906274999 a.u.
+CENTER OF MASS: {0.182395, 8.758542, 15.767305} ANGS
+DIPOLE MOMENT: {16.670014, 13.955984, 32.198581} (|D| = 38.851094) DEBYE
+
+ Job terminated: Fri Apr  5 15:51:03 2024
+
