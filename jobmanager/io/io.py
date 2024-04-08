@@ -364,7 +364,10 @@ def gen2tc_inp(inp_dict):
     Returns a Terachem input dictionary from a general one.
     '''
     temp = inp_dict.copy()
+    
     tc_dict = temp.pop('unrecognized_terachem')
+    if tc_dict is None:
+        tc_dict = dict()
 
     ## required for how jobmanager currently treats convergence thresholds
     if 'convergence_thresholds' in temp and temp['convergence_thresholds']:
@@ -373,10 +376,11 @@ def gen2tc_inp(inp_dict):
             if temp_list[i]:
                 tc_dict[key] = temp_list[i]
 
-    if 'multibasis' in temp:
+    if 'multibasis' in temp and temp['multibasis']:
         tc_dict['$multibasis'] = temp.pop('multibasis')
 
-    if 'constraints' in temp:
+
+    if 'constraints' in temp and temp['constraints']:
         tc_dict["$constraint_freeze"] = temp.pop('constraints')
     if 'dispersion' in temp:
         dispersion = temp.pop('dispersion')
@@ -656,8 +660,8 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 guess=False, custom_line=None, levelshifta=0.25, levelshiftb=0.25,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
-                parallel_environment=4, precision='dynamic', dftgrid=2, dynamicgrid='yes',
-                machine='gibraltar'):
+                parallel_environment=1, precision='dynamic', dftgrid=2, dynamicgrid='yes',
+                machine='gibraltar', debug=False):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
     infile = dict()
@@ -686,7 +690,8 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
         print(('Charge Type: ' + str(type(infile['charge']))))
         print(('Spinmult Type: ' + str(type(infile['spinmult']))))
         raise Exception('Spin and Charge should both be integers!')
-
+    if debug:
+        print(infile)
     if infile['qm_code'] == 'terachem':
         write_terachem_input(infile['name'] + '.in', gen2tc_inp(infile))
     elif infile['qm_code'] == 'orca':
