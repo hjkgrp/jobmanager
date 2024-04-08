@@ -513,6 +513,9 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
         else:
             return False
 
+    def check_terminated_no_scf_inner(path, results_dict=results_dict):
+        return check_terminated_no_scf(path, results_dict)
+
     ########
 
 
@@ -536,7 +539,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     scf_errors = list(filter(check_scf_error, errors))
 
     ######
-    terminated_no_scf = list(filter(check_terminated_no_scf,outfiles))
+    terminated_no_scf = list(filter(check_terminated_no_scf_inner,outfiles))
 
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)
