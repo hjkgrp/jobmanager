@@ -1084,17 +1084,28 @@ def prep_ad_spin(path):
             else:
                 os.mkdir(PATH)
                 os.chdir(PATH)
-                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
-
                 local_infile_dict = copy.copy(infile_dict)
-                local_infile_dict['charge'], local_infile_dict['guess'] = infile_dict['charge'], False
+                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+                if infile_dict['spinmult'] == 1:
+                    shutil.copy(os.path.join(base, 'scr', 'c0'), 'c0')
+                    io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+                    local_infile_dict['guess'] = 'c0'
+                elif infile_dict['spinmult'] != 1:
+                    shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join('ca0'))
+                    shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join('cb0'))
+                    local_infile_dict['guess'] = 'ca0 cb0'
+                    io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
+                                            machine=get_machine())
+
+
+                
+                local_infile_dict['charge']= infile_dict['charge']
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'minimize', calc
                 local_infile_dict['name'] = name
                 local_infile_dict['coordinates'] = name+'.xyz'
                 local_infile_dict['machine'] = get_machine()
 
                 io.write_input(local_infile_dict)
-                io.write_jobscript(name, machine=get_machine())
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
     return jobscripts
