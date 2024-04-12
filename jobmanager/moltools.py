@@ -130,11 +130,14 @@ def apply_geo_check(job_outfile_path, geometry):
         optim_path = os.path.join(os.path.split(job_outfile_path)[0], 'scr', 'optim.xyz')
 
         if os.path.isfile(optim_path):
-            tools.extract_optimized_geo(optim_path)
+            lines = tools.extract_optimized_geo(optim_path)
             optimized_path = os.path.join(os.path.split(optim_path)[0], 'optimized.xyz')
 
-            mol = mol3D()
-            mol.readfromxyz(optimized_path)
+            if len(lines)==0:
+                return True
+            else:
+                mol = mol3D()
+                mol.readfromxyz(optimized_path)
         else:
             # If the optim.xyz doesn't exist, assume that it's a single point and should pass geo check
             return True
