@@ -423,6 +423,8 @@ def read_infile(outfile_path):
     if qm_code == 'terachem':
         tc_dict = read_terachem_input(inp)
         return_dict = tc2gen_inp(tc_dict)
+        if 'name' not in return_dict:
+            return_dict['name'] = return_dict['coordinates'].strip('.xyz')
         return return_dict
 
 
@@ -683,7 +685,11 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
             not infile['name']) or (not infile['coordinates']):
-        print(('Name: ' + infile['name']))
+        
+        if infile['name']:
+            print(('Name: ' + infile['name']))
+        else:
+            print(f'XYZ file: {infile["coordinates"]}')
         print(('Charge: ' + str(infile['charge'])))
         print(('Spinmult: ' + str(infile['spinmult'])))
         raise Exception('Minimum parameters not specified for writing infile')
