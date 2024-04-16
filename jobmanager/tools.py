@@ -1150,7 +1150,7 @@ def prep_ad_spin(path):
 
     home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
     check_prep_finish(results)
-    new_spin = new_spin_assigner("prep_add_spin", infile_dict, path)
+    new_spin = new_spin_assigner("prep_ad_spin", infile_dict, path)
     if new_spin ==0:
         return 0
 
