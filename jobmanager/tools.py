@@ -863,6 +863,154 @@ def sub_bundle_jobscripts(home_directory, jobscript_paths):
     return os.path.join(home_directory, 'bundle', 'bundle_' + str(max(existing_bundle_numbers) + 1),
                         'bundle_' + str(max(existing_bundle_numbers) + 1))
 
+def home_path_results_in_file_dict_base_prep(path):
+    """This function gets home directory; converts relative path to
+    absolute path; reads output file in given path; gets base directory.
+
+    Parameters
+    ----------
+        path : str
+            Path to the output file of a finished job.
+
+    Returns
+    -------
+        home : str
+            current working directory.
+        path : str
+            absolute path obtained from initial relative path
+        in_file_dict : dict
+            dictionary obtained reading output file
+        base : str
+            base directory
+    """
+    home = os.getcwd()
+    path = convert_to_absolute_path(path)
+
+    results = io.read_outfile(path)
+
+    infile_dict = io.read_infile(path)
+    base = os.path.split(path)[0]
+    return home, path, results, infile_dict, base
+
+def check_prep_finish(results):
+    """This function checks if job is finished.
+
+    Parameters
+    ----------
+        results : dict
+            Results of checking the directory for completeness.
+
+    Returns
+    -------
+        None
+    """
+    if not results['finished']:
+        raise Exception('This calculation does not appear to be complete! Aborting...')
+
+def new_spin_assigner(function_name, infile_dict, path):
+    """This function assigns new spin multiplicity.
+
+    Parameters
+    ----------
+        function_name : str
+            name of the function calling new_spin_assigner.
+        in_file_dict : dict
+            dictionary obtained reading output file
+        path : str
+            Path to the output file of a finished job.
+    Returns
+    -------
+        new_spin : list
+            list of new spin multiplicites to run
+    """
+    if function_name in ["prep_vertical_ip", "prep_vertical_ea", "prep_general_sp"]:
+        if infile_dict['spinmult'] == 1:
+            new_spin = [2]
+        else:
+            new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
+    elif function_name == "prep_ad_spin":
+        if infile_dict['spinmult'] == 1:
+            new_spin = [3, 5]
+        elif infile_dict['spinmult'] == 2:
+            new_spin = [4, 6]
+        else:
+            print(f'Skipping spin-splitting calculation requested for {path:s}')
+            new_spin=0
+    return new_spin
+
+def optimxyz_runtype(infile_dict, base):
+    """This function sets path to the xyz file.
+
+    Parameters
+    ----------
+        in_file_dict : dict
+            dictionary obtained reading output file
+        base : str
+            base directory.
+    Returns
+    -------
+        optimxyz : str
+            path to the xyz file
+    """
+    if infile_dict['run_type'] == 'minimize':
+        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
+    else:
+        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    return optimxyz
+
+def spin_mult_jobscript_write(function_name, infile_dict, base, name, PATH):
+    """This function writes jobscripts using spinmult.
+
+    Parameters
+    ----------
+        function_name : str
+            name of the function calling new_spin_assigner.
+        in_file_dict : dict
+            dictionary obtained reading output file
+        base : str
+            base directory
+        name : str
+        PATH : str
+            Path to the output file of a finished job.
+    Returns
+    -------
+        new_spin : list
+            list of new spin multiplicites to run
+    """
+    guess = False
+    if function_name in ["prep_solvent_sp", "prep_functionals_sp", "prep_general_sp"]:
+        if infile_dict['spinmult'] == 1:
+            if os.path.isfile(os.path.join(base, 'scr', 'c0')):
+                shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
+                io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+                guess = True
+        else:
+            if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
+                shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
+                shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
+                io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+                guess = True
+    elif function_name in ["prep_thermo", "prep_ultratight"]:
+        if infile_dict['spinmult'] == 1:
+            shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
+            io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+        if infile_dict['spinmult'] != 1:
+            shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
+            shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
+            io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+    elif function_name == ["prep_hfx_resample"]:
+        source_dir = base
+        subname = name
+        if infile_dict['spinmult'] == 1:
+            shutil.copy(os.path.join(source_dir, 'scr', 'c0'), 'c0')
+            io.write_jobscript(subname, custom_line='# -fin c0', machine=get_machine())
+        elif infile_dict['spinmult'] != 1:
+            shutil.copyfile(os.path.join(source_dir, 'scr', 'ca0'), os.path.join('ca0'))
+            shutil.copyfile(os.path.join(source_dir, 'scr', 'cb0'), os.path.join('cb0'))
+            io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
+                                        machine=get_machine())
+    return guess
+
 def prep_vertical_ip(path):
     """This function prepares a vertical IP job for a base job.
 
@@ -879,26 +1027,14 @@ def prep_vertical_ip(path):
     """
     # Given a path to the outfile of a finished run, this preps the files for a corresponding vertical IP run
     # Returns a list of the PATH(s) to the jobscript(s) to start the vertical IP calculations(s)
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
 
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
 
-    infile_dict = io.read_infile(path)
+    new_spin = new_spin_assigner("prep_vertical_ip", infile_dict, path)
 
-    if infile_dict['spinmult'] == 1:
-        new_spin = [2]
-    else:
-        new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
+    optimxyz = optimxyz_runtype(infile_dict, base)
 
-    base = os.path.split(path)[0]
-
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     ipname = results['name'] + '_vertIP'
@@ -952,26 +1088,14 @@ def prep_vertical_ea(path):
     """
     # Given a path to the outfile of a finished run, this preps the files for a corresponding vertical EA run
     # Returns a list of the PATH(s) to the jobscript(s) to start the vertical IP calculations(s)
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
 
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
 
-    infile_dict = io.read_infile(path)
+    new_spin = new_spin_assigner("prep_vertical_ea", infile_dict, path)
 
-    if infile_dict['spinmult'] == 1:
-        new_spin = [2]
-    else:
-        new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
+    optimxyz = optimxyz_runtype(infile_dict, base)
 
-    base = os.path.split(path)[0]
-
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     eaname = results['name'] + '_vertEA'
@@ -1023,29 +1147,15 @@ def prep_ad_spin(path):
     """
     # Given a path to the outfile of a finished run, this preps the files for a corresponding adiabatic spin-splitting calculation
     # Returns a list of the PATH(s) to the jobscript(s) to start the calculations(s)
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
 
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
-
-    infile_dict = io.read_infile(path)
-
-    if infile_dict['spinmult'] == 1:
-        new_spin = [3, 5]
-    elif infile_dict['spinmult'] == 2:
-        new_spin = [4, 6]
-    else:
-        print(f'Skipping spin-splitting calculation requested for {path:s}')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
+    new_spin = new_spin_assigner("prep_add_spin", infile_dict, path)
+    if new_spin ==0:
         return 0
 
-    base = os.path.split(path)[0]
+    optimxyz = optimxyz_runtype(infile_dict, base)
 
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
     extract_optimized_geo(optimxyz)
 
     sseName = results['name'] + '_sse'
@@ -1099,21 +1209,11 @@ def prep_solvent_sp(path, solvents=[78.9]):
     # Given a path to the outfile of a finished run, this preps the files for a single point solvent run
     # Uses the wavefunction from the gas phase calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the solvent sp calculations(s)
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
 
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
 
-    infile_dict = io.read_infile(path)
-
-    base = os.path.split(path)[0]
-
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    optimxyz = optimxyz_runtype(infile_dict, base)
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -1137,17 +1237,8 @@ def prep_solvent_sp(path, solvents=[78.9]):
         shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
         guess = False
         os.chdir(PATH)
-        if infile_dict['spinmult'] == 1:
-            if os.path.isfile(os.path.join(base, 'scr', 'c0')):
-                shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
-                guess = True
-        else:
-            if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
-                shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
-                shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
-                guess = True
+
+        guess = spin_mult_jobscript_write('prep_solvent_sp', infile_dict, base, name, PATH)
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['solvent'], local_infile_dict['guess'] = sol_val, guess
         local_infile_dict['run_type'] = 'energy'
@@ -1179,19 +1270,10 @@ def prep_functionals_sp(path, functionalsSP):
             List of paths for jobscripts of jobs with other functionals.
 
     """
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
 
-    infile_dict = io.read_infile(path)
-    base = os.path.split(path)[0]
-
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    optimxyz = optimxyz_runtype(infile_dict, base)
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -1214,17 +1296,7 @@ def prep_functionals_sp(path, functionalsSP):
         shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
         guess = False
         os.chdir(PATH)
-        if infile_dict['spinmult'] == 1:
-            if os.path.isfile(os.path.join(base, 'scr', 'c0')):
-                shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
-                guess = True
-        else:
-            if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
-                shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
-                shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
-                guess = True
+        guess = spin_mult_jobscript_write('prep_functionals_sp', infile_dict, base, name, PATH)
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['guess'] = guess
         local_infile_dict['run_type'] = 'energy'
@@ -1273,18 +1345,12 @@ def prep_general_sp(path, general_config):
                 config[k] = default[k]
         general_config[ii] = config
     # ----sanity check for dependent job-----
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
+
     # -----make base directory for general jobs---
-    infile_dict = io.read_infile(path)
-    base = os.path.split(path)[0]
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
+
+    optimxyz = optimxyz_runtype(infile_dict, base)
     extract_optimized_geo(optimxyz)
     # Now, start generating the new directory
     funcname = results['name'] + '_general'
@@ -1298,10 +1364,7 @@ def prep_general_sp(path, general_config):
     for ii in general_config:
         config = general_config[ii]
         if config['type'] in ["vertIP", "vertEA"]:
-            if infile_dict['spinmult'] == 1:
-                new_spin = [2]
-            else:
-                new_spin = [infile_dict['spinmult'] - 1, infile_dict['spinmult'] + 1]
+            new_spin = new_spin_assigner("prep_general_sp",infile_dict,path)
             for calc in new_spin:
                 suffix = "type_%s_functional_%s_solvent_%s_spin_%d" % (config['type'], config['functional'], str(config['solvent']), calc)
                 PATH = os.path.join(functional_base_path, suffix)
@@ -1345,17 +1408,7 @@ def prep_general_sp(path, general_config):
             shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
             guess = False
             os.chdir(PATH)
-            if infile_dict['spinmult'] == 1:
-                if os.path.isfile(os.path.join(base, 'scr', 'c0')):
-                    shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-                    io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
-                    guess = True
-            else:
-                if os.path.isfile(os.path.join(base, 'scr', 'ca0')) and os.path.isfile(os.path.join(base, 'scr', 'cb0')):
-                    shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
-                    shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-                    io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
-                    guess = True
+            guess = spin_mult_jobscript_write('prep_general_sp', infile_dict, base, name, PATH)
             local_infile_dict = copy.copy(infile_dict)
             local_infile_dict['guess'] = guess
             local_infile_dict['run_type'] = 'energy'
@@ -1398,18 +1451,10 @@ def prep_thermo(path):
     # Given a path to the outfile of a finished run, this preps the files for a thermo calculation
     # Uses the wavefunction from the previous calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the solvent sp calculations(s)
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
 
-    results = io.read_outfile(path)
-    infile_dict = io.read_infile(path)
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
 
-    base = os.path.split(path)[0]
-
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    optimxyz = optimxyz_runtype(infile_dict, base)
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -1430,14 +1475,7 @@ def prep_thermo(path):
     local_infile_dict['machine'] = get_machine()
 
     io.write_input(local_infile_dict)
-    if infile_dict['spinmult'] == 1:
-        shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-        io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
-    if infile_dict['spinmult'] != 1:
-        shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
-        shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-        io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
-
+    guess = spin_mult_jobscript_write('prep_thermo', infile_dict, base, name, PATH)
     os.chdir(home)
     return [os.path.join(PATH, name + '_jobscript')]
 
@@ -1459,21 +1497,11 @@ def prep_ultratight(path):
     # Given a path to the outfile of a finished run, this preps a run with tighter convergence criteria
     # Uses the wavefunction and geometry from the previous calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the solvent sp calculations(s)
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
 
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
 
-    infile_dict = io.read_infile(path)
-
-    base = os.path.split(path)[0]
-
-    if infile_dict['run_type'] == 'minimize':
-        optimxyz = os.path.join(base, 'scr', 'optim.xyz')
-    else:
-        optimxyz = os.path.join(base, 'scr', 'xyz.xyz')
+    optimxyz = optimxyz_runtype(infile_dict, base)
     extract_optimized_geo(optimxyz)
 
     # Now, start generating the new directory
@@ -1488,13 +1516,8 @@ def prep_ultratight(path):
             raise Exception('This tightened convergence run appears to already exist. Aborting...')
 
         shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
-        if infile_dict['spinmult'] == 1:
-            shutil.copyfile(os.path.join(base, 'scr', 'c0'), os.path.join(PATH, 'c0'))
-            io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
-        elif infile_dict['spinmult'] != 1:
-            shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join(PATH, 'ca0'))
-            shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join(PATH, 'cb0'))
-            io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'], machine=get_machine())
+
+        guess = spin_mult_jobscript_write('prep_ultratight', infile_dict, base, name, PATH)
 
         criteria = ['2.25e-04', '1.5e-04', '0.9e-03', '0.6e-03', '0.5e-06', '1.5e-05']
 
@@ -1555,16 +1578,11 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
     # Given a path to the outfile of a finished run, this preps the files for hfx resampling
     # Uses the wavefunction from the gas phase calculation as an initial guess
     # Returns a list of the PATH(s) to the jobscript(s) to start the resampling calculations(s)
-    home = os.getcwd()
-    path = convert_to_absolute_path(path)
-    base = os.path.split(path)[0]
 
-    results = io.read_outfile(path)
-    if not results['finished']:
-        raise Exception('This calculation does not appear to be complete! Aborting...')
+    home, path, results, infile_dict, base = home_path_results_in_file_dict_base_prep(path)
+    check_prep_finish(results)
 
     # Check the state of the calculation and ensure than hfx resampling is valid
-    infile_dict = io.read_infile(path)
     if infile_dict['method'] != 'b3lyp':
         raise Exception('HFX resampling may not behave well for methods other than b3lyp!')
     if not infile_dict['hfx']:
@@ -1626,21 +1644,11 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
         else:
             source_dir = os.path.join(hfx_path, lower_hfx)
 
-        if infile_dict['run_type'] == 'minimize':
-            optimxyz = os.path.join(source_dir, 'scr', 'optim.xyz')
-        else:
-            optimxyz = os.path.join(source_dir, 'scr', 'xyz.xyz')
+        optimxyz = optimxyz_runtype(infile_dict, base)
         extract_optimized_geo(optimxyz)
 
         shutil.copy(os.path.join(source_dir, 'scr', 'optimized.xyz'), subname + '.xyz')
-        if infile_dict['spinmult'] == 1:
-            shutil.copy(os.path.join(source_dir, 'scr', 'c0'), 'c0')
-            io.write_jobscript(subname, custom_line='# -fin c0', machine=get_machine())
-        elif infile_dict['spinmult'] != 1:
-            shutil.copyfile(os.path.join(source_dir, 'scr', 'ca0'), os.path.join('ca0'))
-            shutil.copyfile(os.path.join(source_dir, 'scr', 'cb0'), os.path.join('cb0'))
-            io.write_jobscript(subname, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
-                                       machine=get_machine())
+        guess = spin_mult_jobscript_write('prep_hfx_resample', infile_dict, source_dir, subname, PATH)
 
         local_infile_dict = copy.copy(infile_dict)
         local_infile_dict['guess'] = True
