@@ -1,0 +1,13 @@
+{
+    "functional": ["hf", "blyp", "pbe", "tpss", "scan", "b3lyp", "tpssh", "scan0", "m06", "m06-l", "wb97x", "pbe0-dh", "b3lyp_hfx_0", "b3lyp_hfx_10", "b3lyp_hfx_30"],
+    "xyzfile": "opt_geo.xyz",
+    "moldenfile": "geo_tc.molden",
+    "memory": "64000 MB",
+    "num_threads": 12,
+    "basis": "def2-tzvp",
+    "charge-spin-info": "charge-spin-info.json",
+    "hfx_rescue": false,
+    "wfnfile": "../b3lyp/wfn.180.npy",
+    "bashrc":"/home/aarongar/.bashrc",
+    "conda_env": "/home/aarongar/miniconda3/envs/jobmanager"
+}
