@@ -1,1 +1,5 @@
-{"charge":2, "spin":5, "ref":"uks"}
+{
+    "charge": 2,
+    "ref": "uks",
+    "spin": 5
+}

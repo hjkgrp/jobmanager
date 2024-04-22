@@ -22,7 +22,7 @@ In the parent directory, one needs two files:
    - `wfnfile`: Leave as `../b3lyp/wfn.180.npy`. Gives the name of the Psi4 wavefunction file that all other calculations are initialized from. This should be converged in Psi4 using the specified basis set and B3LYP, and is generated automatically when the workflow is run.
    - `bashrc`: The user's `.bashrc` file, used to help initialize the conda environment.
    - `conda_env`: The path to the `jobmanager` conda environment.
-  
+
 In each subdirectory, one needs three files:
  - A `.xyz` file, matching the naming convention established in the parent directory's `.json` file. This should give the geometry of the structure corresponding to the wavefunction in the `.molden` file, so either the geometry used in a single-point or the final frame of a geometry optimization.
  - A `.molden` file, matching the naming convention established in the parent directory's `.json` file. This should be the converged molden for the structure, calculated using B3LYP/LACVP*, which is found in the `/scr/` directory of a TeraChem calculation, by default.
@@ -30,7 +30,7 @@ In each subdirectory, one needs three files:
     - `charge`: The overall charge of the structure.
     - `spin`: The spin of the structure.
     - `ref`: Either `uks` if one wants to run unrestricted Kohn-Sham for spin specialization, or `rks` if one wants to run restricted Kohn-Sham.
-  
+
 After these files are generated, one runs `jobmanager` in the parent directory (the one with the `configure` file), and it should perform the specified calculations on the structures in each subfolder.
 
 The output structure is as follows (in each subfolder):
