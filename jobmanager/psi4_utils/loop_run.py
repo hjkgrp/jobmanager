@@ -1,6 +1,7 @@
 import os
 import json
 from jobmanager.psi4_utils.run import run_b3lyp, run_general
+from jobmanager.psi4_utils.mp2_noon import run_mp2_noon
 
 psi4_config = {'bashrc': '/home/crduan/.bashrc',
                'conda_env': '/home/crduan/miniconda/envs/mols_py36'}
@@ -37,6 +38,7 @@ else:
         if 'PsiException: Could not converge SCF iterations' not in txt and os.path.isfile(functional + "/wfn.180.npy"):
             print("success: ", True)
             success_count += 1
+
 for ii, functional in enumerate(psi4_config["functional"]):
     print("===%d: %s===" % (ii, functional))
     if not os.path.isdir(functional.replace("(", "l-").replace(")", "-r")):
@@ -70,3 +72,34 @@ for ii, functional in enumerate(psi4_config["functional"]):
                 success_count += 1
 print("total successful jobs : %d/ %d." %
       (success_count, len(psi4_config["functional"]) + 1))
+
+if psi4_config.get("mp2_noon", False):
+    psi4_config["wfnfile"] = "../b3lyp/wfn.180.npy"
+    if not os.path.isdir("mp2_noon"):
+        success = run_mp2_noon(psi4_config)
+        print("success: ", success)
+    else:
+        print("folder exists.")
+        files = os.listdir("mp2_noon")
+        resubed = False
+        functional = "mp2_noon"
+        if not os.path.isfile(functional + "/output.dat"):
+            resubed = True
+        else:
+            with open(functional + "/output.dat", "r") as fo:
+                txt = "".join(fo.readlines())
+            if "==> Iterations <==" not in txt:
+                resubed = True
+        if resubed:
+            print("previous errored out. resubmitting...")
+            success = run_mp2_noon(psi4_config)
+            print("success: ", success)
+        else:
+            with open(functional + "/output.dat", "r") as fo:
+                txt = "".join(fo.readlines())
+            if 'PsiException: Could not converge SCF iterations' not in txt and os.path.isfile(functional + "/wfn.180.npy"):
+                print("success: ", True)
+                success_count += 1
+
+
+

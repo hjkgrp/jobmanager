@@ -3,7 +3,7 @@ import json
 from jobmanager.psi4_utils.run import run_b3lyp, run_general
 from jobmanager.psi4_utils.derivative import derivative_tree, get_wfn_path
 from jobmanager.psi4_utils.stable_run import run_with_check
-
+from jobmanager.psi4_utils.mp2_noon import run_mp2_noon
 
 basedir = os.getcwd()
 success_count = 0
@@ -19,6 +19,16 @@ success_count = run_with_check(job=jobs[0], basedir=basedir, psi4_config=psi4_co
 # ---run other jobs using the wfn from the previous step---
 for ii, job in enumerate(jobs[1:]):
     psi4_config["wfnfile"] = get_wfn_path(jobs, ii+1)
-    success_count = run_with_check(job=job, basedir=basedir, psi4_config=psi4_config,
+    if job == "noon":
+        success_count = run_with_check(
+            job=job, basedir=basedir,
+            psi4_config=psi4_config,
+            success_count = success_count,
+            run_func = run_mp2_noon,
+            error_scf = True
+        )
+    else:
+        success_count = run_with_check(job=job, basedir=basedir,
+                                   psi4_config=psi4_config,
                                    success_count=success_count, run_func=run_general,
                                    error_scf=True)
