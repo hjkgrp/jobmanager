@@ -1,0 +1,18 @@
+#$ -S /bin/bash
+#$ -N co_octahedral_3_water_6_s_5_conf_1
+#$ -cwd
+#$ -R y
+#$ -l h_rt=16:00:00
+#$ -l h_rss=8G
+#$ -q gpus|gpusnew
+#$ -l gpus=1
+#$ -pe smp 1
+# -fin co_octahedral_3_water_6_s_5_conf_1.in
+# -fin co_octahedral_3_water_6_s_5_conf_1.xyz
+# -fout scr/
+
+source /etc/profile.d/modules.sh
+module load terachem/tip
+export OMP_NUM_THREADS=1
+terachem co_octahedral_3_water_6_s_5_conf_1.in > $SGE_O_WORKDIR/co_octahedral_3_water_6_s_5_conf_1.out
+sleep 30
