@@ -552,10 +552,10 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # A job always gets labelled as active if it fits that criteria, even if it's in every other category too
 
     priority_list = [active_jobs, chronic_errors, waiting, thermo_grad_errors,
-                     oscillating_scf_errors, scf_errors, errors, spin_contaminated, needs_resub, finished]
+                     oscillating_scf_errors, scf_errors, terminated_no_scf, errors, spin_contaminated, needs_resub, finished]
     priority_list_names = ['Active', 'Chronic_errors', 'Waiting', 'Thermo_grad_error',
-                           'oscillating_scf_errors', 'SCF_Error', 'Error', 'Spin_contaminated', 'Needs_resub',
-                           'Finished']
+                           'oscillating_scf_errors', 'SCF_Error', 'Terminated_No_SCF_cycle', 'Error', 'Spin_contaminated',
+                           'Needs_resub', 'Finished']
     # return (priority_list, priority_list_names)
     priority_list = priority_sort(priority_list)
 
@@ -567,10 +567,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     waiting = [{i: grab_waiting(i)} for i in waiting]
     results['Waiting'] = waiting
     results['SCF_Errors_Including_Active'] = all_scf_errors
-
-    #
-    results['Terminated_No_SCF_cycle'] = terminated_no_scf
-
+    
     return results
 
 def find(key, directory='in place', maxdepth=False):
