@@ -1,0 +1,724 @@
+Startfile from command line: co_octahedral_3_water_6_s_5_conf_1.in
+
+
+       ***********************************************************
+       *                    TeraChem v1.9-2018.11-dev            *
+       *                 Hg Version:                             *
+       *                   Development Version                   *
+       *                Compiled without textures                *
+       *           Chemistry at the Speed of Graphics!           *
+       ***********************************************************
+       * This program may only be used in connection with        *
+       * a valid license from PetaChem, LLC. Use of this program *
+       * or results thereof indicates acceptance of all terms    *
+       * and conditions stated in the license and that a valid   *
+       * license agreement between the user and PetaChem, LLC    *
+       * exists. PetaChem, LLC does not warrant the correctness  *
+       * of results or their suitability for any purpose.        *
+       * Please email bugs, suggestions, and comments to         *
+       *                  help@petachem.com                      *
+       *                                                         *
+       ***********************************************************
+
+
+       ***********************************************************
+       *  Compiled by crduan       Thu Nov 29 14:42:14 EST 2018  *
+       *  Supported architectures: sm_35 sm_50 sm_52 sm_61       *
+       *  Cuda compilation tools, release 8.0, V8.0.61           *
+       ***********************************************************
+
+
+ Job started   Mon Jun  3 11:18:18 2024
+ On gibraltar-34 (available memory: 28459 MB)
+
+######################################### RUNTIME INFO ##########################################
+terachem co_octahedral_3_water_6_s_5_conf_1.in 
+
+NVRM version: NVIDIA UNIX x86_64 Kernel Module  450.51.05  Sun Jun 28 10:33:40 UTC 2020
+GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-39) (GCC) 
+
+	linux-vdso.so.1 =>  (0x00007ffcde962000)
+	libcurl.so.4 => /lib64/libcurl.so.4 (0x00002ad107b23000)
+	libdftbplus.so => /opt/terachem/120318-cuda8-intel16/lib/libdftbplus.so (0x00002ad107d8d000)
+	libfsockets.so => /opt/terachem/120318-cuda8-intel16/lib/libfsockets.so (0x00002ad1082ac000)
+	libxmlf90.so => /opt/terachem/120318-cuda8-intel16/lib/libxmlf90.so (0x00002ad1084af000)
+	libOpenMM.so => /opt/OpenMM-7.1.1/lib/libOpenMM.so (0x00002ad1086d4000)
+	libintbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libintbox.so.1 (0x00002ad108bf5000)
+	libthcbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libthcbox.so.1 (0x00002ad123e99000)
+	libgridbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libgridbox.so.1 (0x00002ad1255bb000)
+	libdftbox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libdftbox.so.1 (0x00002ad125a7f000)
+	libcibox.so.1 => /opt/terachem/120318-cuda8-intel16/lib/libcibox.so.1 (0x00002ad125d64000)
+	libcuda.so.1 => /lib64/libcuda.so.1 (0x00002ad1260e1000)
+	libcudart.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcudart.so.8.0 (0x00002ad127594000)
+	libcublas.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcublas.so.8.0 (0x00002ad1277fa000)
+	libcufft.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcufft.so.8.0 (0x00002ad12a292000)
+	libcusparse.so.8.0 => /opt/terachem/120318-cuda8-intel16/lib/libcusparse.so.8.0 (0x00002ad1330e1000)
+	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00002ad135bfc000)
+	libssl.so.10 => /lib64/libssl.so.10 (0x00002ad13605f000)
+	libm.so.6 => /lib64/libm.so.6 (0x00002ad1362d1000)
+	libcilkrts.so.5 => /opt/terachem/120318-cuda8-intel16/lib/libcilkrts.so.5 (0x00002ad1365d3000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00002ad136814000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00002ad136b1b000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00002ad136d31000)
+	libc.so.6 => /lib64/libc.so.6 (0x00002ad136f4d000)
+	/lib64/ld-linux-x86-64.so.2 (0x00002ad1078ff000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00002ad13731b000)
+	libidn.so.11 => /lib64/libidn.so.11 (0x00002ad13751f000)
+	libssh2.so.1 => /lib64/libssh2.so.1 (0x00002ad137752000)
+	libssl3.so => /lib64/libssl3.so (0x00002ad13797f000)
+	libsmime3.so => /lib64/libsmime3.so (0x00002ad137bd8000)
+	libnss3.so => /lib64/libnss3.so (0x00002ad137e00000)
+	libnssutil3.so => /lib64/libnssutil3.so (0x00002ad13812f000)
+	libplds4.so => /lib64/libplds4.so (0x00002ad13835f000)
+	libplc4.so => /lib64/libplc4.so (0x00002ad138563000)
+	libnspr4.so => /lib64/libnspr4.so (0x00002ad138768000)
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00002ad1389a6000)
+	libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00002ad138bf3000)
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00002ad138edc000)
+	libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00002ad13910f000)
+	liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00002ad139313000)
+	libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00002ad139522000)
+	libz.so.1 => /lib64/libz.so.1 (0x00002ad139777000)
+	libmkl_intel_lp64.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_intel_lp64.so (0x00002ad13998d000)
+	libmkl_intel_thread.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_intel_thread.so (0x00002ad13a2cb000)
+	libmkl_core.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_core.so (0x00002ad13b622000)
+	libiomp5.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libiomp5.so (0x00002ad13cf07000)
+	libifport.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libifport.so.5 (0x00002ad13d248000)
+	libifcoremt.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libifcoremt.so.5 (0x00002ad13d477000)
+	libimf.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libimf.so (0x00002ad13d809000)
+	libsvml.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libsvml.so (0x00002ad13dd01000)
+	libintlc.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libintlc.so.5 (0x00002ad13ebc0000)
+	librt.so.1 => /lib64/librt.so.1 (0x00002ad13ee1f000)
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00002ad13f027000)
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00002ad13f237000)
+	libresolv.so.2 => /lib64/libresolv.so.2 (0x00002ad13f43b000)
+	libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00002ad13f654000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00002ad13f871000)
+	libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00002ad13fa98000)
+	libpcre.so.1 => /lib64/libpcre.so.1 (0x00002ad13fccf000)
+	libfreebl3.so => /lib64/libfreebl3.so (0x00002ad13ff31000)
+#################################################################################################
+
+Cannot find license.dat file in the TeraChem installation directory /opt/terachem/120318-cuda8-intel16
+
+
+TRYING THE NETWORK LICENSE...
+Connecting to license server '54.208.252.40' port '8877'...
+Connected!
+Checking your license...
+
+**************************************************************
+  Greetings, Martinez Group! You have 1000 licenses in total
+  IN USE: 24
+  AVAILABLE: 976
+**************************************************************
+
+Scratch directory: ./scr
+Random number seed: 1300191001
+
+XYZ coordinates co_octahedral_3_water_6_s_5_conf_1.xyz
+Molden File Output: ./scr/co_octahedral_3_water_6_s_5_conf_1.molden
+Using basis set: lacvps_ecp
+dmrgstart not found
+Spin multiplicity: 5
+DIIS will use up to 10 vectors.
+WF convergence threshold: 3.00e-05
+Using DIIS algorithm to converge WF
+Maximum number of SCF iterations: 500
+Incremental fock with rebuild every 8 iterations
+Will switch to conventional Fock if diffuse functions are detected
+X-matrix tolerance: 1.00e-04
+PRECISION: DYNAMIC
+DFT Functional requested: b3lyp
+Method: B3LYP 
+  Hartree-Fock exact exchange:          0.20 
+  Slater exchange functional:           0.80 
+  Becke 1988 exchange functional:       0.72 
+  Lee-Yang-Parr correlation functional: 0.81 
+  VWN(I) correlation functional:        0.19 
+Wavefunction: UNRESTRICTED
+DFT grid type: 1
+Using dynamic DFT grids.
+Initial guess generated by maximum overlap
+
+********************************************
+******* RUNNING GEOMETRY OPTMIZATION *******
+********************************************
+
+Geometry optimization parameters:
+Max number of optimization cycles: 1000
+Convergence threshold (Max grad component): 4.50e-04
+Convergence threshold (energy change): 1.00e-06
+Maximum of RMSD change allowed between steps is 0.500000
+using L-BFGS method
+Optimization checkpoint file will be dumped every 10 cycles
+Atomic displacement in finite-difference Hessian (Bohr) 0.003000
+Each step will be scaled by 1.00
+Maximum step size in internal coordinates 0.50
+Minimization SCF guess will be regenerated every 10 steps
+Job started from scratch
+SCF:   Initial guess is taken from previous step
+
+using 1 out of 1 CUDA devices
+   Device 0:  GeForce GTX 1080 Ti, 11178MB, CC 6.1 -- CPU THREAD 0
+-------------------------------------------------------------------
+Compiled with MAGMA support.  MAGMA parameters:
+    Matrices larger than 5000 square will be treated with MAGMA
+       (Change by setting the MagmaMinN environment variable)
+    Magma will use 1 out of 1 GPUs
+       (Change by setting the MagmaNGPUs environment variable)
+-------------------------------------------------------------------
+ CPU Memory Available: 16081.75 MegaWords 
+ GPU Memory Available: 1141.31 MegaWords 
+ Maximum recommended basis set size: 12200 basis functions
+ (limited by GPU memory)
+-------------------------------------------------------------------
+Using d-functions. Configuring GPUs accordingly.
+0: CUBLAS initialized, available GPU memory: 8271MB
+
+
+Basis set:       lacvps_ecp
+Total atoms:     19
+Total charge:    3
+Total electrons: 74 (39-alpha, 35-beta)
+Number electrons modeled by ECPs: 10
+Total orbitals:  138
+Total AO shells: 68 (45 S-shells; 15 P-shells; 8 D-shells; 0 F-shells; 0 G-shells)
+Spin multiplicity: 5
+Nuclear repulsion energy (QM atoms): 555.538857545386 a.u.
+
+-------------------------------------------------------
+0 additional frames found in co_octahedral_3_water_6_s_5_conf_1.xyz
+-------------------------------------------------------
+-=#=-----------------------------------=#=-
+-=#=-   Geometry Optimizer Started    -=#=-
+-=#=-----------------------------------=#=-
+-=#=- Using Translation Rotation Internal Coordinates (TRIC)
+-=#=- Building Primitive Internal Coordinates -=#=- 
+-=#=-  Internal Coordinate Summary   -=#=-
+-=#     Total       : 121
+-=#     Constraint  : 0
+-=#     Distance    : 18
+-=#     Angle       : 15
+-=#     OutofPlane  : 18
+-=#     Dihedral    : 60
+-=#     Cartesian-X : 0
+-=#     Cartesian-Y : 0
+-=#     Cartesian-Z : 0
+-=#     Translation-X : 3
+-=#     Translation-Y : 3
+-=#     Translation-Z : 3
+-=#     Rotator     : 1
+-=#  Finished Primitive Internal Coordinates
+-=#  Generating Delocalized Coordinates...
+-=#  Found 57 Delocalized Coordinates
+
+Using WF guess from previous time step during MD.
+-=#=-   Getting Energy and Gradient   -=#=-
+-=#=-      (We'll Be Right Back)      -=#=-
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 22614 (1190 points/atom)
+Setting up the DFT grid...
+time to set the grid = 0.01 s
+DFT grid points: 59666 (3140 points/atom)
+ ECP GPU Integrals elapsed time: 0.15 sec
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy      J    K   LA  DFT          Energy        Time(s)
+-------------------------------------------------------------------------------------------------------------------------------
+         >>> Purifying Palpha... IDMP = 8.55e-15 <<<
+         >>> Purifying Pbeta ... IDMP = 1.09e-14 <<<
+THRESPDP set to 1.00e+00
+                >>> SWITCHING TO GRID 1 <<<
+Rotate HOMO and LUMO by 45.000000 degrees
+   1     0.7180443168    -598.0542181372    73.9828663385   -53.4090085367  0.02 0.19 0.01 0.27    -598.0542181372     0.53  
+THRESPDP set to 4.70e-01
+                >>> SWITCHING TO GRID 0 <<<
+   2     0.6680243004      +2.5954262998    73.9694861397   -60.9695847766  0.02 0.18 0.01 0.10    -595.4587918374     0.31  
+   3     1.1629472465      +9.2855676359    73.9722597784   -54.4874017383  0.02 0.19 0.01 0.10    -586.1732242015     0.31  
+   4     0.6653728027     -12.8131097389    73.9621161489   -58.1625443481  0.02 0.19 0.01 0.10    -598.9863339404     0.31  
+   5     0.1942811475      -2.9224574930    73.9579077106   -57.2818785244  0.02 0.18 0.01 0.11    -601.9087914333     0.31  
+   6     0.1811785118      +0.0881130307    73.9563381650   -57.1319243820  0.02 0.17 0.01 0.10    -601.8206784026     0.30  
+   7     0.1107816019      -0.4369919549    73.9555171270   -56.9428913843  0.02 0.17 0.01 0.10    -602.2576703576     0.30  
+   8     0.0765701875      -0.0814795953    73.9548842334   -56.7296431371  0.02 0.17 0.01 0.10    -602.3391499529     0.30  
+THRESPDP set to 4.26e-03
+   9     0.0384339393      -0.0742875643    73.9536329811   -56.5999742739  0.02 0.22 0.01 0.12    -602.4134375172     0.37  
+  10     0.0495080113      -0.0038781487    73.9530281246   -56.5603045537  0.02 0.18 0.01 0.12    -602.4173156659     0.33  
+  11     0.0499593346      -0.0038758783    73.9529237166   -56.5518904938  0.02 0.17 0.01 0.12    -602.4211915442     0.32  
+  12     0.0508357700      +0.0011878537    73.9529031125   -56.5396332279  0.02 0.16 0.01 0.12    -602.4200036905     0.30  
+  13     0.0527561269      +0.0013841355    73.9530490091   -56.5665857873  0.02 0.16 0.01 0.13    -602.4186195549     0.32  
+  14     0.0368674025      -0.0118030195    73.9529769262   -56.5851335901  0.02 0.18 0.01 0.13    -602.4304225744     0.33  
+  15     0.0147919941      -0.0088072349    73.9529245574   -56.6079613035  0.02 0.18 0.01 0.12    -602.4392298094     0.33  
+  16     0.0085264206      -0.0010347610    73.9529275949   -56.6134860300  0.02 0.17 0.01 0.12    -602.4402645704     0.31  
+                >>> SWITCHING TO GRID 1 <<<
+  17     0.0046982541      -0.0164491548    73.9838222903   -56.6343362262  0.02 0.22 0.01 0.28    -602.4567137252     0.53  
+  18     0.0036327753      -0.0000379847    73.9838442488   -56.6354583212  0.02 0.16 0.01 0.28    -602.4567517099     0.45  
+  19     0.0042523967      -0.0000058291    73.9838453158   -56.6322553325  0.02 0.15 0.01 0.28    -602.4567575390     0.45  
+  20     0.0009566456      -0.0004051595    73.9839265448   -56.6402456079  0.02 0.17 0.01 0.28    -602.4571626985     0.47  
+  21     0.0010935433      +0.0000072183    73.9838950921   -56.6368266958  0.02 0.16 0.01 0.28    -602.4571554801     0.46  
+  22     0.0005443416      -0.0000728866    73.9839148275   -56.6388718173  0.02 0.16 0.01 0.29    -602.4572283668     0.47  
+  23     0.0004569779      -0.0000228740    73.9839181457   -56.6394655168  0.02 0.15 0.01 0.28    -602.4572512408     0.45  
+  24     0.0003965054      -0.0000396916    73.9839148014   -56.6392816490  0.02 0.15 0.01 0.28    -602.4572909324     0.45  
+  25     0.0003250889      -0.0000387907    73.9839137518   -56.6395588855  0.02 0.22 0.01 0.28    -602.4573297232     0.53  
+  26     0.0002713561      -0.0000241050    73.9839093754   -56.6388517993  0.02 0.15 0.01 0.28    -602.4573538282     0.45  
+  27     0.0001634966      -0.0000381134    73.9839132108   -56.6399783535  0.02 0.15 0.01 0.28    -602.4573919415     0.45  
+  28     0.0001870987      +0.0000006894    73.9839129889   -56.6388304651  0.02 0.14 0.01 0.28    -602.4573912521     0.45  
+  29     0.0000738828      -0.0000179310    73.9839123993   -56.6392253380  0.02 0.15 0.01 0.29    -602.4574091832     0.47  
+  30     0.0000633666      +0.0000000836    73.9839125057   -56.6393200252  0.01 0.13 0.01 0.28    -602.4574090995     0.44  
+  31     0.0000460959      -0.0000010661    73.9839130270   -56.6391788746  0.01 0.14 0.01 0.29    -602.4574101656     0.45  
+  32     0.0000449424      -0.0000004177    73.9839134196   -56.6393172683  0.01 0.13 0.01 0.28    -602.4574105833     0.43  
+  33     0.0000432552      -0.0000004041    73.9839133312   -56.6392384748  0.02 0.23 0.01 0.28    -602.4574109874     0.53  
+  34     0.0000419852      -0.0000003824    73.9839134680   -56.6392489028  0.01 0.13 0.01 0.29    -602.4574113698     0.44  
+  35     0.0000376009      -0.0000009769    73.9839134559   -56.6392575337  0.01 0.14 0.01 0.28    -602.4574123466     0.44  
+  36     0.0000330935      -0.0000009050    73.9839135534   -56.6392660740  0.01 0.14 0.01 0.28    -602.4574132516     0.44  
+  37     0.0000284440      -0.0000008245    73.9839136862   -56.6392382175  0.01 0.14 0.01 0.29    -602.4574140761     0.45  
+  38     0.0000233274      -0.0000006840    73.9839136536   -56.6392159102  0.02 0.22 0.01 0.28    -602.4574147601     0.53  
+  39     0.0000167418      -0.0000007055    73.9839137906   -56.6392601529  0.02 0.23 0.01 0.28    -602.4574154656     0.53  
+  40     0.0000152521      -0.0000006697    73.9839138981   -56.6392304230  0.02 0.22 0.01 0.28    -602.4574161353     0.53  
+  41     0.0000068464      -0.0000001523    73.9839138390   -56.6392165369  0.02 0.23 0.00 0.29    -602.4574162876     0.53  
+-------------------------------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -602.4574162876 a.u.
+CENTER OF MASS: {-0.000000, -0.000000, -0.000000} ANGS
+DIPOLE MOMENT: {0.002846, -0.025402, 0.006342} (|D| = 0.026336) DEBYE
+SPIN SZ:         2.000000
+SPIN S-SQUARED: 6.006637 (exact: 6.00)
+ Gradient: K   elapsed time: 1.49 sec
+ Gradient: 1E  elapsed time: 0.00 sec
+ ECP GPU Gradients elapsed time: 0.15 sec
+ Gradient: 1E(ECP)  elapsed time: 0.15 sec
+ Gradient: NUC elapsed time: 0.00 sec
+ Gradient: CL  elapsed time: 0.04 sec
+ Gradient (XC): Time to pack points: 0.00 sec
+ Gradient (XC): Time to compute density: 0.07 sec
+ Gradient (XC): Time to compute functional: 0.03 sec
+ Gradient (XC): Time to compute grid gradient: 0.01 sec
+ Gradient (XC): Time to repack points: 0.00 sec
+GPU Memory: 8171 Mb
+GPU Memory: 8171 Mb
+ Gradient (XC): Time to compute gradient: 0.18 sec
+ Gradient: XC  elapsed time: 0.30 sec
+
+Running Mulliken population analysis...
+
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0003600704     0.0004682351     0.0003267900
+   -0.0000677550    -0.0169372622     0.0014702577
+    0.0017826501     0.0050055081    -0.0036787632
+   -0.0018717861     0.0051523291     0.0033270207
+   -0.0195649290    -0.0000383918    -0.0015301401
+    0.0064132350    -0.0031181074    -0.0005256843
+    0.0063099809     0.0029609222     0.0008748367
+   -0.0003328750     0.0165650452     0.0012622498
+   -0.0012492779    -0.0050913687    -0.0037463479
+    0.0017124006    -0.0050379311     0.0034628426
+    0.0198753980    -0.0004303251    -0.0012798803
+   -0.0065127747     0.0028160672    -0.0010156369
+   -0.0065392091    -0.0025151457     0.0011177856
+    0.0001363230     0.0002027235    -0.0160134572
+   -0.0007584910     0.0017147107     0.0060421697
+    0.0007991800    -0.0018752012     0.0059732683
+    0.0005255858     0.0002835661     0.0153545055
+    0.0002107073     0.0019102903    -0.0057854174
+   -0.0005082921    -0.0020356643    -0.0056363998
+-=#=-    Now Returning to Optimizer   -=#=-
+Make new history opbject
+Add point to history
+Setup optimizer object
+-=#=-       End of Initialization     -=#=-
+
+Running Mulliken population analysis...
+
+
+Running Mulliken population analysis...
+
+-=#=-  Checking Convergence Criteria  -=#=-
+-=#@    Cycle       Energy          Delta-E   Gradient-RMS   Gradient-Max   Displace-RMS   Displace-Max
+-=#@                       Crit:  1.000e-06      3.000e-04      4.500e-04      1.200e-03      1.800e-03 
+-=#@  ---------------------------------------------------------------------------------------------------
+-=#@      0    -602.4574162876        -     -    1.115e-02 N    1.988e-02 N        -     -        -     -
+-=#=-----------------------------------=#=-
+-=#=-      Optimization Cycle     1   -=#=-
+-=#=-----------------------------------=#=-
+-=#  Finding Optimization Step, Current Trust Radius: 1.0000e-01
+-=#  Cartesian Step Size: 2.0597e-02, Expected Delta-E: -1.8821e-03
+-=#=-   Getting Energy and Gradient   -=#=-
+-=#=-      (We'll Be Right Back)      -=#=-
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 22638 (1191 points/atom)
+Setting up the DFT grid...
+time to set the grid = 0.01 s
+DFT grid points: 59661 (3140 points/atom)
+ ECP GPU Integrals elapsed time: 0.11 sec
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy      J    K   LA  DFT          Energy        Time(s)
+-------------------------------------------------------------------------------------------------------------------------------
+         >>> Purifying Palpha... IDMP = 1.19e-02 <<<
+         >>> Purifying Palpha... IDMP = 2.12e-04 <<<
+         >>> Purifying Palpha... IDMP = 8.67e-08 <<<
+         >>> Purifying Palpha... IDMP = 5.23e-14 <<<
+         >>> Purifying Pbeta ... IDMP = 1.21e-02 <<<
+         >>> Purifying Pbeta ... IDMP = 2.18e-04 <<<
+         >>> Purifying Pbeta ... IDMP = 9.14e-08 <<<
+         >>> Purifying Pbeta ... IDMP = 5.75e-14 <<<
+THRESPDP set to 4.26e-03
+                >>> SWITCHING TO GRID 1 <<<
+Rotate HOMO and LUMO by 45.000000 degrees
+   1     0.0163174239    -602.4587019324    73.9840781822   -56.6310210669  0.02 0.23 0.01 0.28    -602.4587019324     0.57  
+                >>> SWITCHING TO GRID 0 <<<
+   2     0.1080903241      +0.1864092566    73.9575357805   -56.4859321003  0.02 0.23 0.01 0.13    -602.2722926758     0.39  
+   3     0.0075615114      -0.1705088165    73.9517449847   -56.6525780800  0.02 0.18 0.01 0.12    -602.4428014922     0.33  
+                >>> SWITCHING TO GRID 1 <<<
+   4     0.0072150396      -0.0164338303    73.9839734369   -56.6279571232  0.02 0.17 0.01 0.28    -602.4592353226     0.48  
+   5     0.0062593062      -0.0000531412    73.9840036196   -56.6440110663  0.02 0.17 0.01 0.28    -602.4592884638     0.48  
+   6     0.0015472281      -0.0003270725    73.9840142310   -56.6422505754  0.02 0.16 0.01 0.29    -602.4596155363     0.47  
+   7     0.0012083689      -0.0000107739    73.9840202657   -56.6418389595  0.02 0.15 0.01 0.28    -602.4596263102     0.45  
+   8     0.0002898692      -0.0000146543    73.9840407260   -56.6443554058  0.02 0.15 0.01 0.28    -602.4596409645     0.46  
+   9     0.0001009687      -0.0000005531    73.9840446066   -56.6451066260  0.02 0.23 0.01 0.28    -602.4596415176     0.54  
+  10     0.0000787106      -0.0000002581    73.9840449442   -56.6450210418  0.01 0.13 0.01 0.28    -602.4596417757     0.44  
+  11     0.0000263926      -0.0000002031    73.9840457610   -56.6450843665  0.01 0.13 0.01 0.28    -602.4596419788     0.44  
+  12     0.0000152631      -0.0000000040    73.9840455599   -56.6451097612  0.02 0.23 0.01 0.28    -602.4596419828     0.54  
+  13     0.0000222835      -0.0000000829    73.9840454048   -56.6451085225  0.02 0.23 0.01 0.28    -602.4596420657     0.55  
+  14     0.0000098951      -0.0000000318    73.9840453073   -56.6450872966  0.02 0.23 0.01 0.28    -602.4596420974     0.55  
+  15     0.0000044861      +0.0000000277    73.9840453266   -56.6450923605  0.02 0.23 0.00 0.28    -602.4596420698     0.54  
+-------------------------------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -602.4596420698 a.u.
+CENTER OF MASS: {0.000601, -0.002370, 0.001753} ANGS
+DIPOLE MOMENT: {-0.009807, 0.023985, -0.040947} (|D| = 0.048458) DEBYE
+SPIN SZ:         2.000000
+SPIN S-SQUARED: 6.006763 (exact: 6.00)
+ Gradient: K   elapsed time: 1.56 sec
+ Gradient: 1E  elapsed time: 0.00 sec
+ ECP GPU Gradients elapsed time: 0.14 sec
+ Gradient: 1E(ECP)  elapsed time: 0.14 sec
+ Gradient: NUC elapsed time: 0.00 sec
+ Gradient: CL  elapsed time: 0.03 sec
+ Gradient (XC): Time to pack points: 0.00 sec
+ Gradient (XC): Time to compute density: 0.07 sec
+ Gradient (XC): Time to compute functional: 0.03 sec
+ Gradient (XC): Time to compute grid gradient: 0.01 sec
+ Gradient (XC): Time to repack points: 0.00 sec
+GPU Memory: 8171 Mb
+GPU Memory: 8171 Mb
+ Gradient (XC): Time to compute gradient: 0.19 sec
+ Gradient: XC  elapsed time: 0.30 sec
+
+Running Mulliken population analysis...
+
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0007610717     0.0018327956    -0.0007240197
+   -0.0003250632    -0.0036974688     0.0016174171
+   -0.0003275070     0.0004102520    -0.0024477828
+    0.0004706202     0.0007071920     0.0018604723
+   -0.0036348624     0.0010993008    -0.0005006514
+    0.0003021399    -0.0017701375     0.0003134421
+    0.0009451043     0.0011177647    -0.0003849631
+    0.0003928249     0.0030890715     0.0017293986
+    0.0004121495    -0.0004071614    -0.0023466935
+   -0.0005153921    -0.0006278892     0.0017337718
+    0.0038242745    -0.0014246186    -0.0006559508
+   -0.0003059684     0.0016694994    -0.0000716809
+   -0.0010757814    -0.0009128583    -0.0001392961
+    0.0011380085    -0.0013460057    -0.0018327644
+   -0.0004652439     0.0013430948     0.0002135418
+   -0.0001089261    -0.0006210479     0.0009235755
+    0.0000511445    -0.0013608325     0.0015892676
+    0.0000172697     0.0014346169    -0.0001418991
+   -0.0000337210    -0.0005355680    -0.0007351843
+-=#=-    Now Returning to Optimizer   -=#=-
+
+Running Mulliken population analysis...
+
+
+Running Mulliken population analysis...
+
+-=#=-  Checking Convergence Criteria  -=#=-
+-=#     Cycle       Energy          Delta-E   Gradient-RMS   Gradient-Max   Displace-RMS   Displace-Max
+-=#                        Crit:  1.000e-06      3.000e-04      4.500e-04      1.200e-03      1.800e-03 
+-=#   ---------------------------------------------------------------------------------------------------
+-=#@      1    -602.4596420698   -2.226e-03 N    2.437e-03 N    3.824e-03 N    2.060e-02 N    3.047e-02 N
+-=#  Adjusting Trust Radius
+-=#  Step Quality:   1.1826 (Good)
+-=#  Increasing trust radius 1.0000e-01 -> 1.4142e-01
+-=#  Updating Hessian with BFGS
+-=#  Hessian Eigenvalues:  4.9533e-01  4.9445e-01  4.9445e-01 ...  2.3000e-02  2.3000e-02  1.9356e-02
+-=#=-----------------------------------=#=-
+-=#=-      Optimization Cycle     2   -=#=-
+-=#=-----------------------------------=#=-
+-=#  Finding Optimization Step, Current Trust Radius: 1.4142e-01
+-=#  Cartesian Step Size: 1.8001e-02, Expected Delta-E: -4.3733e-04
+-=#=-   Getting Energy and Gradient   -=#=-
+-=#=-      (We'll Be Right Back)      -=#=-
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 22648 (1192 points/atom)
+Setting up the DFT grid...
+time to set the grid = 0.01 s
+DFT grid points: 59694 (3141 points/atom)
+ ECP GPU Integrals elapsed time: 0.11 sec
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy      J    K   LA  DFT          Energy        Time(s)
+-------------------------------------------------------------------------------------------------------------------------------
+         >>> Purifying Palpha... IDMP = 7.75e-03 <<<
+         >>> Purifying Palpha... IDMP = 8.57e-05 <<<
+         >>> Purifying Palpha... IDMP = 1.25e-08 <<<
+         >>> Purifying Palpha... IDMP = 1.22e-15 <<<
+         >>> Purifying Pbeta ... IDMP = 8.00e-03 <<<
+         >>> Purifying Pbeta ... IDMP = 9.05e-05 <<<
+         >>> Purifying Pbeta ... IDMP = 1.38e-08 <<<
+         >>> Purifying Pbeta ... IDMP = 1.33e-15 <<<
+THRESPDP set to 4.26e-03
+                >>> SWITCHING TO GRID 1 <<<
+Rotate HOMO and LUMO by 45.000000 degrees
+   1     0.0090327428    -602.4598136806    73.9841371766   -56.6388700402  0.02 0.23 0.01 0.29    -602.4598136806     0.57  
+   2     0.1093612349      +0.1712279880    73.9859655689   -56.4913662296  0.02 0.23 0.01 0.29    -602.2885856926     0.55  
+                >>> SWITCHING TO GRID 0 <<<
+   3     0.0048108006      -0.1545730070    73.9507199743   -56.6372798212  0.02 0.17 0.01 0.13    -602.4431586996     0.33  
+                >>> SWITCHING TO GRID 1 <<<
+   4     0.0026386133      -0.0169644956    73.9840679712   -56.6394365379  0.02 0.17 0.01 0.29    -602.4601231952     0.48  
+   5     0.0034252403      +0.0000240195    73.9840890188   -56.6463122308  0.02 0.16 0.01 0.29    -602.4600991757     0.47  
+   6     0.0013599053      -0.0001026945    73.9840907260   -56.6436080620  0.02 0.16 0.01 0.29    -602.4602018702     0.47  
+   7     0.0010647603      -0.0000091663    73.9840977002   -56.6435422178  0.02 0.15 0.01 0.29    -602.4602110365     0.45  
+   8     0.0005667967      -0.0000090809    73.9841079703   -56.6448581874  0.01 0.14 0.01 0.29    -602.4602201174     0.45  
+   9     0.0003460087      -0.0000024982    73.9841132150   -56.6451667838  0.02 0.23 0.01 0.29    -602.4602226156     0.55  
+  10     0.0000984358      -0.0000018408    73.9841194247   -56.6453786882  0.01 0.14 0.01 0.30    -602.4602244564     0.46  
+  11     0.0000456643      -0.0000001397    73.9841199728   -56.6455570296  0.01 0.13 0.01 0.29    -602.4602245961     0.44  
+  12     0.0000554393      -0.0000002352    73.9841223405   -56.6456704865  0.01 0.14 0.01 0.29    -602.4602248313     0.45  
+  13     0.0000774784      -0.0000000295    73.9841229136   -56.6457048671  0.01 0.13 0.01 0.29    -602.4602248608     0.44  
+  14     0.0000168691      -0.0000000036    73.9841211038   -56.6456284412  0.01 0.13 0.01 0.29    -602.4602248643     0.44  
+  15     0.0000055601      +0.0000000269    73.9841211085   -56.6456124487  0.02 0.23 0.00 0.29    -602.4602248374     0.54  
+-------------------------------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -602.4602248374 a.u.
+CENTER OF MASS: {0.000655, -0.001193, 0.000432} ANGS
+DIPOLE MOMENT: {-0.002063, -0.019038, -0.011198} (|D| = 0.022183) DEBYE
+SPIN SZ:         2.000000
+SPIN S-SQUARED: 6.006863 (exact: 6.00)
+ Gradient: K   elapsed time: 1.55 sec
+ Gradient: 1E  elapsed time: 0.00 sec
+ ECP GPU Gradients elapsed time: 0.14 sec
+ Gradient: 1E(ECP)  elapsed time: 0.14 sec
+ Gradient: NUC elapsed time: 0.00 sec
+ Gradient: CL  elapsed time: 0.03 sec
+ Gradient (XC): Time to pack points: 0.00 sec
+ Gradient (XC): Time to compute density: 0.07 sec
+ Gradient (XC): Time to compute functional: 0.03 sec
+ Gradient (XC): Time to compute grid gradient: 0.01 sec
+ Gradient (XC): Time to repack points: 0.00 sec
+GPU Memory: 8171 Mb
+GPU Memory: 8171 Mb
+ Gradient (XC): Time to compute gradient: 0.19 sec
+ Gradient: XC  elapsed time: 0.30 sec
+
+Running Mulliken population analysis...
+
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0005124537     0.0004372398    -0.0000289506
+    0.0000349068     0.0014802287     0.0011845764
+   -0.0018172654    -0.0006732218    -0.0013825658
+    0.0016950109    -0.0005112860     0.0011135970
+    0.0014271286     0.0002747543    -0.0010037326
+   -0.0008313943     0.0003583191     0.0015153613
+   -0.0005401558    -0.0004529391    -0.0013468299
+    0.0000893261    -0.0017502180     0.0012821037
+    0.0018328166     0.0007532381    -0.0013036353
+   -0.0017118833     0.0006309360     0.0009922894
+   -0.0012533010    -0.0003065051    -0.0009744772
+    0.0008284853    -0.0004668789     0.0013439188
+    0.0004481771     0.0004614230    -0.0012284680
+    0.0001630945    -0.0001308986     0.0019361561
+    0.0009720070    -0.0006594801    -0.0006949570
+   -0.0010148292     0.0006056071    -0.0003795436
+    0.0004134428     0.0000023846    -0.0020105706
+   -0.0007187905    -0.0010507117     0.0006158897
+    0.0004956774     0.0009980084     0.0003698380
+-=#=-    Now Returning to Optimizer   -=#=-
+
+Running Mulliken population analysis...
+
+
+Running Mulliken population analysis...
+
+-=#=-  Checking Convergence Criteria  -=#=-
+-=#     Cycle       Energy          Delta-E   Gradient-RMS   Gradient-Max   Displace-RMS   Displace-Max
+-=#                        Crit:  1.000e-06      3.000e-04      4.500e-04      1.200e-03      1.800e-03 
+-=#   ---------------------------------------------------------------------------------------------------
+-=#@      2    -602.4602248374   -5.828e-04 N    1.767e-03 N    2.011e-03 N    1.800e-02 N    2.821e-02 N
+-=#  Adjusting Trust Radius
+-=#  Step Quality:   1.3325 (Good)
+-=#  Increasing trust radius 1.4142e-01 -> 2.0000e-01
+-=#  Updating Hessian with BFGS
+-=#  Hessian Eigenvalues:  5.7300e-01  4.9510e-01  4.9445e-01 ...  2.3000e-02  2.3000e-02  8.7440e-03
+-=#=-----------------------------------=#=-
+-=#=-      Optimization Cycle     3   -=#=-
+-=#=-----------------------------------=#=-
+-=#  Finding Optimization Step, Current Trust Radius: 2.0000e-01
+-=#  Cartesian Step Size: 2.0231e-02, Expected Delta-E: -3.1770e-04
+-=#=-   Getting Energy and Gradient   -=#=-
+-=#=-      (We'll Be Right Back)      -=#=-
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 22657 (1192 points/atom)
+Setting up the DFT grid...
+time to set the grid = 0.01 s
+DFT grid points: 59723 (3143 points/atom)
+ ECP GPU Integrals elapsed time: 0.11 sec
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy      J    K   LA  DFT          Energy        Time(s)
+-------------------------------------------------------------------------------------------------------------------------------
+         >>> Purifying Palpha... IDMP = 9.53e-03 <<<
+         >>> Purifying Palpha... IDMP = 1.16e-04 <<<
+         >>> Purifying Palpha... IDMP = 2.43e-08 <<<
+         >>> Purifying Palpha... IDMP = 4.66e-15 <<<
+         >>> Purifying Pbeta ... IDMP = 9.81e-03 <<<
+         >>> Purifying Pbeta ... IDMP = 1.20e-04 <<<
+         >>> Purifying Pbeta ... IDMP = 2.58e-08 <<<
+         >>> Purifying Pbeta ... IDMP = 5.33e-15 <<<
+THRESPDP set to 4.26e-03
+                >>> SWITCHING TO GRID 1 <<<
+Rotate HOMO and LUMO by 45.000000 degrees
+   1     0.0068419591    -602.4601279432    73.9841486802   -56.6401969577  0.02 0.23 0.01 0.29    -602.4601279432     0.57  
+   2     0.1092003194      +0.1717387605    73.9858277027   -56.4815220905  0.02 0.23 0.01 0.29    -602.2883891826     0.55  
+                >>> SWITCHING TO GRID 0 <<<
+   3     0.0043788124      -0.1552902949    73.9505379776   -56.6280998793  0.02 0.18 0.01 0.13    -602.4436794775     0.33  
+                >>> SWITCHING TO GRID 1 <<<
+   4     0.0028315463      -0.0169383102    73.9840556065   -56.6344693257  0.02 0.17 0.01 0.29    -602.4606177878     0.48  
+   5     0.0039491580      +0.0000392837    73.9840781404   -56.6427592509  0.02 0.16 0.01 0.29    -602.4605785041     0.47  
+   6     0.0014231961      -0.0001354350    73.9840796128   -56.6394336110  0.02 0.15 0.01 0.29    -602.4607139391     0.47  
+   7     0.0011496214      -0.0000120160    73.9840866672   -56.6390055721  0.02 0.14 0.01 0.29    -602.4607259551     0.45  
+   8     0.0006105653      -0.0000112577    73.9840976350   -56.6400418816  0.02 0.14 0.01 0.29    -602.4607372128     0.45  
+   9     0.0004115343      -0.0000021905    73.9841023421   -56.6402999359  0.02 0.23 0.01 0.29    -602.4607394033     0.55  
+  10     0.0000968725      -0.0000027903    73.9841100315   -56.6405392361  0.02 0.14 0.01 0.29    -602.4607421936     0.45  
+  11     0.0000437567      -0.0000002208    73.9841111344   -56.6407705423  0.01 0.13 0.01 0.29    -602.4607424145     0.44  
+  12     0.0000620646      -0.0000002092    73.9841133124   -56.6408719260  0.01 0.14 0.01 0.29    -602.4607426237     0.45  
+  13     0.0000817439      -0.0000000150    73.9841138407   -56.6408941507  0.01 0.13 0.01 0.29    -602.4607426387     0.44  
+  14     0.0000142621      -0.0000000281    73.9841119229   -56.6408177974  0.01 0.13 0.01 0.29    -602.4607426668     0.44  
+  15     0.0000061882      -0.0000000214    73.9841119365   -56.6408054113  0.02 0.23 0.00 0.29    -602.4607426882     0.54  
+-------------------------------------------------------------------------------------------------------------------------------
+FINAL ENERGY: -602.4607426882 a.u.
+CENTER OF MASS: {0.000641, -0.000758, -0.000988} ANGS
+DIPOLE MOMENT: {0.008614, -0.039800, 0.013976} (|D| = 0.043053) DEBYE
+SPIN SZ:         2.000000
+SPIN S-SQUARED: 6.006939 (exact: 6.00)
+ Gradient: K   elapsed time: 1.54 sec
+ Gradient: 1E  elapsed time: 0.00 sec
+ ECP GPU Gradients elapsed time: 0.14 sec
+ Gradient: 1E(ECP)  elapsed time: 0.14 sec
+ Gradient: NUC elapsed time: 0.00 sec
+ Gradient: CL  elapsed time: 0.03 sec
+ Gradient (XC): Time to pack points: 0.00 sec
+ Gradient (XC): Time to compute density: 0.07 sec
+ Gradient (XC): Time to compute functional: 0.03 sec
+ Gradient (XC): Time to compute grid gradient: 0.01 sec
+ Gradient (XC): Time to repack points: 0.00 sec
+GPU Memory: 8171 Mb
+GPU Memory: 8171 Mb
+ Gradient (XC): Time to compute gradient: 0.18 sec
+ Gradient: XC  elapsed time: 0.30 sec
+
+Running Mulliken population analysis...
+
+
+Gradient units are Hartree/Bohr
+---------------------------------------------------
+        dE/dX            dE/dY            dE/dZ
+   -0.0002072029    -0.0003805838     0.0004180316
+    0.0002027315     0.0038163008     0.0008632318
+   -0.0016119951    -0.0008649686    -0.0012483941
+    0.0013708384    -0.0009144245     0.0011323398
+    0.0034489869    -0.0001148063    -0.0009785951
+   -0.0009628516     0.0003758049     0.0014450899
+   -0.0009987888    -0.0002243924    -0.0012219364
+   -0.0001570506    -0.0036068012     0.0008931039
+    0.0017456674     0.0008425826    -0.0011311662
+   -0.0014889554     0.0008971186     0.0010597365
+   -0.0034914922     0.0002639078    -0.0010144382
+    0.0009836967    -0.0004076288     0.0012280801
+    0.0010874919     0.0001200114    -0.0011574181
+   -0.0001996251     0.0003310751     0.0032261543
+    0.0008642723    -0.0006252922    -0.0008785953
+   -0.0007264867     0.0003530295    -0.0009239510
+    0.0003397015     0.0003480593    -0.0034150905
+   -0.0004798085    -0.0008890206     0.0008292914
+    0.0002808715     0.0006800289     0.0008745266
+-=#=-    Now Returning to Optimizer   -=#=-
+
+Running Mulliken population analysis...
+
+
+Running Mulliken population analysis...
+
+-=#=-  Checking Convergence Criteria  -=#=-
+-=#     Cycle       Energy          Delta-E   Gradient-RMS   Gradient-Max   Displace-RMS   Displace-Max
+-=#                        Crit:  1.000e-06      3.000e-04      4.500e-04      1.200e-03      1.800e-03 
+-=#   ---------------------------------------------------------------------------------------------------
+-=#@      3    -602.4607426882   -5.179e-04 N    2.445e-03 N    3.816e-03 N    2.023e-02 N    3.918e-02 N
+-=#  Adjusting Trust Radius
+-=#  Step Quality:   1.6300 (Good)
+-=#  Increasing trust radius 2.0000e-01 -> 2.8284e-01
+-=#  Updating Hessian with BFGS
+-=#  Hessian Eigenvalues:  5.4329e-01  4.9512e-01  4.9452e-01 ...  2.3000e-02  2.3000e-02  2.4671e-03
+-=#=-----------------------------------=#=-
+-=#=-      Optimization Cycle     4   -=#=-
+-=#=-----------------------------------=#=-
+-=#  Finding Optimization Step, Current Trust Radius: 2.8284e-01
+-=#  Cartesian Step Size: 5.4971e-02, Expected Delta-E: -7.5298e-04
+-=#=-   Getting Energy and Gradient   -=#=-
+-=#=-      (We'll Be Right Back)      -=#=-
+Setting up the DFT grid...
+time to set the grid = 0.00 s
+DFT grid points: 22655 (1192 points/atom)
+Setting up the DFT grid...
+time to set the grid = 0.01 s
+DFT grid points: 59747 (3144 points/atom)
+ECP GPU Integrals elapsed time: 0.11 sec
+
+                      *** Start SCF Iterations ***
+
+ Iter     DIIS Error       Energy change      Electrons        XC Energy      J    K   LA  DFT          Energy        Time(s)
+-------------------------------------------------------------------------------------------------------------------------------
+         >>> Purifying Palpha... IDMP = 2.47e-02 <<<
+         >>> Purifying Palpha... IDMP = 8.21e-04 <<<
+         >>> Purifying Palpha... IDMP = 1.45e-06 <<<
+         >>> Purifying Palpha... IDMP = 2.00e-15 <<<
+         >>> Purifying Pbeta ... IDMP = 2.52e-02 <<<
+         >>> Purifying Pbeta ... IDMP = 8.32e-04 <<<
+         >>> Purifying Pbeta ... IDMP = 1.54e-06 <<<
+         >>> Purifying Pbeta ... IDMP = 6.54e-12 <<<
+         >>> Purifying Pbeta ... IDMP = 6.66e-16 <<<
+THRESPDP set to 4.26e-03
+                >>> SWITCHING TO GRID 1 <<<
+Rotate HOMO and LUMO by 45.000000 degrees
+   1     0.0193076495    -602.4569735860    73.9842795234   -56.6363872538  0.02 0.23 0.01 0.28    -602.4569735860     0.56  
+                >>> SWITCHING TO GRID 0 <<<
+   2     0.1076758471      +0.1845086056    73.9582375453   -56.4606073869  0.02 0.23 0.01 0.13    -602.2724649804     0.39  
+   3     0.0094556123      -0.1728248458    73.9525149967   -56.6304834601  0.02 0.18 0.01 0.13    -602.4452898263     0.34  
+                >>> SWITCHING TO GRID 1 <<<
+   4     0.0045473723      -0.0162465760    73.9840827906   -56.6277087019  0.02 0.17 0.01 0.29    -602.4615364022     0.48  
+   5     0.0021166064      -0.0002320236    73.9841072280   -56.6299429297  0.02 0.16 0.01 0.29    -602.4617684258     0.47  
+   6     0.0012792003      -0.0000338961    73.9841164832   -56.6310913007  0.01 0.15 0.01 0.28    -602.4618023219     0.46  
+   7     0.0015827290      -0.0000081101    73.9841331985   -56.6349084588  0.02 0.15 0.01 0.29    -602.4618104320     0.46  
+   8     0.0004523289      -0.0000298729    73.9841423545   -56.6335831261  0.02 0.15 0.01 0.28    -602.4618403048     0.46  
+   9     0.0001325280      -0.0000033000    73.9841444623   -56.6334601979  0.02 0.23 0.01 0.29    -602.4618436049     0.54 
+  10     0.0001144813      -0.0000008575    73.9841456397   -56.6341486937  0.01 0.13 0.01 0.29    -602.4618444624     0.45  
+  11     0.0000826050      -0.0000012094    73.9841447064   -56.6340671456  0.01 0.13 0.01 0.28    -602.4618456718     0.44  
+  12     0.0000542549      -0.0000009543    73.9841449923   -56.6340059891  0.01 0.13 0.01 0.28    -602.4618466261     0.43  
+  13     0.0000472500      -0.0000005545    73.9841451653   -56.6341003374  0.01 0.13 0.01 0.28    -602.4618471806     0.44  
+  14     0.0000214670      -0.0000001523    73.9841450172   -56.6340687311  0.01 0.12 0.01 0.28    -602.4618473329     0.43  
+  15     0.0000146464      -0.0000001763    73.9841450234   -56.6340763810  0.02 0.23 0.01 0.28    -602.4618475092     0.54  
