@@ -8,7 +8,7 @@ class Cartesian:
 
     def internal_ao_mapping(self, shell_type):
         """
-        (?) Informs how to shift the individual AOs within a set with the same n, L
+        Informs how to shift the individual AOs within a set with the same n, l
         Read as i:j where i is the position of the original (TC) AO,
         and j is the position of the AO for Psi4.
         """
@@ -24,7 +24,7 @@ class Cartesian:
 
     def shell_sequence_mapping(self, atom_shell_types):
         """
-        (?) Informs how to shift the sequence of orbitals with same n, L
+        Informs how to shift the sequence of orbitals with same n, l
         Read as i:j where i is the position of the original (TC) set of AOs
         and j is the position of the set of AOs in Psi4
         """
