@@ -367,7 +367,7 @@ def gen2tc_inp(inp_dict):
     Returns a Terachem input dictionary from a general one.
     '''
     temp = inp_dict.copy()
-    
+
     tc_dict = temp.pop('unrecognized_terachem')
     if tc_dict is None:
         tc_dict = dict()
@@ -687,7 +687,7 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
             not infile['name']) or (not infile['coordinates']):
-        
+
         if infile['name']:
             print(('Name: ' + infile['name']))
         else:

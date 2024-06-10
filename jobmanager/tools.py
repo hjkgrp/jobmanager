@@ -567,7 +567,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     waiting = [{i: grab_waiting(i)} for i in waiting]
     results['Waiting'] = waiting
     results['SCF_Errors_Including_Active'] = all_scf_errors
-    
+
     return results
 
 def find(key, directory='in place', maxdepth=False):
@@ -1095,7 +1095,7 @@ def prep_ad_spin(path):
                                             machine=get_machine())
 
 
-                
+
                 local_infile_dict['charge']= infile_dict['charge']
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'minimize', calc
                 local_infile_dict['name'] = name
