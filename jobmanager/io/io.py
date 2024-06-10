@@ -170,6 +170,8 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
 
         is_finished = output.wordgrab(['finished:'], 'whole_line', last_line=True)[0]
         if is_finished:  # for full optimization
+            if not is_finished[0].isalnum():
+                is_finished = is_finished[1:]
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = True
 
