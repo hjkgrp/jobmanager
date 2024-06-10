@@ -17,7 +17,7 @@ class read_outfile():
             self.currently_running = temp['currently_running']
             self.energies = temp['energies']
 
-    def read_from(self):
+    def read_from(self, end_line=None):
         if self.current_scf == 0:
             start = 0
             starting_point = False
@@ -27,7 +27,7 @@ class read_outfile():
             if starting_point:
                 energy_this_scf = self.energies[0]
         with open(self.fname) as lines:
-            iter = islice(enumerate(lines),start,None,1)
+            iter = islice(enumerate(lines),start,end_line,1)
             for linenum, line in iter:
                 line_list_no_space = line.split()
                 if "Start SCF Iterations" in line:
