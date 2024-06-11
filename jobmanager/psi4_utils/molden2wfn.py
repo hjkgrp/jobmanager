@@ -34,7 +34,9 @@ class Cartesian:
         Note: tells how to shift the AOs in the subshell, not how the subshells related.
         The number of elements in the dictionary is not the number of subshells, but rather the
         number of basis functions used to represent the atom.
-        See below for examples.
+        See below for examples. The notation 1s(6) means the basis function for the 1s subshell
+        composed of 6 primitives. So, for valence subshells, have 2 basis functions per subshell,
+        one with 3 primitives and the other with 1 (in 6-31g*).
         """
         # 6-31g* on C, O, N...
         #Molden is 1s(6), 2s(3), 2s(1), 2p(3), 2p(1), d
