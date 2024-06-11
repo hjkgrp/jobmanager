@@ -125,6 +125,11 @@ def resub(directory='in place'):
     for job in molscontrol_kills:
         counter += 1
         print("killed by molscontrol: ", job, counter)
+
+    # List jobs which might need human intervention
+    for error in completeness['Terminated_No_SCF_cycle']:
+        print(f"Job terminated without any SCF cycles, check for validity: {error}")
+
     # Resub unidentified errors
     for error in errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
