@@ -17,7 +17,7 @@ class read_outfile():
             self.currently_running = temp['currently_running']
             self.energies = temp['energies']
 
-    def read_from(self):
+    def read_from(self,end_line = None):
         if self.current_scf == 0:
             start = 0
             starting_point = False
@@ -26,8 +26,9 @@ class read_outfile():
             starting_point = self.currently_running
             if starting_point:
                 energy_this_scf = self.energies[0]
+        reached_final_energy = False
         with open(self.fname) as lines:
-            iter = islice(enumerate(lines),start,None,1)
+            iter = islice(enumerate(lines),start,end_line,1)
             for linenum, line in iter:
                 line_list_no_space = line.split()
                 if "Start SCF Iterations" in line:
@@ -37,6 +38,7 @@ class read_outfile():
                 elif starting_point and len(line_list_no_space) == 11 and line_list_no_space[0].isdigit():
                     energy_this_scf.append(float(line_list_no_space[-2]))
                 elif 'FINAL ENERGY:' in line and starting_point:
+                    reached_final_energy = True
                     starting_point = False
                     final_energy = float(line_list_no_space[2])
                     # self.energies.append(final_energy)
@@ -44,10 +46,14 @@ class read_outfile():
             if self.current_scf != 0 and starting_point:
                 self.energies = [energy_this_scf]
                 self.currently_running = True
-            elif self.current_scf != 0:
+            elif self.current_scf != 0 and reached_final_energy:
                 self.energies = final_energy
+                self.currently_running = False
+            else:
+                pass
 
         dict = {'linenum' : self.linenum, 'current_scf':self.current_scf,
                 'currently_running':self.currently_running,'energies':self.energies}
         with open(self.fname.rsplit('.',1)[0]+'.json', 'w') as json_file:
             json.dump(dict, json_file)
+        return dict
