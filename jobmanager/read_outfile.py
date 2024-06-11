@@ -17,11 +17,7 @@ class read_outfile():
             self.currently_running = temp['currently_running']
             self.energies = temp['energies']
 
-<<<<<<< HEAD
-    def read_from(self,end_line = None):
-=======
     def read_from(self, end_line=None):
->>>>>>> 4f4ceb7b28d5fa28795338a7b84d7526ee29660e
         if self.current_scf == 0:
             start = 0
             starting_point = False
