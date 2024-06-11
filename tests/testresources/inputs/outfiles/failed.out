@@ -1,0 +1,112 @@
+Startfile from command line: minimal_input.in
+       ***********************************************************
+       *                    TeraChem v1.9-2019.06-dev            *
+       *                 Hg Version: 909e0119069e+               *
+       *                   Development Version                   *
+       *                Compiled without textures                *
+       *           Chemistry at the Speed of Graphics!           *
+       ***********************************************************
+       * This program may only be used in connection with        *
+       * a valid license from PetaChem, LLC. Use of this program *
+       * or results thereof indicates acceptance of all terms    *
+       * and conditions stated in the license and that a valid   *
+       * license agreement between the user and PetaChem, LLC    *
+       * exists. PetaChem, LLC does not warrant the correctness  *
+       * of results or their suitability for any purpose.        *
+       * Please email bugs, suggestions, and comments to         *
+       *                  help@petachem.com                      *
+       *                                                         *
+       ***********************************************************
+       ***********************************************************
+       *  Compiled by fangliu      Fri Jun 28 22:07:58 EDT 2019  *
+       *  Supported architectures: sm_35 sm_50 sm_52 sm_61 sm_75 *
+       *  Cuda compilation tools, release 10.1, V10.1.168        *
+       ***********************************************************
+ Job started   Fri Mar  8 11:11:31 2024
+ On gibraltar-38 (available memory: 120346 MB)
+######################################### RUNTIME INFO ##########################################
+terachem minimal_input.in
+NVRM version: NVIDIA UNIX x86_64 Kernel Module  450.51.05  Sun Jun 28 10:33:40 UTC 2020
+GCC version:  gcc version 4.8.5 20150623 (Red Hat 4.8.5-36) (GCC)
+    linux-vdso.so.1 =>  (0x00007ffdfddfb000)
+    libcurl.so.4 => /lib64/libcurl.so.4 (0x00007f03b639f000)
+    libdftbplus.so => /opt/terachem/062819/lib/libdftbplus.so (0x00007f03b5e7f000)
+    libfsockets.so => /opt/terachem/062819/lib/libfsockets.so (0x00007f03b5c7b000)
+    libxmlf90.so => /opt/terachem/062819/lib/libxmlf90.so (0x00007f03b5a56000)
+    libOpenMM.so => /opt/OpenMM-7.1.1/lib/libOpenMM.so (0x00007f03b5535000)
+    libgpubox.so.1 => /opt/terachem/062819/lib/libgpubox.so.1 (0x00007f03b532f000)
+    libtensorbox.so.1 => /opt/terachem/062819/lib/libtensorbox.so.1 (0x00007f03b5117000)
+    libintbox.so.1 => /opt/terachem/062819/lib/libintbox.so.1 (0x00007f0392153000)
+    libthcbox.so.1 => /opt/terachem/062819/lib/libthcbox.so.1 (0x00007f0390585000)
+    libgridbox.so.1 => /opt/terachem/062819/lib/libgridbox.so.1 (0x00007f0390031000)
+    libdftbox.so.1 => /opt/terachem/062819/lib/libdftbox.so.1 (0x00007f038fd4e000)
+    libcibox.so.1 => /opt/terachem/062819/lib/libcibox.so.1 (0x00007f038f95f000)
+    libcuda.so.1 => /lib64/libcuda.so.1 (0x00007f038e4ac000)
+    libcudart.so.10.1 => /opt/terachem/062819/lib/libcudart.so.10.1 (0x00007f038e230000)
+    libcublas.so.10 => /opt/cuda-10.1/lib64/libcublas.so.10 (0x00007f038a4b8000)
+    libcufft.so.10 => /opt/terachem/062819/lib/libcufft.so.10 (0x00007f0381e76000)
+    libcusparse.so.10 => /opt/terachem/062819/lib/libcusparse.so.10 (0x00007f037a805000)
+    libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00007f037a3a2000)
+    libssl.so.10 => /lib64/libssl.so.10 (0x00007f037a130000)
+    libm.so.6 => /lib64/libm.so.6 (0x00007f0379e2e000)
+    libcilkrts.so.5 => /opt/terachem/062819/lib/libcilkrts.so.5 (0x00007f0379bed000)
+    libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007f03798e6000)
+    libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f03796d0000)
+    libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f03794b4000)
+    libc.so.6 => /lib64/libc.so.6 (0x00007f03790e7000)
+    /lib64/ld-linux-x86-64.so.2 (0x00007f03b6609000)
+    libdl.so.2 => /lib64/libdl.so.2 (0x00007f0378ee3000)
+    libidn.so.11 => /lib64/libidn.so.11 (0x00007f0378cb0000)
+    libssh2.so.1 => /lib64/libssh2.so.1 (0x00007f0378a86000)
+    libssl3.so => /lib64/libssl3.so (0x00007f0378834000)
+    libsmime3.so => /lib64/libsmime3.so (0x00007f037860d000)
+    libnss3.so => /lib64/libnss3.so (0x00007f03782e0000)
+    libnssutil3.so => /lib64/libnssutil3.so (0x00007f03780b0000)
+    libplds4.so => /lib64/libplds4.so (0x00007f0377eac000)
+    libplc4.so => /lib64/libplc4.so (0x00007f0377ca7000)
+    libnspr4.so => /lib64/libnspr4.so (0x00007f0377a69000)
+    libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00007f037781c000)
+    libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00007f0377533000)
+    libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00007f0377300000)
+    libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00007f03770fc000)
+    liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 (0x00007f0376eed000)
+    libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 (0x00007f0376c98000)
+    libz.so.1 => /lib64/libz.so.1 (0x00007f0376a82000)
+    libmkl_intel_lp64.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_intel_lp64.so (0x00007f0376144000)
+    libmkl_intel_thread.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_intel_thread.so (0x00007f0374ded000)
+    libmkl_core.so => /opt/intel/2016/compilers_and_libraries/linux/mkl/lib/intel64/libmkl_core.so (0x00007f0373508000)
+    libiomp5.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libiomp5.so (0x00007f03731c7000)
+    libifport.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libifport.so.5 (0x00007f0372f98000)
+    libifcoremt.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libifcoremt.so.5 (0x00007f0372c06000)
+    libimf.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libimf.so (0x00007f037270e000)
+    libsvml.so => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libsvml.so (0x00007f037184f000)
+    libintlc.so.5 => /opt/intel/2016/compilers_and_libraries/linux/ipp/../compiler/lib/intel64/libintlc.so.5 (0x00007f03715f0000)
+    librt.so.1 => /lib64/librt.so.1 (0x00007f03713e8000)
+    libcublasLt.so.10 => /opt/cuda-10.1/lib64/libcublasLt.so.10 (0x00007f036f297000)
+    libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00007f036f087000)
+    libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00007f036ee83000)
+    libresolv.so.2 => /lib64/libresolv.so.2 (0x00007f036ec6a000)
+    libsasl2.so.3 => /lib64/libsasl2.so.3 (0x00007f036ea4d000)
+    libselinux.so.1 => /lib64/libselinux.so.1 (0x00007f036e826000)
+    libcrypt.so.1 => /lib64/libcrypt.so.1 (0x00007f036e5ef000)
+    libpcre.so.1 => /lib64/libpcre.so.1 (0x00007f036e38d000)
+    libfreebl3.so => /lib64/libfreebl3.so (0x00007f036e18a000)
+#################################################################################################
+Cannot find license.dat file in the TeraChem installation directory /opt/terachem/062819
+TRYING THE NETWORK LICENSE...
+Connecting to license server '54.208.252.40' port '8877'...
+Connected!
+Checking your license...
+**************************************************************
+  Greetings, Martinez Group! You have 1000 licenses in total
+  IN USE: 22
+  AVAILABLE: 978
+**************************************************************
+Jobname: caffeine
+Scratch directory: ./scr.caffeine
+Random number seed: 1304702252
+XYZ coordinates caffeine.xyz
+Molden File Output: ./scr.caffeine/caffeine.molden
+Can't find basis
+DIE called at line number 218 in file terachem/params.cpp
+ Job terminated: Fri Mar  8 11:11:39 2024

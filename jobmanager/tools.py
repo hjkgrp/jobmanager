@@ -402,6 +402,13 @@ def get_total_queue_usage():
 
     return len(jobs)
 
+def check_terminated_no_scf(path, results_dict):
+        results = results_dict[path]
+        if results['terminated'] and results['no_scf']:
+            return True
+        else:
+            return False
+
 def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     """Checks whether or not a directory is completed by the job manager.
 
@@ -506,6 +513,12 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
         else:
             return False
 
+    def check_terminated_no_scf_inner(path, results_dict=results_dict):
+        return check_terminated_no_scf(path, results_dict)
+
+    ########
+
+
     def check_thermo_grad_error(path, results_dict=results_dict):
         results = results_dict[path]
         if results['thermo_grad_error']:
@@ -525,6 +538,9 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     scf_errors = list(filter(check_scf_error, errors))
 
+    ######
+    terminated_no_scf = list(filter(check_terminated_no_scf_inner,outfiles))
+
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)
     jobscript_list = [i.rsplit('_', 1)[0] + '.out' for i in jobscript_list]
@@ -536,10 +552,10 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # A job always gets labelled as active if it fits that criteria, even if it's in every other category too
 
     priority_list = [active_jobs, chronic_errors, waiting, thermo_grad_errors,
-                     oscillating_scf_errors, scf_errors, errors, spin_contaminated, needs_resub, finished]
+                     oscillating_scf_errors, scf_errors, terminated_no_scf, errors, spin_contaminated, needs_resub, finished]
     priority_list_names = ['Active', 'Chronic_errors', 'Waiting', 'Thermo_grad_error',
-                           'oscillating_scf_errors', 'SCF_Error', 'Error', 'Spin_contaminated', 'Needs_resub',
-                           'Finished']
+                           'oscillating_scf_errors', 'SCF_Error', 'Terminated_No_SCF_cycle', 'Error', 'Spin_contaminated',
+                           'Needs_resub', 'Finished']
     # return (priority_list, priority_list_names)
     priority_list = priority_sort(priority_list)
 
@@ -612,7 +628,7 @@ def qsub(jobscript_list):
         if get_machine() in ['gibraltar']:
             stdout, stderr = call_bash('qsub ' + jobscript, error=True)
             stdouts.append(stdout)
-        elif get_machine() in ['bridges', 'comet', 'expanse']:
+        elif get_machine() in ['supercloud','bridges', 'comet', 'expanse']:
             stdout, stderr = call_bash('sbatch ' + jobscript, error=True)
             stdouts.append(stdout)
         if len(stderr) > 0:
@@ -1065,17 +1081,28 @@ def prep_ad_spin(path):
             else:
                 os.mkdir(PATH)
                 os.chdir(PATH)
-                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
-
                 local_infile_dict = copy.copy(infile_dict)
-                local_infile_dict['charge'], local_infile_dict['guess'] = infile_dict['charge'], False
+                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+                if infile_dict['spinmult'] == 1:
+                    shutil.copy(os.path.join(base, 'scr', 'c0'), 'c0')
+                    io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+                    local_infile_dict['guess'] = 'c0'
+                elif infile_dict['spinmult'] != 1:
+                    shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join('ca0'))
+                    shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join('cb0'))
+                    local_infile_dict['guess'] = 'ca0 cb0'
+                    io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
+                                            machine=get_machine())
+
+
+
+                local_infile_dict['charge']= infile_dict['charge']
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'minimize', calc
                 local_infile_dict['name'] = name
                 local_infile_dict['coordinates'] = name+'.xyz'
                 local_infile_dict['machine'] = get_machine()
 
                 io.write_input(local_infile_dict)
-                io.write_jobscript(name, machine=get_machine())
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
     return jobscripts
