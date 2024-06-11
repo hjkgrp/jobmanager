@@ -1,36 +1,112 @@
 from jobmanager.read_outfile import read_outfile
 
-def test_read_outfile(resource_path_root):
-    file_1 = str(resource_path_root/'inputs'/'read_outfile'/'first.out') # full 3 scf cycles
-    file_2 = str(resource_path_root/'inputs'/'read_outfile'/'second.out') # starts 4th scf but has only 'Start SCF Iterations'
-    file_3 = str(resource_path_root/'inputs'/'read_outfile'/'third.out') # 0-9 energies in 4th scf (not full)
-    file_4 = str(resource_path_root/'inputs'/'read_outfile'/'fourth.out') # 0-15 energies in 4th scf (not full)
-    file_5 = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out') # complete 4th scf cycle with 'FINAL ENERGY'
+def test_read_outfile_1(resource_path_root):
+    file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
+    sample = read_outfile(file)
+    dict = sample.read_from(end_line = 690)
+    ref_dict = {'linenum': 689,
+                'current_scf': 4,
+                'currently_running': False,
+                'energies': -602.4607426882}
 
-    sample_1 = read_outfile(file_1)
-    sample_1.read_from()
-    bool_1 = (sample_1.energies == -602.4607426882)
+    bool = ((dict['linenum'] == ref_dict['linenum']) and
+            (dict['current_scf'] == ref_dict['current_scf']) and
+            (dict['currently_running'] == ref_dict['currently_running']) and
+            (dict['energies'] == ref_dict['energies']))
+    assert bool
 
-    sample_2 = read_outfile(file_2, jsonfile=file_1.rsplit('.',1)[0]+'.json')
-    sample_2.read_from()
-    bool_2 = (sample_2.energies == [[]])
+def test_read_outfile_2(resource_path_root):
+    file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
+    sample = read_outfile(file, jsonfile=file.rsplit('.',1)[0]+'.json')
+    dict = sample.read_from(end_line = 695)
+    ref_dict =  {'linenum': 694,
+                 'current_scf': 5,
+                 'currently_running': True,
+                 'energies': [[]]}
+    bool = ((dict['linenum'] == ref_dict['linenum']) and
+            (dict['current_scf'] == ref_dict['current_scf']) and
+            (dict['currently_running'] == ref_dict['currently_running']) and
+            (dict['energies'] == ref_dict['energies']))
+    assert bool
 
-    sample_3 = read_outfile(file_3, jsonfile=file_2.rsplit('.',1)[0]+'.json')
-    sample_3.read_from()
-    bool_3 = (sample_3.energies == [[-602.456973586, -602.2724649804, -602.4452898263,
-                                    -602.4615364022, -602.4617684258, -602.4618023219,
-                                    -602.461810432, -602.4618403048, -602.4618436049]])
+def test_read_outfile_3(resource_path_root):
+    file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
+    sample = read_outfile(file, jsonfile=file.rsplit('.',1)[0]+'.json')
+    dict = sample.read_from(end_line = 718)
+    ref_dict = {'linenum': 717,
+                'current_scf': 5,
+                'currently_running': True,
+                'energies': [[-602.456973586, -602.2724649804,
+                              -602.4452898263, -602.4615364022,
+                              -602.4617684258, -602.4618023219,
+                              -602.461810432, -602.4618403048,
+                              -602.4618436049]]}
+    bool = ((dict['linenum'] == ref_dict['linenum']) and
+            (dict['current_scf'] == ref_dict['current_scf']) and
+            (dict['currently_running'] == ref_dict['currently_running']) and
+            (dict['energies'] == ref_dict['energies']))
+    assert bool
 
-    sample_4 = read_outfile(file_4, jsonfile=file_3.rsplit('.',1)[0]+'.json')
-    sample_4.read_from()
-    bool_4 = (sample_4.energies == [[-602.456973586, -602.2724649804, -602.4452898263,
-                                     -602.4615364022, -602.4617684258, -602.4618023219,
-                                     -602.461810432, -602.4618403048, -602.4618436049,
-                                     -602.4618444624, -602.4618456718, -602.4618466261,
-                                     -602.4618471806, -602.4618473329, -602.4618475092]])
+def test_read_outfile_4(resource_path_root):
+    file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
+    sample = read_outfile(file, jsonfile=file.rsplit('.',1)[0]+'.json')
+    dict = sample.read_from(end_line = 724)
+    ref_dict = {'linenum': 723,
+                'current_scf': 5,
+                'currently_running': True,
+                'energies': [[-602.456973586, -602.2724649804,
+                              -602.4452898263, -602.4615364022,
+                              -602.4617684258, -602.4618023219,
+                              -602.461810432, -602.4618403048,
+                              -602.4618436049, -602.4618444624,
+                              -602.4618456718, -602.4618466261,
+                              -602.4618471806, -602.4618473329,
+                              -602.4618475092]]}
+    bool = ((dict['linenum'] == ref_dict['linenum']) and
+            (dict['current_scf'] == ref_dict['current_scf']) and
+            (dict['currently_running'] == ref_dict['currently_running']) and
+            (dict['energies'] == ref_dict['energies']))
+    assert bool
 
-    sample_5 = read_outfile(file_5, jsonfile=file_4.rsplit('.',1)[0]+'.json')
-    sample_5.read_from()
-    bool_5 = (sample_5.energies == -602.4618478648)
+def test_read_outfile_5(resource_path_root):
+    file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
+    sample = read_outfile(file, jsonfile=file.rsplit('.',1)[0]+'.json')
+    dict = sample.read_from(end_line = 731)
+    ref_dict = {'linenum': 730,
+                'current_scf': 5,
+                'currently_running': False,
+                'energies': -602.4618478648}
+    bool = ((dict['linenum'] == ref_dict['linenum']) and
+            (dict['current_scf'] == ref_dict['current_scf']) and
+            (dict['currently_running'] == ref_dict['currently_running']) and
+            (dict['energies'] == ref_dict['energies']))
+    assert bool
 
-    assert (bool_1 and bool_2 and bool_3 and bool_4 and bool_5)
+
+def test_read_outfile_6(resource_path_root):
+    file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
+    sample = read_outfile(file, jsonfile = file.rsplit('.',1)[0]+'.json')
+    dict = sample.read_from(end_line = 731)
+    ref_dict = {'linenum': 730,
+                'current_scf': 5,
+                'currently_running': False,
+                'energies': -602.4618478648}
+    bool = ((dict['linenum'] == ref_dict['linenum']) and
+            (dict['current_scf'] == ref_dict['current_scf']) and
+            (dict['currently_running'] == ref_dict['currently_running']) and
+            (dict['energies'] == ref_dict['energies']))
+    assert bool
+
+def test_read_outfile_7(resource_path_root):
+    file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
+    sample = read_outfile(file, jsonfile = file.rsplit('.',1)[0]+'.json')
+    dict = sample.read_from(end_line = None)
+    ref_dict = {'linenum': 730,
+                'current_scf': 5,
+                'currently_running': False,
+                'energies': -602.4618478648}
+    bool = ((dict['linenum'] == ref_dict['linenum']) and
+            (dict['current_scf'] == ref_dict['current_scf']) and
+            (dict['currently_running'] == ref_dict['currently_running']) and
+            (dict['energies'] == ref_dict['energies']))
+    assert bool
