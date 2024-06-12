@@ -2,6 +2,8 @@ import pickle
 import os
 import numpy as np
 import json
+from abc import ABC, abstractmethod
+
 
 def strip_new_line(string):
     """Tries to strip string of new line.
@@ -23,7 +25,7 @@ def strip_new_line(string):
         return string
 
 
-class Calc:
+class Calc(ABC):
     """
     Interface with software/write inputs
     Contains information about a single calculation
@@ -44,6 +46,12 @@ class Calc:
         # self.poptype = 0
         # self.bond_order_list = 0
 
+    @abstractmethod
+    def read_input(self,input_path):
+        ...
+
+
+class TerachemCalc(Calc):
 
     def read_input(self,input_path):
         '''
