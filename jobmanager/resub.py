@@ -125,6 +125,11 @@ def resub(directory='in place'):
     for job in molscontrol_kills:
         counter += 1
         print("killed by molscontrol: ", job, counter)
+
+    # List jobs which might need human intervention
+    for error in completeness['Terminated_No_SCF_cycle']:
+        print(f"Job terminated without any SCF cycles, check for validity: {error}")
+
     # Resub unidentified errors
     for error in errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
@@ -306,7 +311,11 @@ def resub(directory='in place'):
                     submitted.append(True)
                 else:
                     invalid_jobs.append(job)
-                    print('Invalid job ......')
+                    print(f'Invalid job: {os.path.split(job)[-1]}')
+            else:  # have not implemented spin/charge checker for ORCA
+                print(('Initial submission for job: ' + os.path.split(job)[-1]))
+                tools.qsub(job)
+                submitted.append(True)
 
     else:
         print('==== Hit the queue limit for the user, not submitting any more jobs. ====')
