@@ -1,4 +1,4 @@
-from jobmanager.job import Job
+from jobmanager.Classes.job import Job
 
 def test_read_jobscript(resource_path_root):
     sample = Job()

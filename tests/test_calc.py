@@ -1,4 +1,4 @@
-from jobmanager.calc import Calc
+from jobmanager.Classes.calc import Calc
 
 def test_read_input(resource_path_root):
     sample = Calc()

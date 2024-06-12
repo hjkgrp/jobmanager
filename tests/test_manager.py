@@ -1,4 +1,4 @@
-from jobmanager.manager import Manager
+from jobmanager.Classes.manager import Manager
 
 def test_find_jobs_to_submit(resource_path_root):
     sample = Manager(str(resource_path_root/'inputs'/'jobscripts'))

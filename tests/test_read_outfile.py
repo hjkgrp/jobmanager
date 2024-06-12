@@ -1,4 +1,4 @@
-from jobmanager.read_outfile import read_outfile
+from jobmanager.Classes.read_outfile import read_outfile
 
 def test_read_outfile_1(resource_path_root):
     file = str(resource_path_root/'inputs'/'read_outfile'/'fifth.out')
