@@ -11,8 +11,17 @@ class TCtoPsi4:
     Note that these conversions (currently) only work for 6-31g* or LACVP* for Cartesian, def2 for Spherical.
     """
 
-    def __init__(self, coordinates):
+    def __init__(self, basis, coordinates):
         assert coordinates in ['Cartesian', 'Spherical']
+        supported_basis = ['lacvps', 'def2', '6-31g']
+        assert any(supported in basis for basis in supported_basis)
+        if 'def2' in basis:
+            self.def2 = True
+            self.lacvps = False
+        elif 'lacvps' in basis or '6-31g' in basis:
+            #lacvps and 6-31g basis sets can be handled analogously
+            self.def2 = False
+            self.lacvps = True
         if coordinates == 'Cartesian':
             self.cartesian = True
             self.spherical = False
@@ -65,7 +74,7 @@ class TCtoPsi4:
         For Cartesian, this function has only been designed for LACVP* (6-31g* for H - Ar, LANL2DZ for heavier atoms)
         For Spherical, this function has only been designed for def2-SV(P), where the orderings are the same
         """
-        if self.cartesian:
+        if self.cartesian and self.lacvps:
             # 6-31g* on C, O, N...
             #Molden is 1s(6), 2s(3), 2s(1), 2p(3), 2p(1), d
             #Generates 1,     1,     1,     3,     3,     6 orbitals
@@ -96,7 +105,7 @@ class TCtoPsi4:
                 for ii, _ in enumerate(atom_shell_types):
                     d.update({ii: 0})
                 return d
-        if self.spherical:
+        elif self.spherical and self.def2:
             #In def2-SV(P), the ordering is the same between TeraChem and Psi4
             d = {}
             for ii, _ in enumerate(atom_shell_types):
