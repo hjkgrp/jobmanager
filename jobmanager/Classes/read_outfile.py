@@ -35,7 +35,8 @@ class read_outfile():
                     self.current_scf+=1
                     starting_point = True
                     energy_this_scf = []
-                elif starting_point and len(line_list_no_space) == 11 and line_list_no_space[0].isdigit():
+                elif ((starting_point and len(line_list_no_space) == 11 and line_list_no_space[0].isdigit()) or
+                    ((starting_point and len(line_list_no_space[1::]) == 11 and line_list_no_space[1::][0].isdigit()))):
                     energy_this_scf.append(float(line_list_no_space[-2]))
                 elif 'FINAL ENERGY:' in line and starting_point:
                     reached_final_energy = True
