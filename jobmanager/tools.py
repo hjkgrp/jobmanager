@@ -17,6 +17,12 @@ FILE_ENDINGS = {
     '.out': 'output'
 }
 
+MACHINES = {
+    'gibraltar': {'scheduler': 'SGE'},
+    'supercloud': {'scheduler': 'SLURM'},
+    'expanse': {'scheduler': 'SLURM'}
+}
+        
 
 def find_calcs(dirpath, extension='.xyz', original=None):
     """Find calculations that need to be run by extension.
@@ -181,27 +187,23 @@ def get_machine():
 
     """
     # Gets the identity of the machine job_manager is being run on!
-    hostname = call_bash('hostname')[0]
-    if 'bridges.psc' in hostname:
-        machine = 'bridges'
-    elif 'gibraltar' in hostname:
-        machine = 'gibraltar'
-    elif 'comet' in hostname:
-        machine = 'comet'
-    elif 'home' in hostname:
-        machine = 'gibraltar'
-    elif "mustang" in hostname:
-        machine = "mustang"
-    elif "gridsan" in hostname or "login-" in hostname:
-        machine = "supercloud"
-    else:
-        hostname = call_bash('hostname -A')[0]
-        if "expanse" in hostname:
-            machine = "expanse"
+    hostname = call_bash('hostname -a')[0]
+    test = [m for m in MACHINES if m in hostname]
+    if test:
+        if len(test) == 1:
+            return test[0]
         else:
-            raise ValueError('Machine Unknown to Job Manager')
-    return machine
-
+            raise ValueError(f'Machine ambiguous: {test}')
+    hostname = call_bash('hostname -A')[0]
+    test = [m for m in MACHINES if m in hostname]
+    if test:
+        if len(test) == 1:
+            return test[0]
+        else:
+            raise ValueError(f'Machine ambiguous: {test}')
+    else:
+        raise ValueError('Machine Unknown to Job Manager')
+    
 def get_username():
     """Gets the identity of the user running jobs.
 
