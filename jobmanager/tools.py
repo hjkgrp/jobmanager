@@ -261,6 +261,80 @@ def create_summary(directory='in place'):
 
     return summary
 
+
+def SGE_list_active_jobs(ids=False, home_directory=False):
+    """List jobs that are currently running.
+
+    Parameters
+    ----------
+        ids : bool, optional
+            Return job IDs.
+        home_directory : bool, optional
+            Give path to home directory. Default is in place.
+    Returns
+    -------
+        names : list
+            Names of all of the jobs that are running.
+
+    """
+    job_report = textfile()
+    job_report.lines = call_bash("qstat -r")
+    names = job_report.wordgrab('jobname:', 2)[0]
+    names = [i for i in names if i]  # filters out NoneTypes
+    if ids:
+        job_ids = []
+        line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
+        line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
+        for line_index in line_indices_of_jobnames:
+            job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
+        
+        if len(names) != len(job_ids):
+            print(len(names))
+            print(len(job_ids))
+            raise Exception('An error has occurred in listing active job IDs!')
+        return names, job_ids
+
+    return names
+
+
+def SLURM_list_active_jobs(ids=False, home_directory=False,):
+    """List jobs that are currently running.
+
+    Parameters
+    ----------
+        ids : bool, optional
+            Return job IDs.
+        home_directory : bool, optional
+            Give path to home directory. Default is in place.
+        parse_bundles : bool, optional
+            Look through bundled jobs. Default is False.
+
+    Returns
+    -------
+        names : list
+            Names of all of the jobs that are running.
+        job_ids : list
+            The job IDs for the jobs that are running. Only returned if ids set to True.
+
+    """
+    job_report = textfile()
+    username = get_username()
+    cmd = 'squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+username
+    job_report.lines = call_bash(cmd, version=2)
+    names = job_report.wordgrab(username, 2)[0]
+    names = [i for i in names if i]  # filters out NoneTypes
+    if ids:
+        job_ids = []
+        line_indices_of_jobnames = job_report.wordgrab(username, 2, matching_index=True)[0]
+        line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
+        for line_index in line_indices_of_jobnames:
+                job_ids.append(int(job_report.lines[line_index].split()[0]))
+        if len(names) != len(job_ids):
+            print(len(names))
+            print(len(job_ids))
+            raise Exception('An error has occurred in listing active job IDs!')
+        return names, job_ids
+    
 def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     """List jobs that are currently running.
 
@@ -285,48 +359,20 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     if (ids and parse_bundles) or (parse_bundles and not home_directory):
         raise Exception('Incompatible options passed to list_active_jobs()')
-    if home_directory == 'in place':
+    
+    if not home_directory:
         home_directory = os.getcwd()
 
-    job_report = textfile()
-    try:
-        if get_machine() == 'gibraltar':
-            job_report.lines = call_bash("qstat -r")
-        elif get_machine() in ['comet', 'bridges','expanse','supercloud']:
-            job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(),
-                                         version=2)
-        else:
-            raise ValueError
-    except:
-        job_report.lines = []
-    if get_machine() == 'gibraltar':
-        names = job_report.wordgrab('jobname:', 2)[0]
-        names = [i for i in names if i]  # filters out NoneTypes
-    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse']:
-        names = job_report.wordgrab(get_username(), 2)[0]
-        names = [i for i in names if i]  # filters out NoneTypes
+    machine = get_machine()
+    if MACHINES[machine]['scheduler'] == 'SGE':
+        res = SGE_list_active_jobs(ids=ids, home_directory=home_directory)
+    elif MACHINES[machine]['scheduler'] == 'SLURM':
+        res = SLURM_list_active_jobs(ids=ids, home_directory=home_directory)
     else:
         raise ValueError
-    if ids:
-        job_ids = []
-        if get_machine() == 'gibraltar':
-            line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
-        elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse']:
-            line_indices_of_jobnames = job_report.wordgrab(get_username(), 2, matching_index=True)[0]
-        line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
-        for line_index in line_indices_of_jobnames:
-            if get_machine() == 'gibraltar':
-                job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
-            elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse']:
-                job_ids.append(int(job_report.lines[line_index].split()[0]))
-        if len(names) != len(job_ids):
-            print(len(names))
-            print(len(job_ids))
-            raise Exception('An error has occurred in listing active jobs!')
-        return names, job_ids
 
     if parse_bundles and os.path.isfile(os.path.join(home_directory, 'bundle', 'bundle_id')):
-
+        names = res
         with open(os.path.join(home_directory, 'bundle', 'bundle_id'), 'r') as fil:
             identifier = fil.readlines()[0]
 
@@ -340,8 +386,9 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
                 lines = fil.readlines()
             lines = [i[:-1] if i.endswith('\n') else i for i in lines]
             names.extend(lines)
-
-    return names
+        return names
+    else:
+        return res
 
 def get_number_active():
     """Gets number of active jobs in the queue. Only count jobs from current directory.
