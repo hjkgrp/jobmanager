@@ -1,3 +1,5 @@
+#Functionality has been transferred to the TCtoPsi4 class.
+
 import numpy as np
 
 

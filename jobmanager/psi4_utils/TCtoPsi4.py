@@ -16,7 +16,7 @@ class TCtoPsi4:
         """
         assert coordinates in ['Cartesian', 'Spherical']
         supported_basis = ['lacvps', 'def2', '6-31g']
-        assert any(supported in basis for basis in supported_basis)
+        assert any(supported in basis for supported in supported_basis)
         if 'def2' in basis:
             self.def2 = True
             self.lacvps = False
