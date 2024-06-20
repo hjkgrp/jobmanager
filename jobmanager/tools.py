@@ -486,8 +486,10 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
         # print(outfile, tmp['oscillating_scf_error'])
-
-    active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
+    if directory == 'in place':
+        active_jobs = list_active_jobs(parse_bundles=True)
+    else:
+        active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
 
     def check_finished(path, results_dict=results_dict):
         # Return True if the outfile corresponds to a complete job, False otherwise
