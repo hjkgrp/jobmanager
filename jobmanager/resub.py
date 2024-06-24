@@ -362,13 +362,13 @@ def resub_psi4(psi4_config):
 
 def main():
     counter = 0
-    configure_dict = io.read_configure('in place', None)
-    print("configure_dict: ", configure_dict)
+    configure_dict = io.read_configure()
+    print("configure_dict: ", configure_dict, flush=True)
     if not configure_dict["run_psi4"]:
         while True:
             print('**********************************')
             print("****** Assessing Job Status ******")
-            print('**********************************')
+            print('**********************************', flush=True)
             time1 = time.time()
             with open('complete', 'w') as fil:
                 fil.write('Active')

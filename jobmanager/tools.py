@@ -491,6 +491,7 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False):
         results_dict[outfile] = tmp
         # print(outfile, tmp['oscillating_scf_error'])
     if directory == 'in place':
+        print("using 'in place' is deprecated")
         active_jobs = list_active_jobs(parse_bundles=True)
     else:
         active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
