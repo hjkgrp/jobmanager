@@ -1739,8 +1739,10 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
 
     return jobscripts
 
-def check_queue(dir):
-    for input_file in find_calcs(dir, extension='.in'):
+def check_queue(directory=None):
+    if directory is None:
+        directory = os.getcwd()
+    for input_file in find_calcs(directory, extension='.in'):
         jobscript = input_file.rsplit('.in',1)[0] + '_jobscript'
         if os.path.exists(jobscript):
             with open(jobscript, 'r') as j:

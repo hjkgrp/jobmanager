@@ -372,9 +372,8 @@ def main():
             time1 = time.time()
             with open('complete', 'w') as fil:
                 fil.write('Active')
-
-            dir = os.getcwd()
-            tools.check_queue(dir)
+            if tools.get_machine() == 'gibraltar':
+                tools.check_queue()
 
             number_resubmitted, number_active, hit_queue_limit = resub()
 
