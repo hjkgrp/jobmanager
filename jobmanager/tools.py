@@ -335,7 +335,8 @@ def SLURM_list_active_jobs(ids=False, home_directory=False,):
             print(len(job_ids))
             raise Exception('An error has occurred in listing active job IDs!')
         return names, job_ids
-    
+    return names
+
 def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     """List jobs that are currently running.
 
