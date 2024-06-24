@@ -371,6 +371,9 @@ def main():
             with open('complete', 'w') as fil:
                 fil.write('Active')
 
+            dir = os.getcwd()
+            tools.check_queue(dir)
+
             number_resubmitted, number_active, hit_queue_limit = resub()
 
             print('**********************************')

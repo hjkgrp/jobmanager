@@ -17,6 +17,12 @@ FILE_ENDINGS = {
     '.out': 'output'
 }
 
+MACHINES = {
+    'gibraltar': {'scheduler': 'SGE'},
+    'supercloud': {'scheduler': 'SLURM'},
+    'expanse': {'scheduler': 'SLURM'}
+}
+
 
 def find_calcs(dirpath, extension='.xyz', original=None):
     """Find calculations that need to be run by extension.
@@ -181,26 +187,22 @@ def get_machine():
 
     """
     # Gets the identity of the machine job_manager is being run on!
-    hostname = call_bash('hostname')[0]
-    if 'bridges.psc' in hostname:
-        machine = 'bridges'
-    elif 'gibraltar' in hostname:
-        machine = 'gibraltar'
-    elif 'comet' in hostname:
-        machine = 'comet'
-    elif 'home' in hostname:
-        machine = 'gibraltar'
-    elif "mustang" in hostname:
-        machine = "mustang"
-    elif "gridsan" in hostname or "login-" in hostname:
-        machine = "supercloud"
-    else:
-        hostname = call_bash('hostname -A')[0]
-        if "expanse" in hostname:
-            machine = "expanse"
+    hostname = call_bash('hostname -a')[0]
+    test = [m for m in MACHINES if m in hostname]
+    if test:
+        if len(test) == 1:
+            return test[0]
         else:
-            raise ValueError('Machine Unknown to Job Manager')
-    return machine
+            raise ValueError(f'Machine ambiguous: {test}')
+    hostname = call_bash('hostname -A')[0]
+    test = [m for m in MACHINES if m in hostname]
+    if test:
+        if len(test) == 1:
+            return test[0]
+        else:
+            raise ValueError(f'Machine ambiguous: {test}')
+    else:
+        raise ValueError('Machine Unknown to Job Manager')
 
 def get_username():
     """Gets the identity of the user running jobs.
@@ -290,7 +292,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     try:
         if get_machine() == 'gibraltar':
             job_report.lines = call_bash("qstat -r")
-        elif get_machine() in ['comet', 'bridges','expanse']:
+        elif get_machine() in ['comet', 'bridges','expanse','supercloud']:
             job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(),
                                          version=2)
         else:
@@ -1681,3 +1683,48 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
     os.chdir(home)
 
     return jobscripts
+
+def check_queue(dir):
+    for input_file in find_calcs(dir, extension='.in'):
+        jobscript = input_file.rsplit('.in',1)[0] + '_jobscript'
+        if os.path.exists(jobscript):
+            with open(jobscript, 'r') as j:
+                jobscript_lines = j.readlines()
+
+            if get_machine()=='gibraltar':
+                gpu = None
+                queue, qlinenum = None, None
+                threads, tlinenum = None, None
+                for linenum, line in enumerate(jobscript_lines):
+                    if '-pe' in line:
+                        gpu = int(line.split(' ')[-1])
+                    elif '-q' in line:
+                        queue = line.split(' ')[-1].strip('\n').split('|')
+                        qlinenum = linenum
+                    elif 'export OMP_NUM_THREADS' in line:
+                        threads = int(line.split(' ')[-1].split('=')[1])
+                        tlinenum = linenum
+
+                xyz_file = input_file.rsplit('.in',1)[0] + '.xyz'
+                with open(xyz_file, 'r') as xyz:
+                    num_atoms = int(xyz.readlines()[0])
+
+                if ('small' in queue) and num_atoms>=100:
+                    queue.remove('small')
+
+                if ('gpusbig' in queue) and gpu==1:
+                    queue.remove('gpusbig')
+                elif ('gpusbig' not in queue) and gpu>1:
+                    queue.insert(0,'gpusbig')
+                new_line = '#$ -q ' + '|'.join(queue)+'\n'
+                jobscript_lines[qlinenum]=new_line
+
+                if gpu != threads:
+                    threads = gpu
+                    new_line = f'export OMP_NUM_THREADS={gpu}\n'
+                    jobscript_lines[tlinenum]=new_line
+
+                with open(jobscript, 'w') as js:
+                    js.writelines(jobscript_lines)
+        else:
+            print(f"{input_file} doesn't have an associated jobscript")
