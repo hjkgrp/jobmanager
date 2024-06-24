@@ -85,7 +85,7 @@ def read_run(outfile_PATH):
     return results
 
 
-def create_summary(directory='in place'):
+def create_summary(directory=None):
     """Create a summary file.
 
     Parameters
@@ -99,9 +99,11 @@ def create_summary(directory='in place'):
             Summary of full directory.
 
     """
+    if directory is None:
+        directory = os.getcwd()
     # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
 
-    outfiles = tools.find('*.out', directory)
+    outfiles = tools.find_calcs(directory, extension='.out')
     outfiles = list(filter(tools.check_valid_outfile, outfiles))
     results = list(map(read_run, outfiles))
     summary = pd.DataFrame(results)
@@ -233,7 +235,7 @@ def get_metal_and_bonded_atoms(job_outfile, geometry=None):
     return metal_index, bonded_atom_indices
 
 
-def check_completeness(directory='in place', max_resub=5, configure_dict=False):
+def check_completeness(directory=None, max_resub=5, configure_dict=False):
     """Get metal and bonded atoms of complex.
 
     Parameters
@@ -251,6 +253,8 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
             Completeness dictionary for a given directory.
 
     """
+    if directory is None:
+        directory = os.getcwd()
     completeness = tools.check_completeness(directory, max_resub, configure_dict=configure_dict)
     # print("=======")
     # print("completeness: ", completeness)
