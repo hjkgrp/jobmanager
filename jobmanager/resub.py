@@ -81,7 +81,7 @@ def prep_derivative_jobs(directory, list_of_outfiles):
             tools.prep_general_sp(job, general_config=configure_dict['general_sp'])
 
 
-def resub(directory='in place'):
+def resub(directory=None):
     """This function takes a directory and submits calculations.
 
         Parameters
@@ -90,6 +90,8 @@ def resub(directory='in place'):
                 Directory of interest to analyze.
 
     """
+    if directory is None:
+        directory = os.getcwd()
     # Takes a directory, resubmits errors, scf failures, and spin contaminated cases
     configure_dict = io.read_configure(directory, None)
     max_resub = configure_dict['max_resub']

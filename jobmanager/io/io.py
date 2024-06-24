@@ -483,7 +483,7 @@ def read_infile(outfile_path):
 # Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
 # The global configure file should be in the same directory where resub() is called
 # The local configure file should be in the same directory as the .out file
-def read_configure(home_directory, outfile_path):
+def read_configure(home_directory=None, outfile_path=None):
     def load_configure_file(directory):
         def strip_new_line(string):
             if string[-1] == '\n':
@@ -491,7 +491,7 @@ def read_configure(home_directory, outfile_path):
             else:
                 return string
 
-        if directory == 'in place':
+        if directory is None:
             directory = os.getcwd()
 
         configure = os.path.join(directory, 'configure')

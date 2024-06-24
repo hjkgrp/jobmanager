@@ -238,7 +238,7 @@ def convert_to_absolute_path(path):
 
     return abspath
 
-def create_summary(directory='in place'):
+def create_summary(directory=None):
     """This function creates a summary of the jobs in a given path.
 
     Parameters
@@ -252,9 +252,10 @@ def create_summary(directory='in place'):
             The dataframe of the summary as a pandas dataframe.
 
     """
+    if directory is None:
+        directory = os.getcwd()
     # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-
-    outfiles = find('*.out', directory)
+    outfiles = find_calcs(directory, extension='.out')
     outfiles = list(filter(check_valid_outfile, outfiles))
     results = list(map(io.read_outfile, outfiles))
     summary = pd.DataFrame(results)
@@ -575,7 +576,7 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False):
 
     return results
 
-def find(key, directory='in place', maxdepth=False):
+def find(key, directory=None, maxdepth=False):
     """Uses the bash find command.
 
     Parameters
@@ -595,7 +596,7 @@ def find(key, directory='in place', maxdepth=False):
     """
     ## Looks for all files with a matching key in their name within directory
     #  @return A list of paths
-    if directory == 'in place':
+    if directory is None:
         directory = os.getcwd()
     if maxdepth:
         bash = 'find ' + directory + ' -name ' + key + ' -maxdepth '+str(maxdepth)
