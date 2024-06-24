@@ -460,7 +460,7 @@ def check_terminated_no_scf(path, results_dict):
         else:
             return False
 
-def check_completeness(directory=None, max_resub=5, configure_dict=False):
+def check_completeness(directory=None, max_resub=5, configure_dict=False, verbose=False):
     """Checks whether or not a directory is completed by the job manager.
 
     Parameters
@@ -484,7 +484,8 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False):
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find_calcs(directory, extension='.out')
     outfiles = list(filter(check_valid_outfile, outfiles))
-
+    if verbose:
+        print(f"Found {len(outfiles)} output files. Checking for completeness.", flush=True)
     results_tmp = [io.read_outfile(outfile, short_ouput=True) for outfile in outfiles]
     results_tmp = list(zip(outfiles, results_tmp))
     results_dict = dict()

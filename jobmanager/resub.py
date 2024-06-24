@@ -4,6 +4,7 @@ import numpy as np
 import time
 import sys
 import json
+import argparse
 import jobmanager.tools as tools
 import jobmanager.moltools as moltools
 import jobmanager.recovery as recovery
@@ -81,7 +82,7 @@ def prep_derivative_jobs(directory, list_of_outfiles):
             tools.prep_general_sp(job, general_config=configure_dict['general_sp'])
 
 
-def resub(directory=None):
+def resub(directory=None, verbose=False, dryrun=False):
     """This function takes a directory and submits calculations.
 
         Parameters
@@ -99,7 +100,7 @@ def resub(directory=None):
     hard_job_limit = configure_dict['hard_job_limit']
     hit_queue_limit = False  # Describes if this run has limitted the number of jobs submitted to work well with the queue
     # Get the state of all jobs being managed by this instance of the job manager
-    completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict)
+    completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict, verbose=verbose)
     # print("completeness: ", completeness)
     errors = completeness['Error']  # These are calculations which failed to complete
     scf_errors = completeness['SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time
@@ -260,11 +261,14 @@ def resub(directory=None):
         to_submit = []
         jobscripts = tools.find('*_jobscript')
         active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
+        active_in_this_dir = []
         for job in jobscripts:
             jobdir, jobname = os.path.split(job.rsplit('_', 1)[0])
             outfile = os.path.join(jobdir, jobname + '.out')
             if not os.path.isfile(outfile) and not any([x.startswith(jobname) for x in active_jobs]):
                 to_submit.append(job)
+            elif any([x.startswith(jobname) for x in active_jobs]):
+                active_in_this_dir.append(job)
 
         short_jobs_to_submit = [i for i in to_submit if tools.check_short_single_point(i)]
         long_jobs_to_submit = [i for i in to_submit if i not in short_jobs_to_submit]
@@ -276,7 +280,8 @@ def resub(directory=None):
 
         submitted = []
         invalid_jobs = []
-
+        if verbose:
+            print(f"{len(active_in_this_dir)} jobs active. {len(to_submit)} jobscripts awaiting submission.")
         for job in to_submit:
             # update the number of running + submitted jobs (from this instance of jobmanager)
             dynamic_nactive = (len(submitted) + nactive + np.sum(resubmitted))
@@ -360,7 +365,14 @@ def resub_psi4(psi4_config):
                 time.sleep(3)
 
 
-def main():
+def main(args=None):
+    if args is None:
+        # Initialize parser
+        parser = argparse.ArgumentParser()
+        # Adding optional arguments
+        parser.add_argument("-v", "--verbose", action='store_true', help="Verbose printing level.")
+        parser.add_argument("-d", "--dry-run", action='store_true', help="Perform a dry-run. WARNING: Not fully implemented")
+        args = parser.parse_args()
     counter = 0
     configure_dict = io.read_configure()
     print("configure_dict: ", configure_dict, flush=True)
@@ -368,14 +380,15 @@ def main():
         while True:
             print('**********************************')
             print("****** Assessing Job Status ******")
-            print('**********************************', flush=True)
+            print('**********************************')
+            sys.stdout.flush()
             time1 = time.time()
             with open('complete', 'w') as fil:
                 fil.write('Active')
             if tools.get_machine() == 'gibraltar':
                 tools.check_queue()
 
-            number_resubmitted, number_active, hit_queue_limit = resub()
+            number_resubmitted, number_active, hit_queue_limit = resub(verbose=args.verbose, dryrun=args.dry_run)
 
             print('**********************************')
             print(("******** " + str(number_resubmitted) + " Jobs Submitted ********"))

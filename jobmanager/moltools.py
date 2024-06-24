@@ -235,7 +235,7 @@ def get_metal_and_bonded_atoms(job_outfile, geometry=None):
     return metal_index, bonded_atom_indices
 
 
-def check_completeness(directory=None, max_resub=5, configure_dict=False):
+def check_completeness(directory=None, max_resub=5, configure_dict=False, verbose=False):
     """Get metal and bonded atoms of complex.
 
     Parameters
@@ -255,7 +255,7 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False):
     """
     if directory is None:
         directory = os.getcwd()
-    completeness = tools.check_completeness(directory, max_resub, configure_dict=configure_dict)
+    completeness = tools.check_completeness(directory, max_resub, configure_dict=configure_dict, verbose=verbose)
     # print("=======")
     # print("completeness: ", completeness)
     # The check_completeness() function in tools doesn't check the geometries (because it's molSimplify dependent)
@@ -264,10 +264,10 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False):
     spin_contaminated = completeness['Spin_contaminated']
     needs_resub = completeness['Needs_resub']
     unfinished = completeness['Error']
-    # print("finished: ", finished)
-    # print("spin_contaminated: ", spin_contaminated)
-    # print("needs_resub: ", needs_resub)
-    # print("unfinished: ", unfinished)
+    if verbose:
+        print(f"{len(finished)} finished.", flush=True)
+        print(f"{len(needs_resub)} need resubmission.")
+        print(f"{len(unfinished)} errors found.")
     bad_geos = []
     new_finished = []
     new_spin_contaminated = []
