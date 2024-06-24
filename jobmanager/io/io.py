@@ -1042,7 +1042,7 @@ def get_scf_progress(outfile):
                 start = True
                 energy_this_scf = []
             is_scf_line = start and len(ll) == 11 and ll[0].isdigit()
-            is_scf_line = is_scf_line or (start and len(ll) == 12 and ll[1].isdigit()):
+            is_scf_line = is_scf_line or (start and len(ll) == 12 and ll[1].isdigit())
             if is_scf_line:
                 energy_this_scf.append(float(ll[-2]))
             if "FINAL ENERGY:" in line and start:
