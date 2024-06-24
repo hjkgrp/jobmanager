@@ -22,7 +22,7 @@ MACHINES = {
     'supercloud': {'scheduler': 'SLURM'},
     'expanse': {'scheduler': 'SLURM'}
 }
-        
+
 
 def find_calcs(dirpath, extension='.xyz', original=None):
     """Find calculations that need to be run by extension.
@@ -203,7 +203,7 @@ def get_machine():
             raise ValueError(f'Machine ambiguous: {test}')
     else:
         raise ValueError('Machine Unknown to Job Manager')
-    
+
 def get_username():
     """Gets the identity of the user running jobs.
 
@@ -1683,3 +1683,48 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
     os.chdir(home)
 
     return jobscripts
+
+def check_queue(dir):
+    for input_file in find_calcs(dir, extension='.in'):
+        jobscript = input_file.rsplit('.in',1)[0] + '_jobscript'
+        if os.path.exists(jobscript):
+            with open(jobscript, 'r') as j:
+                jobscript_lines = j.readlines()
+
+            if get_machine()=='gibraltar':
+                gpu = None
+                queue, qlinenum = None, None
+                threads, tlinenum = None, None
+                for linenum, line in enumerate(jobscript_lines):
+                    if '-pe' in line:
+                        gpu = int(line.split(' ')[-1])
+                    elif '-q' in line:
+                        queue = line.split(' ')[-1].strip('\n').split('|')
+                        qlinenum = linenum
+                    elif 'export OMP_NUM_THREADS' in line:
+                        threads = int(line.split(' ')[-1].split('=')[1])
+                        tlinenum = linenum
+
+                xyz_file = input_file.rsplit('.in',1)[0] + '.xyz'
+                with open(xyz_file, 'r') as xyz:
+                    num_atoms = int(xyz.readlines()[0])
+
+                if ('small' in queue) and num_atoms>=100:
+                    queue.remove('small')
+
+                if ('gpusbig' in queue) and gpu==1:
+                    queue.remove('gpusbig')
+                elif ('gpusbig' not in queue) and gpu>1:
+                    queue.insert(0,'gpusbig')
+                new_line = '#$ -q ' + '|'.join(queue)+'\n'
+                jobscript_lines[qlinenum]=new_line
+
+                if gpu != threads:
+                    threads = gpu
+                    new_line = f'export OMP_NUM_THREADS={gpu}\n'
+                    jobscript_lines[tlinenum]=new_line
+
+                with open(jobscript, 'w') as js:
+                    js.writelines(jobscript_lines)
+        else:
+            print(f"{input_file} doesn't have an associated jobscript")
