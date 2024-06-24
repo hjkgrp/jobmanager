@@ -51,9 +51,9 @@ def find_calcs(dirpath, extension='.xyz', original=None):
 
     for new_path in walk_dirs:
         if original:
-            yield from find_calcs(new_path, original=original)
+            yield from find_calcs(new_path, extension=extension, original=original)
         else:
-            yield from find_calcs(new_path, original=dirpath)
+            yield from find_calcs(new_path, extension=extension, original=dirpath)
     for path in calc_paths:
         if original:
             yield path[len(original)+1:]
