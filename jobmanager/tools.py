@@ -1762,7 +1762,7 @@ def check_queue(dir):
 
                 xyz_file = input_file.rsplit('.in',1)[0] + '.xyz'
                 with open(xyz_file, 'r') as xyz:
-                    num_atoms = int(xyz.readlines()[0])
+                    num_atoms = int(next(xyz))
 
                 if ('small' in queue) and num_atoms>=100:
                     queue.remove('small')
