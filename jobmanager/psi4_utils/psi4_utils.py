@@ -161,7 +161,6 @@ class Psi4Utils:
         Results will be stored in rundir as a subdirectory of the current directory.
         """
         psi4_config = self.config
-        basedir = os.getcwd()
         #update the Psi4 config with the charge, spin, and method
         #in the charge_spin_info json file.
         with open(psi4_config["charge-spin-info"], "r") as f:
@@ -175,9 +174,10 @@ class Psi4Utils:
         mol = self.get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
         self.setup_dft_parameters(psi4_config)
         if os.path.isfile(psi4_config["moldenfile"]):
+            #logic to transfer the TC coefficients to Psi4
             psi4.core.set_output_file(rundir + '/' + filename + '.dat', False)
             # 1-step SCF
-            #Needed to get a wfn file to populate with the molden results
+            #run very crudely, only goal is to get the wfn object, will later populate with the molden results
             psi4.set_options({
                 "maxiter": 5,
                 "D_CONVERGENCE": 1e5,
@@ -186,8 +186,7 @@ class Psi4Utils:
             #If def2-TZVP, converge in def2-SV(P) first, since expecting to project up from def2-SV(P)
             if psi4_config["basis"] == "def2-tzvp":
                 psi4.set_options({"basis": "def2-sv(p)"})
-            #If the initial calculation was done with B3LYP and a HFX not equal to 20, use version defined in
-            #b3lyp_hfx above
+            #If the initial calculation was done with B3LYP and a HFX not equal to 20, use functional defined in b3lyp_hfx
             if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                 print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
                 e, wfn = psi4.energy("scf", dft_functional=self.b3lyp_hfx(psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
@@ -195,19 +194,20 @@ class Psi4Utils:
                 e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
             wfn.to_file(rundir + "/wfn-1step.180")
             # Get converged WFN
-            #do by loading the TC molden file
             d_molden = load_molden(psi4_config["moldenfile"])
             #if calculation restricted or not, checking for rks or rhf references
             restricted = True if any(x in psi4_config["ref"] for x in ["r", "R"]) else False
             #initialize TCtoPsi4 class and use to convert molden to wfn
-            if psi4_config["basis"] == "lacvps":
+            if psi4_config["basis"] == "lacvps" or '6-31g' in psi4_config['basis']:
+                #currently only support Cartesian calculation in Psi4 with 6-31g*
                 converter = TCtoPsi4(psi4_config['basis'], 'Cartesian')
                 Ca, Cb, mapping = converter.tcmolden2psi4wfn_ao_mapping(d_molden, restricted=restricted)
             elif 'def2' in psi4_config['basis']:
+                #currrently only support Spherical calculation in Psi4 with def2 basis sets
                 converter = TCtoPsi4(psi4_config['basis'], 'Spherical')
                 Ca, Cb, mapping = converter.tcmolden2psi4wfn_ao_mapping(d_molden, restricted=restricted)
             else:
-                raise ValueError('Unsuppoorted Basis Set encountered! Please use LACVP* or def2 basis sets.')
+                raise ValueError('Unsuppoorted Basis Set encountered! Please use 6-31G, LACVP*, or def2 basis sets.')
             #populate the 1-step SCF wfn with the coefficients from the molden
             wfn_minimal_np = np.load(rundir + "/wfn-1step.180.npy", allow_pickle=True)
             wfn_minimal_np[()]['matrix']["Ca"] = Ca
@@ -256,6 +256,7 @@ class Psi4Utils:
         #If using def2-TZVP, did the first calculation in def2-SV(P), so do another calculation to get TZVP.
         if psi4_config["basis"] == "def2-tzvp" and sucess:
             #allow for more iterations since doing a projection
+            #TODO: seems to not use the converged sv(p) guess, write over the TC guess with the Psi4 result?
             psi4.set_options({"basis": "def2-tzvp", "maxiter": 200 if "maxiter" not in psi4_config else psi4_config["maxiter"]})
             try:
                 if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
@@ -267,7 +268,8 @@ class Psi4Utils:
             except:
                 print("This calculation does not converge.")
         success = run_utils.check_sucess()
-        for filename in os.listdir("./"):
+        #remove copied wfn file, psi4 log files
+        for filename in os.listdir('./'):
             if ("psi." in filename) or ("default" in filename):
                 print("removing: :", filename)
                 os.remove(filename)

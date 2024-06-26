@@ -110,7 +110,7 @@ def b3lyp_hfx():
         b3lyp_d["b3lyp_" + str(hfx)] = hfx_func
     return b3lyp_d
 
-#moved to psi4_utils, edited so that not running in the b3lyp folder, but rather in the parent folder
+#moved to psi4_utils, edited there so that not running in the b3lyp folder, but rather in the parent folder
 def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     b3lyp_d = b3lyp_hfx()
     psi4_scr = './'
