@@ -1,3 +1,5 @@
+#Functionality being moved to run_utils.py, psi4_utils.py
+
 import psi4
 import os
 import numpy as np
@@ -9,7 +11,7 @@ from jobmanager.psi4_utils.molden2psi4wfn import tcmolden2psi4wfn_ao_mapping
 from jobmanager.psi4_utils.molden2psi4wfn_spherical import tcmolden2psi4wfn_ao_mapping_spherical
 from importlib_resources import files as resource_files
 
-
+#moved to psi4_utils
 def lacvps(mol, role):
     '''
     Define the LACVP* basis set.
@@ -30,7 +32,7 @@ def lacvps(mol, role):
     mol.set_basis_by_symbol("hf", "lanl2dz", role=role)
     return basstrings
 
-
+#moved to psi4_utils
 def get_molecule(xyzfile, charge, spin, sym='c1'):
     '''
     Assemble a molecule object from xyzfile, charge and spin.
@@ -46,7 +48,7 @@ def get_molecule(xyzfile, charge, spin, sym='c1'):
     mol = psi4.geometry("""%s""" % wholetext)
     return mol
 
-
+#moved to psi4_utils
 def setup_dft_parameters(psi4_config):
     psi4.set_memory(psi4_config["memory"])
     psi4.set_num_threads(psi4_config["num_threads"])
@@ -75,12 +77,12 @@ def setup_dft_parameters(psi4_config):
         # "BASIS_GUESS": True,
         "guess": "read", })
 
-
+#moved to run_utils
 def ensure_dir(dirpath):
     if not os.path.isdir(dirpath):
         os.makedirs(dirpath)
 
-
+#moved to run_utils
 def check_sucess():
     success = False
     with open("output.dat", "r") as fo:
@@ -89,7 +91,7 @@ def check_sucess():
         success = True
     return success
 
-
+#moved to psi4_utils
 def b3lyp_hfx():
     b3lyp_d = {}
     for hfx in [0, 5, 10, 15, 20, 25, 30, 35, 40]:
@@ -108,7 +110,7 @@ def b3lyp_hfx():
         b3lyp_d["b3lyp_" + str(hfx)] = hfx_func
     return b3lyp_d
 
-
+#moved to psi4_utils, edited so that not running in the b3lyp folder, but rather in the parent folder
 def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     b3lyp_d = b3lyp_hfx()
     psi4_scr = './'
