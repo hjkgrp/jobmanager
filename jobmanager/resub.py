@@ -104,7 +104,7 @@ def resub(directory=None, verbose=False, dryrun=False):
         finished_previous = None
     else:
         with open(directory + '/.job_history.json', 'r') as f:
-            job_history_dict = json.loads(f.readline)
+            job_history_dict = json.load(f)
         finished_previous = job_history_dict['Finished']
     completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict,
                                                verbose=verbose, finished_prev=finished_previous)
