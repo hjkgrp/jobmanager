@@ -594,7 +594,9 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False, verbos
             return False
 
     active_jobs = list(filter(check_active, outfiles))
-    finished = list(filter(check_finished, outfiles)) + finished_prev
+    finished = list(filter(check_finished, outfiles))
+    if finished_prev:
+        finished.extend(finished_prev)
     needs_resub = list(filter(check_needs_resub, outfiles))
     waiting = list(filter(check_waiting, outfiles))
     spin_contaminated = list(filter(check_spin_contaminated, outfiles))
