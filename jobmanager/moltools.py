@@ -235,7 +235,7 @@ def get_metal_and_bonded_atoms(job_outfile, geometry=None):
     return metal_index, bonded_atom_indices
 
 
-def check_completeness(directory=None, max_resub=5, configure_dict=False, verbose=False):
+def check_completeness(directory=None, max_resub=5, configure_dict=False, verbose=False, finished_prev=None):
     """Get metal and bonded atoms of complex.
 
     Parameters
@@ -255,7 +255,7 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False, verbos
     """
     if directory is None:
         directory = os.getcwd()
-    completeness = tools.check_completeness(directory, max_resub, configure_dict=configure_dict, verbose=verbose)
+    completeness = tools.check_completeness(directory, max_resub, configure_dict=configure_dict, verbose=verbose, finished_prev=finished_prev)
     # print("=======")
     # print("completeness: ", completeness)
     # The check_completeness() function in tools doesn't check the geometries (because it's molSimplify dependent)
