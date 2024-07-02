@@ -491,7 +491,8 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False, verbos
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find_calcs(directory, extension='.out')
     outfiles = list(filter(check_valid_outfile, outfiles))
-    outfiles = list(filter(check_finished_outfile(finished=finished_prev), outfiles))
+    if finished_prev is not None:
+        outfiles = list(filter(lambda x: check_finished_outfile(x, finished=finished_prev), outfiles))
     if verbose:
         print(f"Found {len(outfiles)} output files. Checking for completeness.", flush=True)
     results_tmp = [io.read_outfile(outfile, short_ouput=True) for outfile in outfiles]
