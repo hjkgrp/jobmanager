@@ -100,7 +100,17 @@ def resub(directory=None, verbose=False, dryrun=False):
     hard_job_limit = configure_dict['hard_job_limit']
     hit_queue_limit = False  # Describes if this run has limitted the number of jobs submitted to work well with the queue
     # Get the state of all jobs being managed by this instance of the job manager
-    completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict, verbose=verbose)
+    if not os.path.exists(directory + '/.job_history.json'):
+        finished_previous = None
+    else:
+        with open(directory + '/.job_history.json', 'r') as f:
+            job_history_dict = json.loads(f.readline)
+        finished_previous = job_history_dict['Finished']
+    completeness = moltools.check_completeness(directory, max_resub, configure_dict=configure_dict,
+                                               verbose=verbose, finished_prev=finished_previous)
+    with open(directory + '/.job_history.json', "w") as js:
+        json.dump(completeness, js)
+
     # print("completeness: ", completeness)
     errors = completeness['Error']  # These are calculations which failed to complete
     scf_errors = completeness['SCF_Error']  # These are calculations which failed to complete, appear to have an scf error, and hit wall time

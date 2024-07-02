@@ -288,7 +288,7 @@ def SGE_list_active_jobs(ids=False, home_directory=False):
         line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
         for line_index in line_indices_of_jobnames:
             job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
-        
+
         if len(names) != len(job_ids):
             print(len(names))
             print(len(job_ids))
@@ -361,7 +361,7 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     if (ids and parse_bundles) or (parse_bundles and not home_directory):
         raise Exception('Incompatible options passed to list_active_jobs()')
-    
+
     if not home_directory:
         home_directory = os.getcwd()
 
@@ -460,7 +460,14 @@ def check_terminated_no_scf(path, results_dict):
         else:
             return False
 
-def check_completeness(directory=None, max_resub=5, configure_dict=False, verbose=False):
+def check_finished_outfile(path, finished):
+    #for filtering - if path is not in finished, keep that file
+    if path in finished:
+        return False
+    else:
+        return True
+
+def check_completeness(directory=None, max_resub=5, configure_dict=False, verbose=False, finished_prev=None):
     """Checks whether or not a directory is completed by the job manager.
 
     Parameters
@@ -484,6 +491,7 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False, verbos
     ## Takes a directory, returns lists of finished, failed, and in-progress jobs
     outfiles = find_calcs(directory, extension='.out')
     outfiles = list(filter(check_valid_outfile, outfiles))
+    outfiles = list(filter(check_finished_outfile(finished=finished_prev), outfiles))
     if verbose:
         print(f"Found {len(outfiles)} output files. Checking for completeness.", flush=True)
     results_tmp = [io.read_outfile(outfile, short_ouput=True) for outfile in outfiles]
@@ -585,7 +593,7 @@ def check_completeness(directory=None, max_resub=5, configure_dict=False, verbos
             return False
 
     active_jobs = list(filter(check_active, outfiles))
-    finished = list(filter(check_finished, outfiles))
+    finished = list(filter(check_finished, outfiles)) + finished_prev
     needs_resub = list(filter(check_needs_resub, outfiles))
     waiting = list(filter(check_waiting, outfiles))
     spin_contaminated = list(filter(check_spin_contaminated, outfiles))
