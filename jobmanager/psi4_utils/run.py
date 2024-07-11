@@ -91,7 +91,7 @@ def check_sucess():
         success = True
     return success
 
-#moved to psi4_utils
+#redundant with get_hfx_functional, removed in psi4_utils
 def b3lyp_hfx():
     b3lyp_d = {}
     for hfx in [0, 5, 10, 15, 20, 25, 30, 35, 40]:
@@ -212,7 +212,7 @@ def run_b3lyp(psi4_config, rundir="./b3lyp", return_wfn=True):
     os.chdir(basedir)
     return success
 
-
+#moved to psi4_utils, edited there to run in the parent folder instead of in the functional subfolder
 def run_general(psi4_config, functional="b3lyp", return_wfn=False):
     b3lyp_d = b3lyp_hfx()
     psi4_scr = './'
@@ -279,7 +279,7 @@ def run_general(psi4_config, functional="b3lyp", return_wfn=False):
     os.chdir(basedir)
     return success
 
-
+#moved to psi4_utils, edited there to run in the parent directory.
 def run_general_hfx(psi4_config, functional, hfx, wfn):
     psi4_scr = './'
     filename = "output"
@@ -322,7 +322,7 @@ def run_general_hfx(psi4_config, functional, hfx, wfn):
     os.chdir(basedir)
     return success
 
-
+#moved to psi4_utils
 def get_hfx_functional(functional, hfx):
     fmap = {"tpss": "TPSS", "scan": "SCAN", "m06-l": "M06_L", "mn15-l": "MN15_L"}
     if functional == "bp86":
@@ -371,7 +371,7 @@ def get_hfx_functional(functional, hfx):
         raise ValueError("This functional has not been implemented with HFX resampling yet: ", functional)
     return hfx_func
 
-
+#moved to run_utils
 def write_jobscript(psi4_config):
     if "cluster" not in psi4_config:
         mem = int(psi4_config['memory'].split(" ")[0])/1000
@@ -516,7 +516,7 @@ def write_jobscript(psi4_config):
                 fo.write("cp outdat.zip $homedir\n")
             fo.write("echo all done.\n")
 
-
+#moved to run_utils.py. Edited so that the files are copied to the parent directory, so the files/commands may need to be modified to match.
 def run_bash(cmd, basedir, rundir):
     os.chdir(rundir)
     infile = resource_files("jobmanager").joinpath("psi4_utils/loop_run.py")

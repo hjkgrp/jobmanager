@@ -122,28 +122,52 @@ class Psi4Utils:
             # "BASIS_GUESS": True,
             "guess": "read", })
         
-    def b3lyp_hfx(self, hfx):
-        """
-        Given a percentage HFX, returns a string that can specify a custom B3LYP with
-        that HFX.
-
-        B3LYP originally uses 20% HFX with the 80% non-HF exchange being split between
-        0.08 LDA and 0.72 B88. This retains the 90:10 split between B and LDA while allowing
-        for scaling of the absolute non-HF exchange fraction to values != 20.
-        Retains the correlation mixing, 81% LYP and 19% VWN.
-        """
-        hfx_func = {
-            "name": "hfx_func",
-            "x_functionals": {
-                "GGA_X_B88": {"alpha": 0.9*(1-hfx*0.01)},
-                "LDA_X": {"alpha": 0.1*(1-hfx*0.01)}
-                    },
-            "x_hf": {"alpha": hfx*0.01},
-            "c_functionals": {
-                "GGA_C_LYP": {"alpha": 0.81},
-                "LDA_C_VWN_RPA": {"alpha": 0.19}
+    def get_hfx_functional(self, functional, hfx):
+        fmap = {"tpss": "TPSS", "scan": "SCAN", "m06-l": "M06_L", "mn15-l": "MN15_L"}
+        if functional == "bp86":
+            hfx_func = {
+                "name": "hfx_func",
+                "x_functionals": {"GGA_X_B88": {"alpha": 1-hfx*0.01}},
+                "x_hf": {"alpha": hfx*0.01},
+                "c_functionals": {"GGA_C_P86": {}}
             }
-        }
+        elif functional == "blyp":
+            hfx_func = {
+                "name": "hfx_func",
+                "x_functionals": {"GGA_X_B88": {"alpha": 1-hfx*0.01}},
+                "x_hf": {"alpha": hfx*0.01},
+                "c_functionals": {"GGA_C_LYP": {}}
+            }
+        elif functional == "b3lyp":
+            hfx_func = {
+                "name": "hfx_func",
+                "x_functionals": {
+                    "GGA_X_B88": {"alpha": 0.9*(1-hfx*0.01)},
+                    "LDA_X": {"alpha": 0.1*(1-hfx*0.01)}
+                        },
+                "x_hf": {"alpha": hfx*0.01},
+                "c_functionals": {
+                    "GGA_C_LYP": {"alpha": 0.81},
+                    "LDA_C_VWN_RPA": {"alpha": 0.19}
+                }
+            }
+        elif functional == "pbe":
+            hfx_func = {
+                "name": "hfx_func",
+                "x_functionals": {"GGA_X_PBE": {"alpha": 1-hfx*0.01}},
+                "x_hf": {"alpha": hfx*0.01},
+                "c_functionals": {"GGA_C_PBE": {}}
+            }
+        elif functional in ["m06-l", "mn15-l", "scan", "tpss"]:
+            mega = "" if "PBE" in functional else "M"
+            hfx_func = {
+                "name": "hfx_func",
+                "x_functionals": {"%sGGA_X_%s" % (mega, fmap[functional]): {"alpha": 1-hfx*0.01}},
+                "x_hf": {"alpha": hfx*0.01},
+                "c_functionals": {"%sGGA_C_%s" % (mega, fmap[functional]): {}}
+            }
+        else:
+            raise ValueError("This functional has not been implemented with HFX resampling yet: ", functional)
         return hfx_func
     
 
@@ -172,7 +196,7 @@ class Psi4Utils:
         #set up the molecule and calculation parameters
         sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
         mol = self.get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
-        self.setup_dft_parameters(psi4_config)
+        self.setup_dft_parameters()
         if os.path.isfile(psi4_config["moldenfile"]):
             #logic to transfer the TC coefficients to Psi4
             psi4.core.set_output_file(rundir + '/' + filename + '.dat', False)
@@ -186,10 +210,10 @@ class Psi4Utils:
             #If def2-TZVP, converge in def2-SV(P) first, since expecting to project up from def2-SV(P)
             if psi4_config["basis"] == "def2-tzvp":
                 psi4.set_options({"basis": "def2-sv(p)"})
-            #If the initial calculation was done with B3LYP and a HFX not equal to 20, use functional defined in b3lyp_hfx
+            #If the initial calculation was done with B3LYP and a HFX not equal to 20, use functional defined in get_hfx_functional
             if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                 print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
-                e, wfn = psi4.energy("scf", dft_functional=self.b3lyp_hfx(psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
+                e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
             wfn.to_file(rundir + "/wfn-1step.180")
@@ -246,7 +270,7 @@ class Psi4Utils:
             if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                 #if calculation was done with a HFX different from 20, use custom B3LYP
                 print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
-                e, wfn = psi4.energy("scf", self.b3lyp_hfx(psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
+                e, wfn = psi4.energy("scf", self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
             wfn.to_file(rundir + "/wfn.180")
@@ -261,15 +285,139 @@ class Psi4Utils:
             try:
                 if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                     print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
-                    e, wfn = psi4.energy("scf", self.b3lyp_hfx(psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
+                    e, wfn = psi4.energy("scf", self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
                 else:
                     e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
-                wfn.to_file("wfn.180")
+                wfn.to_file(rundir + "/wfn.180")
             except:
                 print("This calculation does not converge.")
         success = run_utils.check_sucess()
         #remove copied wfn file, psi4 log files
         for filename in os.listdir('./'):
+            if ("psi." in filename) or ("default" in filename):
+                print("removing: :", filename)
+                os.remove(filename)
+        return success
+
+    def run_general(self, functional="b3lyp", return_wfn=False,
+                    psi4_scr='./', filename='output'):
+        """
+        From a directory, launches calculations with other functionals from the .wfn specified in the functional input.
+        Does so in subdirectories with names corresponding to the functional names.
+        """
+        #Make the subdirectory, load relevant information
+        psi4_config = self.config
+        rundir = "./" + functional.replace("(", "l-").replace(")", "-r")
+        with open(psi4_config["charge-spin-info"], "r") as f:
+            d = json.load(f)
+        psi4_config.update(d)
+        run_utils = RunUtils()
+        run_utils.ensure_dir(rundir)
+
+        #Set up Psi4 parameters
+        psi4.core.set_output_file(rundir + '/' + filename + '.dat', False)
+        sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
+        mol = self.get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
+        self.setup_dft_parameters()
+
+        # Copy wfn file to the right place with a right name---
+        pid = str(os.getpid())
+        targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
+        if os.path.isfile(psi4_config["wfnfile"]):
+            shutil.copyfile(psi4_config["wfnfile"], targetfile)
+        
+        # Final scf---
+        psi4.set_options({
+            "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
+            "D_CONVERGENCE": 3e-5,
+            "E_CONVERGENCE": 3e-5,
+            "fail_on_maxiter": True})
+        
+        if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
+            try:
+                if "hfx_" not in functional:
+                    #Run Psi4 calculation without HFX adjustment
+                    e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+                else:
+                    #Define custom functional with adjusted HFX
+                    basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
+                    print("HFX sampling: ", basefunc, hfx)
+                    e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
+                if return_wfn:
+                    wfn.to_file(rundir + "/wfn.180")
+            except:
+                print("This calculation does not converge.")
+        else:
+            #If a CC, MP2, or HF (SCF) calculation
+            #Does not use the molden as the initial guess
+            print("running CC: ", functional)
+            psi4.set_options({
+                'reference': d['ref'].replace("ks", "hf"),
+                'R_CONVERGENCE': 1e-5,
+                'E_CONVERGENCE': 5e-5,
+                'D_CONVERGENCE': 5e-5,
+                "mp2_type": "df",
+                "cc_type": "conv",
+                "scf_type": "df",
+                'nat_orbs': True,
+                'FREEZE_CORE': True,
+                "GUESS": "SAD",
+                })
+            e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+            if return_wfn:
+                wfn.to_file(rundir + "/wfn.180")
+        #Remove temporary files
+        success = run_utils.check_sucess()
+        for filename in os.listdir("./"):
+            if ("psi." in filename) or ("default" in filename):
+                print("removing: :", filename)
+                os.remove(filename)
+        return success
+    
+    def run_general_hfx(self, functional, hfx, wfn,
+                        psi4_scr='./', filename='output'):
+        """
+        From a converged calculation (given in wfn), calculates the energy using
+        functional and hfx.
+        """
+        #Set up folders and configuration
+        psi4_config = self.config
+        rundir = "./" + functional + "-%d" % hfx
+        with open(psi4_config["charge-spin-info"], "r") as f:
+            d = json.load(f)
+        psi4_config.update(d)
+        run_utils = RunUtils()
+        run_utils.ensure_dir(rundir)
+
+        #Set up parameters
+        psi4.core.set_output_file(rundir + '/' + filename + '.dat', False)
+        sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
+        mol = self.get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
+        self.setup_dft_parameters()
+
+        # Copy wfn file to the right place with a right name---
+        pid = str(os.getpid())
+        targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
+        if not os.path.isfile(wfn):
+            #If the referenced wfn is not found, skip
+            print("Previous calculation failed... This one is skipped.")
+            return False
+        shutil.copyfile(wfn, targetfile)
+        # Final scf---
+        psi4.set_options({
+            "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
+            "D_CONVERGENCE": 3e-5,
+            "E_CONVERGENCE": 3e-5,
+            "fail_on_maxiter": True})
+        try:
+            e, wfn_o = psi4.energy("scf", molecule=mol, return_wfn=True, dft_functional=self.get_hfx_functional(functional, hfx))
+            wfn_o.to_file(rundir + "/wfn.180")
+            # os.remove(wfn)
+        except:
+            print("This calculation does not converge.")
+        success = run_utils.check_sucess()
+        #remove temporary files
+        for filename in os.listdir("./"):
             if ("psi." in filename) or ("default" in filename):
                 print("removing: :", filename)
                 os.remove(filename)
