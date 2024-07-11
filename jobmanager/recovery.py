@@ -325,7 +325,7 @@ def clean_resub(outfile_path):
     else:
         raise ValueError('No coordinates idenfied for clean in resubmission in directory ' + os.getcwd())
 
-    configure_dict = io.read_configure('in_place', outfile_path)
+    configure_dict = io.read_configure(outfile_path=outfile_path)
 
     infile_dict['coordinates'] = coordinates
     infile_dict['method'] = configure_dict['method']
