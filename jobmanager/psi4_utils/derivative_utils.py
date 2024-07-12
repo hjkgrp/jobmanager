@@ -84,7 +84,7 @@ class DerivativeUtils():
         """
         print("====running for====: ", job)
         success = False
-        psi4_utils = Psi4Utils()
+        psi4_utils = Psi4Utils(psi4_config)
         if run_func == 'run_b3lyp':
             run_func = psi4_utils.run_b3lyp()
         elif run_func == 'run_general':
@@ -112,7 +112,7 @@ class DerivativeUtils():
             #Resubmit B3LYP calculation
             if resubed:
                 print("previous errored out. resubmitting...")
-                success = psi4_utils.run_func(psi4_config, return_wfn=True)
+                success = psi4_utils.run_func(rundir=job+'/b3lyp', return_wfn=True)
                 print("success: ", success)
                 if success:
                     success_count += 1

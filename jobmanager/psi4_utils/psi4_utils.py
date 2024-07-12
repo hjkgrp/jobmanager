@@ -375,7 +375,7 @@ class Psi4Utils:
                 os.remove(filename)
         return success
     
-    def run_general_hfx(self, functional, hfx, wfn,
+    def run_general_hfx(self, functional, hfx, wfn, return_wfn=True,
                         psi4_scr='./', filename='output'):
         """
         From a converged calculation (given in wfn), calculates the energy using
@@ -412,7 +412,8 @@ class Psi4Utils:
             "fail_on_maxiter": True})
         try:
             e, wfn_o = psi4.energy("scf", molecule=mol, return_wfn=True, dft_functional=self.get_hfx_functional(functional, hfx))
-            wfn_o.to_file(rundir + "/wfn.180")
+            if return_wfn:
+                wfn_o.to_file(rundir + "/wfn.180")
             # os.remove(wfn)
         except:
             print("This calculation does not converge.")
