@@ -1,3 +1,7 @@
+#Moved to derivative_utils.py
+#This function will only check the convergence of the B3LYP calculation,
+#so edited there to clarify this.
+
 import os
 from typing import Callable
 

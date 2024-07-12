@@ -178,16 +178,19 @@ class RunUtils():
                     fo.write("cp outdat.zip $homedir\n")
                 fo.write("echo all done.\n")
 
-    def run_bash(self, cmd):
+    def run_bash(self, cmd, psi4_config):
         """
         Copies all of the relevant python scripts from the jobmanager repo to the base directory,
         where calculations will be run.
         """
-        infile = resource_files("jobmanager").joinpath("psi4_utils/loop_run.py")
-        shutil.copy(infile, "./")
-        infile_rescue = resource_files("jobmanager").joinpath("psi4_utils/loop_rescue.py")
-        shutil.copy(infile_rescue, "./")
-        infile_deriv = resource_files("jobmanager").joinpath("psi4_utils/loop_derivative_jobs.py")
-        shutil.copy(infile_deriv, "./")
+        if "trigger" in psi4_config:
+            infile_deriv = resource_files("jobmanager").joinpath("psi4_utils/loop_derivative_jobs.py")
+            shutil.copy(infile_deriv, "./")
+        else:
+            infile = resource_files("jobmanager").joinpath("psi4_utils/loop_run.py")
+            shutil.copy(infile, "./")
+            if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
+                infile_rescue = resource_files("jobmanager").joinpath("psi4_utils/loop_rescue.py")
+                shutil.copy(infile_rescue, "./")
         print("Executing: ", cmd, "at: ", './')
         subprocess.call(cmd, shell=True)

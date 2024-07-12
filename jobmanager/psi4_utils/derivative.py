@@ -1,3 +1,5 @@
+#Moved to derivative_utils.py
+
 import os
 import operator
 from typing import List
@@ -49,7 +51,7 @@ def derivative_tree(path: str = "./", trigger: str = "_derivNo_") -> list:
     jobs = dict(sorted(jobs.items(), key=operator.itemgetter(0)))
     return list(jobs.keys())
 
-
+#Altered in derivative_utils so that derivative calculations are executed from the parent directory
 def get_wfn_path(jobs, ii):
     assert ii > 0
     return "../../" + jobs[ii - 1] + "/b3lyp/wfn.180.npy"

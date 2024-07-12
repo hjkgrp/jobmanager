@@ -291,7 +291,8 @@ class Psi4Utils:
                 wfn.to_file(rundir + "/wfn.180")
             except:
                 print("This calculation does not converge.")
-        success = run_utils.check_sucess()
+        #Check if the B3LYP calculation succeeded
+        success = run_utils.check_sucess(path=rundir)
         #remove copied wfn file, psi4 log files
         for filename in os.listdir('./'):
             if ("psi." in filename) or ("default" in filename):
@@ -299,7 +300,7 @@ class Psi4Utils:
                 os.remove(filename)
         return success
 
-    def run_general(self, functional="b3lyp", return_wfn=False,
+    def run_general(self, functional="b3lyp", rundir="./", return_wfn=False,
                     psi4_scr='./', filename='output'):
         """
         From a directory, launches calculations with other functionals from the .wfn specified in the functional input.
@@ -307,7 +308,7 @@ class Psi4Utils:
         """
         #Make the subdirectory, load relevant information
         psi4_config = self.config
-        rundir = "./" + functional.replace("(", "l-").replace(")", "-r")
+        rundir = rundir + functional.replace("(", "l-").replace(")", "-r")
         with open(psi4_config["charge-spin-info"], "r") as f:
             d = json.load(f)
         psi4_config.update(d)
@@ -366,8 +367,8 @@ class Psi4Utils:
             e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
             if return_wfn:
                 wfn.to_file(rundir + "/wfn.180")
-        #Remove temporary files
-        success = run_utils.check_sucess()
+        #Check success, Remove temporary files
+        success = run_utils.check_sucess(path=rundir)
         for filename in os.listdir("./"):
             if ("psi." in filename) or ("default" in filename):
                 print("removing: :", filename)
@@ -415,7 +416,7 @@ class Psi4Utils:
             # os.remove(wfn)
         except:
             print("This calculation does not converge.")
-        success = run_utils.check_sucess()
+        success = run_utils.check_sucess(path=rundir)
         #remove temporary files
         for filename in os.listdir("./"):
             if ("psi." in filename) or ("default" in filename):
