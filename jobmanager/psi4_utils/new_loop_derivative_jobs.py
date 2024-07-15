@@ -8,11 +8,6 @@ import os
 import json
 from jobmanager.psi4_utils.derivative_utils import DerivativeUtils
 
-#from jobmanager.psi4_utils.run import run_b3lyp, run_general
-#from jobmanager.psi4_utils.derivative import derivative_tree, get_wfn_path
-#from jobmanager.psi4_utils.stable_run import run_with_check
-
-
 success_count = 0
 with open("psi4_config.json", "r") as f:
     psi4_config = json.load(f)

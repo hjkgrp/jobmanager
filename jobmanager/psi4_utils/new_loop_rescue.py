@@ -5,7 +5,6 @@
 import os
 import json
 import shutil
-import numpy as np
 from jobmanager.psi4_utils.psi4_utils import Psi4Utils
 
 with open("psi4_config.json", "r") as f:

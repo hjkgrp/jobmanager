@@ -23,7 +23,7 @@ class RunUtils():
         and that the output file is named output.dat.
         """
         success = False
-        with open(path + output_name, "r") as fo:
+        with open(path + '/' + output_name, "r") as fo:
             txt = "".join(fo.readlines())
         #Psi4 will write Computation Completed once the calculation finishes.
         if 'Computation Completed' in txt:
@@ -55,17 +55,18 @@ class RunUtils():
                 fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
 
                 if "trigger" in psi4_config:
-                    fo.write("python -u loop_derivative_jobs.py  > $SGE_O_WORKDIR/deriv_nohup1.out\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs()'  > $SGE_O_WORKDIR/deriv_nohup1.out\n")
                 else:
-                    fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
-                    fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err\n")
-                    fo.write("python -u loop_run.py  > $SGE_O_WORKDIR/nohup3.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup3.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                     if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
                         fo.write("echo rescuing...\n")
-                        fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup1.out\n")
-                        fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup2.out\n")
-                        fo.write("python -u loop_rescue.py > $SGE_O_WORKDIR/rescue_nohup3.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup1.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup2.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup3.out\n")
                 fo.write("cp -rf * $SGE_O_WORKDIR\n")
+                fo.write("sleep 30\n")
         elif psi4_config["cluster"] == "supercloud":
             mem = int(psi4_config['memory'].split(" ")[0])/1000
             with open("./jobscript.sh", "w") as fo:
@@ -178,19 +179,8 @@ class RunUtils():
                     fo.write("cp outdat.zip $homedir\n")
                 fo.write("echo all done.\n")
 
-    def run_bash(self, cmd, psi4_config):
+    def run_bash(self, cmd):
         """
-        Copies all of the relevant python scripts from the jobmanager repo to the base directory,
-        where calculations will be run.
+        Runs the specified bash command from the current directory.
         """
-        if "trigger" in psi4_config:
-            infile_deriv = resource_files("jobmanager").joinpath("psi4_utils/loop_derivative_jobs.py")
-            shutil.copy(infile_deriv, "./")
-        else:
-            infile = resource_files("jobmanager").joinpath("psi4_utils/loop_run.py")
-            shutil.copy(infile, "./")
-            if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
-                infile_rescue = resource_files("jobmanager").joinpath("psi4_utils/loop_rescue.py")
-                shutil.copy(infile_rescue, "./")
-        print("Executing: ", cmd, "at: ", './')
         subprocess.call(cmd, shell=True)

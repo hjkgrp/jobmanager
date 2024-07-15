@@ -55,6 +55,8 @@ class Psi4Utils:
         if os.path.isfile(xyzfile):
             with open(xyzfile, "r") as fo:
                 natoms = int(fo.readline().split()[0])
+                #skip the comment line, append all remaining lines
+                fo.readline()
                 for ii in range(natoms):
                     wholetext += fo.readline()
         else:

@@ -516,8 +516,7 @@ def write_jobscript(psi4_config):
                 fo.write("cp outdat.zip $homedir\n")
             fo.write("echo all done.\n")
 
-#moved to run_utils.py. Edited so that the files are copied to the parent directory, so the files/commands may need to be modified to match.
-#Also edited so that only the relevant scripts are copied over
+#Moved to run_utils.py, copying python files deprecated.
 def run_bash(cmd, basedir, rundir):
     os.chdir(rundir)
     infile = resource_files("jobmanager").joinpath("psi4_utils/loop_run.py")

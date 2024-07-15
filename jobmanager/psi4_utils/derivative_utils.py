@@ -66,7 +66,7 @@ class DerivativeUtils():
         jobs = dict(sorted(jobs.items(), key=operator.itemgetter(1)))
         return list(jobs.keys())
     
-    def get_wfn_path(jobs, ii):
+    def get_wfn_path(self, jobs, ii):
         """
         Gets the path of the .wfn file from the ii-th item in jobs.
 
@@ -75,7 +75,7 @@ class DerivativeUtils():
         assert ii > 0
         return './' + jobs[ii - 1] + "/b3lyp/wfn.180.npy"
     
-    def run_with_check(job: str, psi4_config: dict,
+    def run_with_check(self, job: str, psi4_config: dict,
                        run_func: str, success_count: int,
                        error_scf: bool = True):
         """
@@ -85,14 +85,13 @@ class DerivativeUtils():
         print("====running for====: ", job)
         success = False
         psi4_utils = Psi4Utils(psi4_config)
-        if run_func == 'run_b3lyp':
-            run_func = psi4_utils.run_b3lyp()
-        elif run_func == 'run_general':
-            run_func = psi4_utils.run_general()
         
         #If the B3LYP folder does not exist, run from TC molden
-        if not os.path.isdir(job + "/b3lyp"):
-            success = psi4_utils.run_func(rundir=job+'/b3lyp', return_wfn=True)
+        if not os.path.isdir("b3lyp"):
+            if run_func == 'run_b3lyp':
+                success = psi4_utils.run_b3lyp(rundir='./b3lyp', return_wfn=True)
+            elif run_func == 'run_general':
+                success = psi4_utils.run_general(rundir='./', return_wfn=True)
             print("success: ", success)
             if success:
                 success_count += 1
@@ -102,25 +101,28 @@ class DerivativeUtils():
             resubed = False
             #need to resubmit if no output or if no iterations in output
             functional = "b3lyp"
-            if not os.path.isfile(job + '/' + functional + "/output.dat"):
+            if not os.path.isfile(functional + "/output.dat"):
                 resubed = True
             else:
-                with open(job + '/' + functional + "/output.dat", "r") as fo:
+                with open('./' + functional + "/output.dat", "r") as fo:
                     txt = "".join(fo.readlines())
                 if "==> Iterations <==" not in txt:
                     resubed = True
             #Resubmit B3LYP calculation
             if resubed:
                 print("previous errored out. resubmitting...")
-                success = psi4_utils.run_func(rundir=job+'/b3lyp', return_wfn=True)
+                if run_func == 'run_b3lyp':
+                    success = psi4_utils.run_b3lyp(rundir='./b3lyp', return_wfn=True)
+                elif run_func == 'run_general':
+                    success = psi4_utils.run_general(rundir='./', return_wfn=True)
                 print("success: ", success)
                 if success:
                     success_count += 1
             else:
                 #If the output file exists and iterations were reached, check for error messages
-                with open(job + '/' + functional + "/output.dat", "r") as fo:
+                with open(functional + "/output.dat", "r") as fo:
                     txt = "".join(fo.readlines())
-                if 'PsiException: Could not converge SCF iterations' not in txt and os.path.isfile(job + '/' + functional + "/wfn.180.npy"):
+                if 'PsiException: Could not converge SCF iterations' not in txt and os.path.isfile(functional + "/wfn.180.npy"):
                     #Success if no SCF error and a wfn file was written
                     print("success: ", True)
                     success = True
