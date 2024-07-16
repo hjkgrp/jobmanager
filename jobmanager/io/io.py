@@ -13,7 +13,8 @@ TC2GEN_KEYS = {
     'epsilon':'solvent', 'run':'run_type',
     'levelshiftvala':'levelshifta', 'levelshiftvalb':'levelshiftb',
     'method':'method', 'basis':'basis', 'coordinates':'coordinates','guess':'guess',
-    'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid'
+    'dynamicgrid':'dynamicgrid','gpus':'parallel_environment','dftgrid':'dftgrid',
+    'scf':'scf', 'maxit':'maxscf'
     }
 
 GEN2TC_KEYS = {val:key for key, val in TC2GEN_KEYS.items()}
@@ -111,6 +112,11 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     scf_error = False
     time = None
     thermo_grad_error = False
+
+    #terminated and no scf cycles were ran
+    terminated = False
+    no_scf = False
+
     implicit_solvation_energy = None
     geo_opt_cycles = None
     thermo_vib = None
@@ -164,13 +170,26 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
 
         is_finished = output.wordgrab(['finished:'], 'whole_line', last_line=True)[0]
         if is_finished:  # for full optimization
+            if not is_finished[0].isalnum():
+                is_finished = is_finished[1:]
             if is_finished[0] == 'Job' and is_finished[1] == 'finished:':
                 finished = True
 
-        is_finished = output.wordgrab(['processing'], 'whole_line', last_line=True)[0]
-        if is_finished:  # for hydrogen optimization
-            if is_finished[0] == 'Total' and is_finished[1] == 'processing':
-                finished = True
+        # is_finished = output.wordgrab(['processing'], 'whole_line', last_line=True)[0]
+        # if is_finished:  # for hydrogen optimization
+        #     if is_finished[0] == 'Total' and is_finished[1] == 'processing':
+        #         finished = True
+
+        #terminated
+        is_terminated = output.wordgrab(['terminated:'],'whole_line',last_line=True)[0]
+        if is_terminated: #
+            if is_terminated[0] == 'Job' and is_terminated[1]== 'terminated:':
+                terminated = True
+
+        #is_no_scf
+        is_no_scf = output.wordgrab(['*** Start SCF Iterations ***'], 'whole_line')[0]
+        if is_no_scf[0] == None:
+            no_scf = True
 
         is_scf_error = output.wordgrab('DIIS', 5, matching_index=True)[0]
         if is_scf_error[0]:
@@ -246,6 +265,11 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
     return_dict['orbital_occupation'] = orbital_occupation
     return_dict['oscillating_scf_error'] = oscillating_scf_error
     return_dict['outfile_path'] = outfile_path
+
+    #
+    return_dict['terminated'] = terminated
+    return_dict['no_scf'] = no_scf
+
     return return_dict
 
 
@@ -265,7 +289,7 @@ def read_terachem_input(input_textfile):
             while not line.startswith('$'):
                 line = next(lines)
         else:
-            key, val = line.split(None, 1)
+            key, val = line.split(maxsplit=1)
             if key in tc_dict:
                 print(f'{key:s} specified multiple times. Ignoring value {val:s}')
             else:
@@ -343,7 +367,10 @@ def gen2tc_inp(inp_dict):
     Returns a Terachem input dictionary from a general one.
     '''
     temp = inp_dict.copy()
+
     tc_dict = temp.pop('unrecognized_terachem')
+    if tc_dict is None:
+        tc_dict = dict()
 
     ## required for how jobmanager currently treats convergence thresholds
     if 'convergence_thresholds' in temp and temp['convergence_thresholds']:
@@ -352,10 +379,11 @@ def gen2tc_inp(inp_dict):
             if temp_list[i]:
                 tc_dict[key] = temp_list[i]
 
-    if 'multibasis' in temp:
+    if 'multibasis' in temp and temp['multibasis']:
         tc_dict['$multibasis'] = temp.pop('multibasis')
 
-    if 'constraints' in temp:
+
+    if 'constraints' in temp and temp['constraints']:
         tc_dict["$constraint_freeze"] = temp.pop('constraints')
     if 'dispersion' in temp:
         dispersion = temp.pop('dispersion')
@@ -397,6 +425,8 @@ def read_infile(outfile_path):
     if qm_code == 'terachem':
         tc_dict = read_terachem_input(inp)
         return_dict = tc2gen_inp(tc_dict)
+        if 'name' not in return_dict:
+            return_dict['name'] = return_dict['coordinates'].strip('.xyz')
         return return_dict
 
 
@@ -453,7 +483,7 @@ def read_infile(outfile_path):
 # Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
 # The global configure file should be in the same directory where resub() is called
 # The local configure file should be in the same directory as the .out file
-def read_configure(home_directory, outfile_path):
+def read_configure(home_directory=None, outfile_path=None):
     def load_configure_file(directory):
         def strip_new_line(string):
             if string[-1] == '\n':
@@ -461,7 +491,7 @@ def read_configure(home_directory, outfile_path):
             else:
                 return string
 
-        if directory == 'in place':
+        if directory is None:
             directory = os.getcwd()
 
         configure = os.path.join(directory, 'configure')
@@ -635,8 +665,8 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
                 guess=False, custom_line=None, levelshifta=0.25, levelshiftb=0.25,
                 convergence_thresholds=None, basis='lacvps_ecp', hfx=None, constraints=None,
                 multibasis=False, coordinates=False, dispersion=False, qm_code='terachem',
-                parallel_environment=4, precision='dynamic', dftgrid=2, dynamicgrid='yes',
-                machine='gibraltar'):
+                parallel_environment=1, precision='dynamic', dftgrid=2, dynamicgrid='yes',
+                machine='gibraltar', debug=False, scf='diis+a', maxscf=500):
     # Writes a generic input file for terachem or ORCA
     # The neccessary parameters can be supplied as arguements or as a dictionary. If supplied as both, the dictionary takes priority
     infile = dict()
@@ -644,12 +674,12 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
     for prop, prop_name in zip([charge, spinmult, solvent, run_type, levelshifta, levelshiftb, method, hfx,
                                 basis, convergence_thresholds, multibasis, constraints, dispersion, coordinates,
                                 guess, custom_line, qm_code, parallel_environment, name, precision, dftgrid,
-                                dynamicgrid, machine],
+                                dynamicgrid, machine, scf, maxscf],
                                ['charge', 'spinmult', 'solvent', 'run_type', 'levelshifta', 'levelshiftb', 'method',
                                 'hfx',
                                 'basis', 'convergence_thresholds', 'multibasis', 'constraints', 'dispersion',
                                 'coordinates', 'guess', 'unrecognized_terachem', 'qm_code', 'parallel_environment', 'name',
-                                'precision', 'dftgrid', 'dynamicgrid', 'machine']):
+                                'precision', 'dftgrid', 'dynamicgrid', 'machine', 'scf', 'maxscf']):
         if prop_name in list(input_dictionary.keys()):
             infile[prop_name] = input_dictionary[prop_name]
         else:
@@ -657,7 +687,11 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
 
     if (not infile['charge'] and infile['charge'] != 0) or (not infile['spinmult'] and infile['spinmult'] != 0) or (
             not infile['name']) or (not infile['coordinates']):
-        print(('Name: ' + infile['name']))
+
+        if infile['name']:
+            print(('Name: ' + infile['name']))
+        else:
+            print(f'XYZ file: {infile["coordinates"]}')
         print(('Charge: ' + str(infile['charge'])))
         print(('Spinmult: ' + str(infile['spinmult'])))
         raise Exception('Minimum parameters not specified for writing infile')
@@ -665,9 +699,13 @@ def write_input(input_dictionary=dict(), name=None, charge=None, spinmult=None,
         print(('Charge Type: ' + str(type(infile['charge']))))
         print(('Spinmult Type: ' + str(type(infile['spinmult']))))
         raise Exception('Spin and Charge should both be integers!')
-
+    if debug:
+        print(infile)
     if infile['qm_code'] == 'terachem':
-        write_terachem_input(infile['name'] + '.in', gen2tc_inp(infile))
+        tc_dict = gen2tc_inp(infile)
+        if tc_dict['levelshiftvala'] or tc_dict['levelshiftvalb']:
+            tc_dict['levelshift'] = 'yes'
+        write_terachem_input(infile['name'] + '.in', tc_dict)
     elif infile['qm_code'] == 'orca':
         write_orca_input(infile)
     else:
@@ -1003,7 +1041,9 @@ def get_scf_progress(outfile):
             if "Start SCF Iterations" in line:
                 start = True
                 energy_this_scf = []
-            if len(ll) == 11 and ll[0].isdigit() and start:
+            is_scf_line = start and len(ll) == 11 and ll[0].isdigit()
+            is_scf_line = is_scf_line or (start and len(ll) == 12 and ll[1].isdigit())
+            if is_scf_line:
                 energy_this_scf.append(float(ll[-2]))
             if "FINAL ENERGY:" in line and start:
                 start = False

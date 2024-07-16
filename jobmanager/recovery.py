@@ -325,7 +325,7 @@ def clean_resub(outfile_path):
     else:
         raise ValueError('No coordinates idenfied for clean in resubmission in directory ' + os.getcwd())
 
-    configure_dict = io.read_configure('in_place', outfile_path)
+    configure_dict = io.read_configure(outfile_path=outfile_path)
 
     infile_dict['coordinates'] = coordinates
     infile_dict['method'] = configure_dict['method']
@@ -582,7 +582,7 @@ def resub_bad_geo(outfile_path, home_directory):
         directory = os.path.split(outfile_path)[0]
         infile_dict = io.read_infile(outfile_path)
 
-        if infile_dict['constraints']:
+        if 'constraints' in infile_dict and infile_dict['constraints']:
             raise Exception(
                 'resub.py does not currently support the use of external atom constraints. These will be overwritten by clean_resub() during job recovery')
 

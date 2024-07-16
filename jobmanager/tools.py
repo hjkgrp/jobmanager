@@ -17,6 +17,12 @@ FILE_ENDINGS = {
     '.out': 'output'
 }
 
+MACHINES = {
+    'gibraltar': {'scheduler': 'SGE'},
+    'supercloud': {'scheduler': 'SLURM'},
+    'expanse': {'scheduler': 'SLURM'}
+}
+
 
 def find_calcs(dirpath, extension='.xyz', original=None):
     """Find calculations that need to be run by extension.
@@ -45,9 +51,9 @@ def find_calcs(dirpath, extension='.xyz', original=None):
 
     for new_path in walk_dirs:
         if original:
-            yield from find_calcs(new_path, original=original)
+            yield from find_calcs(new_path, extension=extension, original=original)
         else:
-            yield from find_calcs(new_path, original=dirpath)
+            yield from find_calcs(new_path, extension=extension, original=dirpath)
     for path in calc_paths:
         if original:
             yield path[len(original)+1:]
@@ -181,26 +187,22 @@ def get_machine():
 
     """
     # Gets the identity of the machine job_manager is being run on!
-    hostname = call_bash('hostname')[0]
-    if 'bridges.psc' in hostname:
-        machine = 'bridges'
-    elif 'gibraltar' in hostname:
-        machine = 'gibraltar'
-    elif 'comet' in hostname:
-        machine = 'comet'
-    elif 'home' in hostname:
-        machine = 'gibraltar'
-    elif "mustang" in hostname:
-        machine = "mustang"
-    elif "gridsan" in hostname or "login-" in hostname:
-        machine = "supercloud"
-    else:
-        hostname = call_bash('hostname -A')[0]
-        if "expanse" in hostname:
-            machine = "expanse"
+    hostname = call_bash('hostname -a')[0]
+    test = [m for m in MACHINES if m in hostname]
+    if test:
+        if len(test) == 1:
+            return test[0]
         else:
-            raise ValueError('Machine Unknown to Job Manager')
-    return machine
+            raise ValueError(f'Machine ambiguous: {test}')
+    hostname = call_bash('hostname -A')[0]
+    test = [m for m in MACHINES if m in hostname]
+    if test:
+        if len(test) == 1:
+            return test[0]
+        else:
+            raise ValueError(f'Machine ambiguous: {test}')
+    else:
+        raise ValueError('Machine Unknown to Job Manager')
 
 def get_username():
     """Gets the identity of the user running jobs.
@@ -236,7 +238,7 @@ def convert_to_absolute_path(path):
 
     return abspath
 
-def create_summary(directory='in place'):
+def create_summary(directory=None):
     """This function creates a summary of the jobs in a given path.
 
     Parameters
@@ -250,14 +252,90 @@ def create_summary(directory='in place'):
             The dataframe of the summary as a pandas dataframe.
 
     """
+    if directory is None:
+        directory = os.getcwd()
     # Returns a pandas dataframe which summarizes all outfiles in the directory, defaults to cwd
-
-    outfiles = find('*.out', directory)
+    outfiles = find_calcs(directory, extension='.out')
     outfiles = list(filter(check_valid_outfile, outfiles))
     results = list(map(io.read_outfile, outfiles))
     summary = pd.DataFrame(results)
 
     return summary
+
+
+def SGE_list_active_jobs(ids=False, home_directory=False):
+    """List jobs that are currently running.
+
+    Parameters
+    ----------
+        ids : bool, optional
+            Return job IDs.
+        home_directory : bool, optional
+            Give path to home directory. Default is in place.
+    Returns
+    -------
+        names : list
+            Names of all of the jobs that are running.
+
+    """
+    job_report = textfile()
+    job_report.lines = call_bash("qstat -r")
+    names = job_report.wordgrab('jobname:', 2)[0]
+    names = [i for i in names if i]  # filters out NoneTypes
+    if ids:
+        job_ids = []
+        line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
+        line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
+        for line_index in line_indices_of_jobnames:
+            job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
+
+        if len(names) != len(job_ids):
+            print(len(names))
+            print(len(job_ids))
+            raise Exception('An error has occurred in listing active job IDs!')
+        return names, job_ids
+
+    return names
+
+
+def SLURM_list_active_jobs(ids=False, home_directory=False,):
+    """List jobs that are currently running.
+
+    Parameters
+    ----------
+        ids : bool, optional
+            Return job IDs.
+        home_directory : bool, optional
+            Give path to home directory. Default is in place.
+        parse_bundles : bool, optional
+            Look through bundled jobs. Default is False.
+
+    Returns
+    -------
+        names : list
+            Names of all of the jobs that are running.
+        job_ids : list
+            The job IDs for the jobs that are running. Only returned if ids set to True.
+
+    """
+    job_report = textfile()
+    username = get_username()
+    cmd = 'squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+username
+    job_report.lines = call_bash(cmd, version=2)
+    names = job_report.wordgrab(username, 2)[0]
+    names = [i for i in names if i]  # filters out NoneTypes
+    if ids:
+        job_ids = []
+        line_indices_of_jobnames = job_report.wordgrab(username, 2, matching_index=True)[0]
+        line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
+        for line_index in line_indices_of_jobnames:
+                job_ids.append(int(job_report.lines[line_index].split()[0]))
+        if len(names) != len(job_ids):
+            print(len(names))
+            print(len(job_ids))
+            raise Exception('An error has occurred in listing active job IDs!')
+        return names, job_ids
+    return names
 
 def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
     """List jobs that are currently running.
@@ -283,48 +361,20 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
 
     if (ids and parse_bundles) or (parse_bundles and not home_directory):
         raise Exception('Incompatible options passed to list_active_jobs()')
-    if home_directory == 'in place':
+
+    if not home_directory:
         home_directory = os.getcwd()
 
-    job_report = textfile()
-    try:
-        if get_machine() == 'gibraltar':
-            job_report.lines = call_bash("qstat -r")
-        elif get_machine() in ['comet', 'bridges','expanse']:
-            job_report.lines = call_bash('squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+get_username(),
-                                         version=2)
-        else:
-            raise ValueError
-    except:
-        job_report.lines = []
-    if get_machine() == 'gibraltar':
-        names = job_report.wordgrab('jobname:', 2)[0]
-        names = [i for i in names if i]  # filters out NoneTypes
-    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse']:
-        names = job_report.wordgrab(get_username(), 2)[0]
-        names = [i for i in names if i]  # filters out NoneTypes
+    machine = get_machine()
+    if MACHINES[machine]['scheduler'] == 'SGE':
+        res = SGE_list_active_jobs(ids=ids, home_directory=home_directory)
+    elif MACHINES[machine]['scheduler'] == 'SLURM':
+        res = SLURM_list_active_jobs(ids=ids, home_directory=home_directory)
     else:
         raise ValueError
-    if ids:
-        job_ids = []
-        if get_machine() == 'gibraltar':
-            line_indices_of_jobnames = job_report.wordgrab('jobname:', 2, matching_index=True)[0]
-        elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse']:
-            line_indices_of_jobnames = job_report.wordgrab(get_username(), 2, matching_index=True)[0]
-        line_indices_of_jobnames = [i for i in line_indices_of_jobnames if i]  # filters out NoneTypes
-        for line_index in line_indices_of_jobnames:
-            if get_machine() == 'gibraltar':
-                job_ids.append(int(job_report.lines[line_index - 1].split()[0]))
-            elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse']:
-                job_ids.append(int(job_report.lines[line_index].split()[0]))
-        if len(names) != len(job_ids):
-            print(len(names))
-            print(len(job_ids))
-            raise Exception('An error has occurred in listing active jobs!')
-        return names, job_ids
 
     if parse_bundles and os.path.isfile(os.path.join(home_directory, 'bundle', 'bundle_id')):
-
+        names = res
         with open(os.path.join(home_directory, 'bundle', 'bundle_id'), 'r') as fil:
             identifier = fil.readlines()[0]
 
@@ -338,8 +388,9 @@ def list_active_jobs(ids=False, home_directory=False, parse_bundles=False):
                 lines = fil.readlines()
             lines = [i[:-1] if i.endswith('\n') else i for i in lines]
             names.extend(lines)
-
-    return names
+        return names
+    else:
+        return res
 
 def get_number_active():
     """Gets number of active jobs in the queue. Only count jobs from current directory.
@@ -402,7 +453,21 @@ def get_total_queue_usage():
 
     return len(jobs)
 
-def check_completeness(directory='in place', max_resub=5, configure_dict=False):
+def check_terminated_no_scf(path, results_dict):
+        results = results_dict[path]
+        if results['terminated'] and results['no_scf']:
+            return True
+        else:
+            return False
+
+def check_finished_outfile(path, finished):
+    #for filtering - if path is not in finished, keep that file
+    if path in finished:
+        return False
+    else:
+        return True
+
+def check_completeness(directory=None, max_resub=5, configure_dict=False, verbose=False, finished_prev=None):
     """Checks whether or not a directory is completed by the job manager.
 
     Parameters
@@ -420,18 +485,27 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
             Results of checking the directory for completeness.
 
     """
-    ## Takes a directory, returns lists of finished, failed, and in-progress jobs
-    outfiles = find('*.out', directory)
-    outfiles = list(filter(check_valid_outfile, outfiles))
+    if directory is None:
+        directory = os.getcwd()
 
+    ## Takes a directory, returns lists of finished, failed, and in-progress jobs
+    outfiles = find_calcs(directory, extension='.out')
+    outfiles = list(filter(check_valid_outfile, outfiles))
+    if finished_prev is not None:
+        outfiles = list(filter(lambda x: check_finished_outfile(x, finished=finished_prev), outfiles))
+    if verbose:
+        print(f"Found {len(outfiles)} output files. Checking for completeness.", flush=True)
     results_tmp = [io.read_outfile(outfile, short_ouput=True) for outfile in outfiles]
     results_tmp = list(zip(outfiles, results_tmp))
     results_dict = dict()
     for outfile, tmp in results_tmp:
         results_dict[outfile] = tmp
         # print(outfile, tmp['oscillating_scf_error'])
-
-    active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
+    if directory == 'in place':
+        print("using 'in place' is deprecated")
+        active_jobs = list_active_jobs(parse_bundles=True)
+    else:
+        active_jobs = list_active_jobs(home_directory=directory, parse_bundles=True)
 
     def check_finished(path, results_dict=results_dict):
         # Return True if the outfile corresponds to a complete job, False otherwise
@@ -506,6 +580,12 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
         else:
             return False
 
+    def check_terminated_no_scf_inner(path, results_dict=results_dict):
+        return check_terminated_no_scf(path, results_dict)
+
+    ########
+
+
     def check_thermo_grad_error(path, results_dict=results_dict):
         results = results_dict[path]
         if results['thermo_grad_error']:
@@ -515,6 +595,8 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
 
     active_jobs = list(filter(check_active, outfiles))
     finished = list(filter(check_finished, outfiles))
+    if finished_prev:
+        finished.extend(finished_prev)
     needs_resub = list(filter(check_needs_resub, outfiles))
     waiting = list(filter(check_waiting, outfiles))
     spin_contaminated = list(filter(check_spin_contaminated, outfiles))
@@ -524,6 +606,9 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     chronic_errors = list(filter(check_chronic_failure, outfiles))
     errors = list(set(outfiles) - set(active_jobs) - set(finished))
     scf_errors = list(filter(check_scf_error, errors))
+
+    ######
+    terminated_no_scf = list(filter(check_terminated_no_scf_inner,outfiles))
 
     # Look for additional active jobs that haven't yet generated outfiles
     jobscript_list = find('*_jobscript', directory)
@@ -536,10 +621,10 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
     # A job always gets labelled as active if it fits that criteria, even if it's in every other category too
 
     priority_list = [active_jobs, chronic_errors, waiting, thermo_grad_errors,
-                     oscillating_scf_errors, scf_errors, errors, spin_contaminated, needs_resub, finished]
+                     oscillating_scf_errors, scf_errors, terminated_no_scf, errors, spin_contaminated, needs_resub, finished]
     priority_list_names = ['Active', 'Chronic_errors', 'Waiting', 'Thermo_grad_error',
-                           'oscillating_scf_errors', 'SCF_Error', 'Error', 'Spin_contaminated', 'Needs_resub',
-                           'Finished']
+                           'oscillating_scf_errors', 'SCF_Error', 'Terminated_No_SCF_cycle', 'Error', 'Spin_contaminated',
+                           'Needs_resub', 'Finished']
     # return (priority_list, priority_list_names)
     priority_list = priority_sort(priority_list)
 
@@ -554,7 +639,7 @@ def check_completeness(directory='in place', max_resub=5, configure_dict=False):
 
     return results
 
-def find(key, directory='in place', maxdepth=False):
+def find(key, directory=None, maxdepth=False):
     """Uses the bash find command.
 
     Parameters
@@ -574,7 +659,7 @@ def find(key, directory='in place', maxdepth=False):
     """
     ## Looks for all files with a matching key in their name within directory
     #  @return A list of paths
-    if directory == 'in place':
+    if directory is None:
         directory = os.getcwd()
     if maxdepth:
         bash = 'find ' + directory + ' -name ' + key + ' -maxdepth '+str(maxdepth)
@@ -612,7 +697,7 @@ def qsub(jobscript_list):
         if get_machine() in ['gibraltar']:
             stdout, stderr = call_bash('qsub ' + jobscript, error=True)
             stdouts.append(stdout)
-        elif get_machine() in ['bridges', 'comet', 'expanse']:
+        elif get_machine() in ['supercloud','bridges', 'comet', 'expanse']:
             stdout, stderr = call_bash('sbatch ' + jobscript, error=True)
             stdouts.append(stdout)
         if len(stderr) > 0:
@@ -1065,17 +1150,28 @@ def prep_ad_spin(path):
             else:
                 os.mkdir(PATH)
                 os.chdir(PATH)
-                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
-
                 local_infile_dict = copy.copy(infile_dict)
-                local_infile_dict['charge'], local_infile_dict['guess'] = infile_dict['charge'], False
+                shutil.copyfile(os.path.join(base, 'scr', 'optimized.xyz'), os.path.join(PATH, name + '.xyz'))
+                if infile_dict['spinmult'] == 1:
+                    shutil.copy(os.path.join(base, 'scr', 'c0'), 'c0')
+                    io.write_jobscript(name, custom_line='# -fin c0', machine=get_machine())
+                    local_infile_dict['guess'] = 'c0'
+                elif infile_dict['spinmult'] != 1:
+                    shutil.copyfile(os.path.join(base, 'scr', 'ca0'), os.path.join('ca0'))
+                    shutil.copyfile(os.path.join(base, 'scr', 'cb0'), os.path.join('cb0'))
+                    local_infile_dict['guess'] = 'ca0 cb0'
+                    io.write_jobscript(name, custom_line=['# -fin ca0\n', '# -fin cb0\n'],
+                                            machine=get_machine())
+
+
+
+                local_infile_dict['charge']= infile_dict['charge']
                 local_infile_dict['run_type'], local_infile_dict['spinmult'] = 'minimize', calc
                 local_infile_dict['name'] = name
                 local_infile_dict['coordinates'] = name+'.xyz'
                 local_infile_dict['machine'] = get_machine()
 
                 io.write_input(local_infile_dict)
-                io.write_jobscript(name, machine=get_machine())
                 jobscripts.append(os.path.join(PATH, name + '_jobscript'))
     os.chdir(home)
     return jobscripts
@@ -1654,3 +1750,50 @@ def prep_hfx_resample(path, hfx_values=[0, 5, 10, 15, 20, 25, 30]):
     os.chdir(home)
 
     return jobscripts
+
+def check_queue(directory=None):
+    if directory is None:
+        directory = os.getcwd()
+    for input_file in find_calcs(directory, extension='.in'):
+        jobscript = input_file.rsplit('.in',1)[0] + '_jobscript'
+        if os.path.exists(jobscript):
+            with open(jobscript, 'r') as j:
+                jobscript_lines = j.readlines()
+
+            if get_machine()=='gibraltar':
+                gpu = None
+                queue, qlinenum = None, None
+                threads, tlinenum = None, None
+                for linenum, line in enumerate(jobscript_lines):
+                    if '-pe' in line:
+                        gpu = int(line.split(' ')[-1])
+                    elif '-q' in line:
+                        queue = line.split(' ')[-1].strip('\n').split('|')
+                        qlinenum = linenum
+                    elif 'export OMP_NUM_THREADS' in line:
+                        threads = int(line.split(' ')[-1].split('=')[1])
+                        tlinenum = linenum
+
+                xyz_file = input_file.rsplit('.in',1)[0] + '.xyz'
+                with open(xyz_file, 'r') as xyz:
+                    num_atoms = int(next(xyz))
+
+                if ('small' in queue) and num_atoms>=100:
+                    queue.remove('small')
+
+                if ('gpusbig' in queue) and gpu==1:
+                    queue.remove('gpusbig')
+                elif ('gpusbig' not in queue) and gpu>1:
+                    queue.insert(0,'gpusbig')
+                new_line = '#$ -q ' + '|'.join(queue)+'\n'
+                jobscript_lines[qlinenum]=new_line
+
+                if gpu != threads:
+                    threads = gpu
+                    new_line = f'export OMP_NUM_THREADS={gpu}\n'
+                    jobscript_lines[tlinenum]=new_line
+
+                with open(jobscript, 'w') as js:
+                    js.writelines(jobscript_lines)
+        else:
+            print(f"{input_file} doesn't have an associated jobscript")
