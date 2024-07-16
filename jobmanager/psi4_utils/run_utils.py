@@ -1,7 +1,6 @@
 import os
 from importlib_resources import files as resource_files
 import subprocess
-import shutil
 
 class RunUtils():
     """
