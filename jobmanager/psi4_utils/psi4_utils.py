@@ -19,15 +19,18 @@ class Psi4Utils:
         """
         LACVP* basis set: H-Ar are 6-31G*, rest are LANL2DZ.
 
-        mol is a psi4.core.Molecule object
-
         Sets the basis set for all atoms to 6-31g* and then
         sets later elements to lanl2dz.
 
-        In the format required for psi4.qcdb.libmintsbasisset.basishorde
-
-        Returns an empty dictionary since setting the basis to LACVP* does
-        not introduce any new basis set that a basis string would be needed for
+        Parameters:
+            mol: psi4.core.Molecule object
+                Molecule you are setting the basis set for
+            role: (?)
+                Required for psi4.qcdb.libmintsbasisset.basishorde format
+        Outputs:
+            bassstrings: dict
+                Returns an empty dictionary since setting the basis to LACVP* does
+                not introduce any new basis set that a basis string would be needed for
         """
         basstrings = {}
         mol.set_basis_all_atoms("6-31g*", role=role)
@@ -48,6 +51,17 @@ class Psi4Utils:
         """
         From an xyzfile, charge, and spin, construct a Psi4 molecule object.
         If multiple structures present in the xyz file, will read the first one.
+
+        Parameters:
+            xyzfile: str
+                Path to the xyz file used to construct the molecule.
+            charge, spin: int
+                Charge and spin multiplicity of the molecule.
+            sym: str
+                Symmetry of the molecule.
+        Outputs:
+            mol: psi4.geometry
+                Object that the Psi4 calculations can be performed on.
         """
         #Psi4 expects charge, spin as 2 integers on first line
         wholetext = "%s %s\n" % (charge, spin)
@@ -125,6 +139,18 @@ class Psi4Utils:
             "guess": "read", })
         
     def get_hfx_functional(self, functional, hfx):
+        """
+        Returns a functional with adjusted HFX percentage.
+
+        Parameters:
+            functional: str
+                Functional one wants to adjust the HFX for.
+            hfx: int
+                Percentage HFX one wants to use in the functional.
+        Outputs:
+            hfx_func: dict
+                Functional with adjusted HFX in the format desired for Psi4.
+        """
         fmap = {"tpss": "TPSS", "scan": "SCAN", "m06-l": "M06_L", "mn15-l": "MN15_L"}
         if functional == "bp86":
             hfx_func = {
@@ -185,6 +211,16 @@ class Psi4Utils:
         starting from the TC initial guess.
 
         Results will be stored in rundir as a subdirectory of the current directory.
+
+        Parameters:
+            rundir: str
+                Path where the B3LYP calculation results and wavefunctions will be stored.
+            return_wfn: bool
+                Whether or not the wfn file should be written after the calculation.
+            psi4_scr: str
+                Path of the Psi4 scratch directory.
+            filename: str
+                Name out the output .dat file containing results.
         """
         psi4_config = self.config
         #update the Psi4 config with the charge, spin, and method
@@ -307,6 +343,19 @@ class Psi4Utils:
         """
         From a directory, launches calculations with other functionals from the .wfn specified in the functional input.
         Does so in subdirectories with names corresponding to the functional names.
+
+        Parameters:
+            functional: str
+                Name of the functional one wants to run.
+            rundir: str
+                Path where all functional calculations are run from.
+                Results will be stored in the path rundir+functional.
+            return_wfn: bool
+                Whether or not the wfn file should be written after the calculation.
+            psi4_scr: str
+                Path of the Psi4 scratch directory.
+            filename: str
+                Name out the output .dat file containing results.
         """
         #Make the subdirectory, load relevant information
         psi4_config = self.config
@@ -378,14 +427,31 @@ class Psi4Utils:
         return success
     
     def run_general_hfx(self, functional, hfx, wfn, return_wfn=True,
-                        psi4_scr='./', filename='output'):
+                        psi4_scr='./', filename='output', rundir='./'):
         """
         From a converged calculation (given in wfn), calculates the energy using
         functional and hfx.
+
+        Parameters:
+            functional: str
+                Name of the functional one wants to run.
+            hfx: int
+                Percentage of HFX to use in the calculation.
+            wfn: str
+                Path to the .wfn file used for reference. 
+            return_wfn: bool
+                Whether or not the wfn file should be written after the calculation.
+            psi4_scr: str
+                Path of the Psi4 scratch directory.
+            filename: str
+                Name out the output .dat file containing results.
+            rundir: str
+                Path where all functional calculations are run from.
+                Results will be stored in the path rundir+functional-hfx.
         """
         #Set up folders and configuration
         psi4_config = self.config
-        rundir = "./" + functional + "-%d" % hfx
+        rundir = rundir + functional + "-%d" % hfx
         with open(psi4_config["charge-spin-info"], "r") as f:
             d = json.load(f)
         psi4_config.update(d)

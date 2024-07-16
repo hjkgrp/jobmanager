@@ -13,7 +13,15 @@ class DerivativeUtils():
 
     def get_subfolders(self, path: str = "./") -> list:
         """
-        Gets all subfolders in the specified path
+        Gets all subfolders in the specified path.
+
+        Parameters:
+            path: str
+                Path to get subfolders of.
+
+        Outputs:
+            folders: list
+                List of subfolders in path.
         """
         files = os.listdir(path)
         folders = []
@@ -27,6 +35,15 @@ class DerivativeUtils():
         Returns a dictionary mapping folders of derivative jobs to their job number.
         Raises errors if the trigger for derivative jobs does not appear or if there
         are multiple base jobs.
+
+        Parameters:
+            folders: list
+                List of folder names.
+            trigger: str
+                Substring to be used to denote derivative jobs.
+        Outputs:
+            jobs: dict
+                Maps folder names to which job number they are.
         """
         trigger_appear = False
         basename: List[str] = list()
@@ -56,9 +73,17 @@ class DerivativeUtils():
     
     def derivative_tree(self, path: str = "./", trigger: str = "_derivNo_") -> list:
         '''
-        Make a sequence structure for derivative jobs in a path.
+        Make a sequence structure for derivative jobs in a path (specified as path).
+        Derivative jobs are denoted by containing the substring contained in trigger.
 
-        Returns a list of subfolders sorted by the order they should be calculated in.
+        Parameters:
+            folders: list
+                List of folder names.
+            trigger: str
+                Substring to be used to denote derivative jobs.
+        Outputs:
+            list
+                List of folder names in order of when they should be calculated.
         '''
         folders = self.get_subfolders(path)
         jobs = self.sanity_check(folders, trigger=trigger)
@@ -71,6 +96,15 @@ class DerivativeUtils():
         Gets the path of the .wfn file from the ii-th item in jobs.
 
         Assumes calculation run from the parent directory.
+
+        Parameters:
+            jobs:
+                list of folder names that mark jobs.
+            ii: int
+                index of job one wants to get the wfn from.
+        Outputs:
+            str
+                Path of the wfn file in the specified job.
         """
         assert ii > 0
         return './' + jobs[ii - 1] + "/b3lyp/wfn.180.npy"
@@ -81,6 +115,18 @@ class DerivativeUtils():
         """
         Checks if a B3LYP calculation is converged for the specified job.
         If not converged, will resubmit the calculation.
+
+        Parameters:
+            job
+                Gives the name of the folder where the job is being run.
+            psi4_config
+                Loaded JSON file giving the settings of the calculation.
+            run_func
+                Either run_b3lyp or run_general, depending on what should be run
+            success_count
+                Current number of successes.
+            error_scf
+                Whether one wants to continue doing derivative jobs after a SCF error occurs.
         """
         print("====running for====: ", job)
         success = False

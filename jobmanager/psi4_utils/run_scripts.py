@@ -19,6 +19,10 @@ class RunScripts:
         runs Psi4 single points with the specified functionals for each subfolder.
         Calculations are run from the subfolders, specifying geometries to run on,
         and are stored in subsubdirectories corresponding to the functional.
+
+        Parameters:
+            rundir: str
+                Path where the calculation is run from.
         """
 
         #To deal with bash variable paths
@@ -112,6 +116,10 @@ class RunScripts:
         Attempts to converge a calculation by converging it at different
         HFX levels. Specifically, increases HFX to 20% to correspond to B3LYP
         and then steps it down to 0 to match non-hybrid functionals.
+
+        Parameters:
+            rundir: str
+                Path where the calculation is run from.
         """
 
         #To deal with bash variable paths
@@ -211,6 +219,10 @@ class RunScripts:
         converged from the .wfn of the first converged job.
         Should be launched from the parent directory, i.e., the folder containing
         the subfolders containing the trigger for derivative jobs.
+
+        Parameters:
+            rundir: str
+                Path where the calculation is run from.
         """
 
         #To deal with bash variable paths

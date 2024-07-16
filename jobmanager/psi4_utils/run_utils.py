@@ -12,7 +12,13 @@ class RunUtils():
         pass
 
     def ensure_dir(self, dirpath):
-        #Checks if a directory exists. If not, makes that directory.
+        """
+        Checks if a directory exists. If not, makes that directory.
+
+        Parameters:
+            dirpath: str
+                Path of the directory that you want to ensure.
+        """
         if not os.path.isdir(dirpath):
             os.makedirs(dirpath)
 
@@ -21,6 +27,16 @@ class RunUtils():
         Checks if a Psi4 calculation is completed.
         Assumes it is being called in the same directory as the Psi4 output file,
         and that the output file is named output.dat.
+
+        Parameters:
+            path: str
+                Path where the calculation result is stored.
+            output_name: str
+                Name of the output file.
+
+        Returns:
+            success: bool
+                Whether or not the calculation succeeded.
         """
         success = False
         with open(path + '/' + output_name, "r") as fo:
@@ -33,7 +49,11 @@ class RunUtils():
     def write_jobscript(self, psi4_config):
         """
         From a psi4_config JSON file, writes a jobscript for the appropriate cluster.
-        Memory should be specified in MB. 
+        Memory should be specified in MB.
+
+        Parameters:
+            psi4_config: str
+                Path to the psi4_config.json file containing job details.
         """
         if "cluster" not in psi4_config or psi4_config["cluster"] == "gibraltar":
             mem = int(psi4_config['memory'].split(" ")[0])/1000
@@ -91,17 +111,17 @@ class RunUtils():
                 fo.write("cd $TMPDIR\n\n")
 
                 if "trigger" in psi4_config:
-                    fo.write("python -u loop_derivative_jobs.py  > $subdir/deriv_nohup1.out\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs()'  > $SGE_O_WORKDIR/deriv_nohup1.out 2> $SGE_O_WORKDIR/deriv_nohup1.err\n")
                     fo.write("rm */*/psi.* */*/dfh.* */*-*/*.npy */b3lyp/*.molden */b3lyp/*1step*\n")
                 else:
-                    fo.write("python -u loop_run.py  > $subdir/nohup1.out\n")
-                    fo.write("python -u loop_run.py  > $subdir/nohup2.out\n")
-                    fo.write("python -u loop_run.py  > $subdir/nohup3.out\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup3.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                     if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
                         fo.write("echo rescuing...\n")
-                        fo.write("python -u loop_rescue.py > $subdir/rescue_nohup1.out\n")
-                        fo.write("python -u loop_rescue.py > $subdir/rescue_nohup2.out\n")
-                        fo.write("python -u loop_rescue.py > $subdir/rescue_nohup3.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup1.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup2.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup3.out\n")
                     fo.write("rm */psi.* */dfh.* *-*/*.npy b3lyp/*.molden b3lyp/*1step*\n")
                 fo.write("cp -rf * $subdir\n")
         elif psi4_config["cluster"] == "expanse":
@@ -125,17 +145,18 @@ class RunUtils():
                 fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
 
                 if "trigger" in psi4_config:
-                    fo.write("python -u loop_derivative_jobs.py  > deriv_nohup1.out\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs()'  > $SGE_O_WORKDIR/deriv_nohup1.out 2> $SGE_O_WORKDIR/deriv_nohup1.err\n")
                 else:
-                    fo.write("python -u loop_run.py  > nohup1.out\n")
-                    fo.write("python -u loop_run.py  > nohup2.out\n")
-                    fo.write("python -u loop_run.py  > nohup3.out\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup3.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                     if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
                         fo.write("echo rescuing...\n")
-                        fo.write("python -u loop_rescue.py > rescue_nohup1.out\n")
-                        fo.write("python -u loop_rescue.py > rescue_nohup2.out\n")
-                        fo.write("python -u loop_rescue.py > rescue_nohup3.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup1.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup2.out\n")
+                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup3.out\n")
         elif psi4_config["cluster"] == "mustang":
+            #TODO: Update
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#!/bin/bash\n")
                 fo.write("#PBS -N psi4_multiDFA\n")
@@ -182,5 +203,9 @@ class RunUtils():
     def run_bash(self, cmd):
         """
         Runs the specified bash command from the current directory.
+
+        Parameters:
+            cmd: str
+                Bash command you want to run.
         """
         subprocess.call(cmd, shell=True)

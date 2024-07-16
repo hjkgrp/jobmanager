@@ -1,6 +1,6 @@
 import os
 import psi4
-from jobmanager.psi4_utils.run import run_bash
+from jobmanager.psi4_utils.run_utils import RunUtils
 
 
 def test_psi4():
@@ -21,9 +21,7 @@ def test_run_bash(tmpdir):
     # Create the run dir
     os.mkdir(rundir)
     # Actually execute run_bash
-    run_bash(command, tmpdir, rundir)
+    run_utils = RunUtils()
+    run_utils.run_bash(command, tmpdir, rundir)
     # Check that the command "touch test.txt" was executed
     assert os.path.isfile(rundir / "test.txt")
-    # Check that all files were copied
-    for file in ["loop_run.py", "loop_rescue.py", "loop_derivative_jobs.py"]:
-        assert os.path.isfile(rundir / file)
