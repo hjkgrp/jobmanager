@@ -377,6 +377,8 @@ class Psi4Utils:
         targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
         if os.path.isfile(psi4_config["wfnfile"]):
             shutil.copyfile(psi4_config["wfnfile"], targetfile)
+        else:
+            print("wfn file not found! Check that the proper path is specified.")
         
         # Final scf---
         psi4.set_options({
