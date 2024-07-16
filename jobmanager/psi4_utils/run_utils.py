@@ -44,7 +44,7 @@ class RunUtils():
         if 'Computation Completed' in txt:
             success = True
         return success
-    
+
     def write_jobscript(self, psi4_config):
         """
         From a psi4_config JSON file, writes a jobscript for the appropriate cluster.

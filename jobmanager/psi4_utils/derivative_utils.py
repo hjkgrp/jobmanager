@@ -29,7 +29,7 @@ class DerivativeUtils():
             if os.path.isdir(path + "/" + file):
                 folders.append(file)
         return folders
-    
+
     def sanity_check(self, folders: list, trigger: str = "_derivNo_") -> dict:
         """
         Returns a dictionary mapping folders of derivative jobs to their job number.
@@ -70,7 +70,7 @@ class DerivativeUtils():
         if len(folders_ignored):
             print("Warning: The following folders are ignored: %s" % str(folders_ignored))
         return jobs
-    
+
     def derivative_tree(self, path: str = "./", trigger: str = "_derivNo_") -> list:
         '''
         Make a sequence structure for derivative jobs in a path (specified as path).
@@ -90,7 +90,7 @@ class DerivativeUtils():
         #sort by values, which are the derivative numbers
         jobs = dict(sorted(jobs.items(), key=operator.itemgetter(1)))
         return list(jobs.keys())
-    
+
     def get_wfn_path(self, jobs, ii):
         """
         Gets the path of the .wfn file from the ii-th item in jobs.
@@ -108,7 +108,7 @@ class DerivativeUtils():
         """
         assert ii > 0
         return './' + jobs[ii - 1] + "/b3lyp/wfn.180.npy"
-    
+
     def run_with_check(self, job: str, psi4_config: dict,
                        run_func: str, success_count: int,
                        error_scf: bool = True):
@@ -131,7 +131,7 @@ class DerivativeUtils():
         print("====running for====: ", job)
         success = False
         psi4_utils = Psi4Utils(psi4_config)
-        
+
         #If the B3LYP folder does not exist, run from TC molden
         if not os.path.isdir("b3lyp"):
             if run_func == 'run_b3lyp':

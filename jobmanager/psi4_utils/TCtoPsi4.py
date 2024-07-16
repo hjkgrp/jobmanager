@@ -107,12 +107,12 @@ class TCtoPsi4:
             #So, need to shift 2s(1) orbitals right 3, 2p(3) orbitals left one.
             if "-".join([str(x) for x in atom_shell_types]) == "-".join([str(x) for x in [0, 0, 0, 1, 1, 2]]):
                 return {0: 0, 1: 0, 2: 3, 3: -1, 4: 0, 5: 0}  # for TC
-            
+
             # 6-31g on C, O, N...
             #Same as above but with no d function.
             elif "-".join([str(x) for x in atom_shell_types]) == "-".join([str(x) for x in [0, 0, 0, 1, 1]]):
                 return {0: 0, 1: 0, 2: 3, 3: -1, 4: 0}
-            
+
             # 6-31g* on P, S, Cl...
             #Molden is 1s(6), 2s(6), 3s(3), 3s(1), 2p(6), 3p(3), 3p(1), d
             #Generates 1,     1,     1,     1,     3,     3,     3,     6 orbitals
@@ -121,11 +121,11 @@ class TCtoPsi4:
             #So, need to shift 3s(3) orbitals right 3, 3s(1) right 6, 2p(6) left 2, 3p(3) left 1.
             elif "-".join([str(x) for x in atom_shell_types]) == "-".join([str(x) for x in [0, 0, 0, 0, 1, 1, 1, 2]]):
                 return {0: 0, 1: 0, 2: 3, 3: 6, 4: -2, 5: -1, 6: 0, 7: 0}
-            
+
             # 6-31g* on metals
             elif "-".join([str(x) for x in atom_shell_types]) == "-".join([str(x) for x in [0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2]]):
                 return {0: 0, 1: 0, 2: 3, 3: 6, 4: 9, 5: -3, 6: -2, 7: -1, 8: 0, 9: 0, 10: 0}
-            
+
             else:
                 #In LACVP*, the LANL2DZ ordering is the same in TeraChem and Psi4
                 #so just return 0 shift for all of the non-(6-31g) atoms
@@ -150,7 +150,7 @@ class TCtoPsi4:
         //    /  -----------------------------
         //  \/             (2l-1)!!
         //
-        
+
         d_conv, d_conv_inv: conversion metrix.
         source: https://github.com/psi4/psi4/blob/master/psi4/src/psi4/libmints/writer.cc, FCHKWriter
 

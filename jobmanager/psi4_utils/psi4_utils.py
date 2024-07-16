@@ -46,7 +46,7 @@ class Psi4Utils:
         mol.set_basis_by_symbol("Br", "lanl2dz", role=role)
         mol.set_basis_by_symbol("hf", "lanl2dz", role=role)
         return basstrings
-    
+
     def get_molecule(self, xyzfile, charge, spin, sym='c1'):
         """
         From an xyzfile, charge, and spin, construct a Psi4 molecule object.
@@ -82,7 +82,7 @@ class Psi4Utils:
         #store the molecule in the class for reference later
         self.mol = mol
         return mol
-    
+
     def setup_dft_parameters(self):
         """
         Sets up the Psi4 parameters before the DFT calculation is run,
@@ -137,7 +137,7 @@ class Psi4Utils:
             # "DAMPING_PERCENTAGE": 20,
             # "BASIS_GUESS": True,
             "guess": "read", })
-        
+
     def get_hfx_functional(self, functional, hfx):
         """
         Returns a functional with adjusted HFX percentage.
@@ -197,7 +197,7 @@ class Psi4Utils:
         else:
             raise ValueError("This functional has not been implemented with HFX resampling yet: ", functional)
         return hfx_func
-    
+
 
     def run_b3lyp(self, rundir="./b3lyp", return_wfn=True,
                   psi4_scr = './', filename='output'):
@@ -379,14 +379,14 @@ class Psi4Utils:
             shutil.copyfile(psi4_config["wfnfile"], targetfile)
         else:
             print("wfn file not found! Check that the proper path is specified.")
-        
+
         # Final scf---
         psi4.set_options({
             "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
             "D_CONVERGENCE": 3e-5,
             "E_CONVERGENCE": 3e-5,
             "fail_on_maxiter": True})
-        
+
         if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
             try:
                 if "hfx_" not in functional:
@@ -427,7 +427,7 @@ class Psi4Utils:
                 print("removing: :", filename)
                 os.remove(filename)
         return success
-    
+
     def run_general_hfx(self, functional, hfx, wfn, return_wfn=True,
                         psi4_scr='./', filename='output', rundir='./'):
         """
@@ -440,7 +440,7 @@ class Psi4Utils:
             hfx: int
                 Percentage of HFX to use in the calculation.
             wfn: str
-                Path to the .wfn file used for reference. 
+                Path to the .wfn file used for reference.
             return_wfn: bool
                 Whether or not the wfn file should be written after the calculation.
             psi4_scr: str

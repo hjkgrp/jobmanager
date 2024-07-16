@@ -211,11 +211,11 @@ class RunScripts:
                 rescued += 1
                 print("%s has already succeeded!" % functional)
         print("all finished!")
-        
+
     def loop_derivative_jobs(self, rundir='$SGE_O_WORKDIR'):
         """
         From a directory, will converge the B3LYP wavefunctions of all derivative jobs.
-        The first derivative job is converged from the TC molden, while the rest are 
+        The first derivative job is converged from the TC molden, while the rest are
         converged from the .wfn of the first converged job.
         Should be launched from the parent directory, i.e., the folder containing
         the subfolders containing the trigger for derivative jobs.
