@@ -13,7 +13,7 @@ class RunScripts:
     def __init__(self) -> None:
         pass
 
-    def loop_run(self, config_path='$SGE_O_WORKDIR'):
+    def loop_run(self, rundir='$SGE_O_WORKDIR'):
         """
         Runs the Psi4 workflow. From a directory with the Psi4 config and the TC molden,
         runs Psi4 single points with the specified functionals for each subfolder.
@@ -21,7 +21,11 @@ class RunScripts:
         and are stored in subsubdirectories corresponding to the functional.
         """
 
-        with open(config_path + "/../psi4_config.json", "r") as f:
+        #To deal with bash variable paths
+        if rundir[0] == '$':
+            rundir = os.environ[rundir[1:]]
+
+        with open(rundir + "/../psi4_config.json", "r") as f:
             psi4_config = json.load(f)
         success_count = 0
         psi4_utils = Psi4Utils(psi4_config)
@@ -103,14 +107,18 @@ class RunScripts:
         print("total successful jobs : %d/ %d." %
             (success_count, len(psi4_config["functional"]) + 1))
 
-    def loop_rescue(self, config_path='$SGE_O_WORKDIR'):
+    def loop_rescue(self, rundir='$SGE_O_WORKDIR'):
         """
         Attempts to converge a calculation by converging it at different
         HFX levels. Specifically, increases HFX to 20% to correspond to B3LYP
         and then steps it down to 0 to match non-hybrid functionals.
         """
 
-        with open(config_path + "/../psi4_config.json", "r") as f:
+        #To deal with bash variable paths
+        if rundir[0] == '$':
+            rundir = os.environ[rundir[1:]]
+
+        with open(rundir + "/../psi4_config.json", "r") as f:
             psi4_config = json.load(f)
         #List of HFX amounts to use
         alphalist = [20, 15, 10, 5, 2]
@@ -196,7 +204,7 @@ class RunScripts:
                 print("%s has already succeeded!" % functional)
         print("all finished!")
         
-    def loop_derivative_jobs(self, config_path='$SGE_O_WORKDIR'):
+    def loop_derivative_jobs(self, rundir='$SGE_O_WORKDIR'):
         """
         From a directory, will converge the B3LYP wavefunctions of all derivative jobs.
         The first derivative job is converged from the TC molden, while the rest are 
@@ -204,9 +212,14 @@ class RunScripts:
         Should be launched from the parent directory, i.e., the folder containing
         the subfolders containing the trigger for derivative jobs.
         """
+
+        #To deal with bash variable paths
+        if rundir[0] == '$':
+            rundir = os.environ[rundir[1:]]
+
         basedir = os.getcwd()
         success_count = 0
-        with open(config_path + "/psi4_config.json", "r") as f:
+        with open(rundir + "/psi4_config.json", "r") as f:
             psi4_config = json.load(f)
         derivative_utils = DerivativeUtils()
 
