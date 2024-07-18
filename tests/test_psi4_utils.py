@@ -15,10 +15,16 @@ def test_psi4():
 
     assert abs(e + 76.0266327351) < 0.00001
 
-def test_run_bash():
+def test_run_bash(tmpdir):
+    cwd = os.getcwd()
     command = "touch test.txt"
-    # execute run_bash
+    rundir = tmpdir / "run"
+    # Create the run dir
+    rundir.mkdir()
+    os.chdir(rundir)
+    # Actually execute run_bash
     run_utils = RunUtils()
-    run_utils.run_bash(command)
+    run_utils.run_bash(command, tmpdir, rundir)
+    os.chdir(cwd)
     # Check that the command "touch test.txt" was executed
-    assert os.path.isfile("test.txt")
+    assert os.path.isfile(rundir / "test.txt")
