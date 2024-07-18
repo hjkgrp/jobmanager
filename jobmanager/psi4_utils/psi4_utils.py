@@ -142,6 +142,8 @@ class Psi4Utils:
         """
         Returns a functional with adjusted HFX percentage.
 
+        Supported functionals: bp86, blyp, b3lyp, pbe, m06-l, mn15-l, scan, tpss
+
         Parameters:
             functional: str
                 Functional one wants to adjust the HFX for.
@@ -397,8 +399,8 @@ class Psi4Utils:
                     basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
                     print("HFX sampling: ", basefunc, hfx)
                     e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
-                if return_wfn:
-                    wfn.to_file(rundir + "/wfn.180")
+                    if return_wfn:
+                        wfn.to_file(rundir + "/wfn.180")
             except:
                 print("This calculation does not converge.")
         else:
