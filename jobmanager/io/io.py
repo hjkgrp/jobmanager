@@ -483,7 +483,7 @@ def read_infile(outfile_path):
 # Read the global and local configure files to determine the derivative jobs requested and the settings for job recovery
 # The global configure file should be in the same directory where resub() is called
 # The local configure file should be in the same directory as the .out file
-def read_configure(home_directory, outfile_path):
+def read_configure(home_directory=None, outfile_path=None):
     def load_configure_file(directory):
         def strip_new_line(string):
             if string[-1] == '\n':
@@ -491,7 +491,7 @@ def read_configure(home_directory, outfile_path):
             else:
                 return string
 
-        if directory == 'in place':
+        if directory is None:
             directory = os.getcwd()
 
         configure = os.path.join(directory, 'configure')
@@ -1041,7 +1041,9 @@ def get_scf_progress(outfile):
             if "Start SCF Iterations" in line:
                 start = True
                 energy_this_scf = []
-            if len(ll) == 11 and ll[0].isdigit() and start:
+            is_scf_line = start and len(ll) == 11 and ll[0].isdigit()
+            is_scf_line = is_scf_line or (start and len(ll) == 12 and ll[1].isdigit())
+            if is_scf_line:
                 energy_this_scf.append(float(ll[-2]))
             if "FINAL ENERGY:" in line and start:
                 start = False
