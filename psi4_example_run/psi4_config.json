@@ -24,6 +24,6 @@
     "memory": "64000 MB",
     "moldenfile": "geo_tc.molden",
     "num_threads": 12,
-    "wfnfile": "../b3lyp/wfn.180.npy",
+    "wfnfile": "b3lyp/wfn.180.npy",
     "xyzfile": "opt_geo.xyz"
 }

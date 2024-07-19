@@ -9,7 +9,7 @@ import jobmanager.tools as tools
 import jobmanager.moltools as moltools
 import jobmanager.recovery as recovery
 from jobmanager.io import io
-from jobmanager.psi4_utils.run import write_jobscript, run_bash
+from jobmanager.psi4_utils.run_utils import RunUtils
 import jobmanager.classes as classes
 
 def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
@@ -346,33 +346,24 @@ def resub(directory=None, verbose=False, dryrun=False):
 
 def resub_psi4(psi4_config):
     basedir = os.getcwd()
+    if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang" or psi4_config["cluster"] == "gibraltar":
+        cmd = "qsub jobscript.sh"
+    else:
+        cmd = "sbatch jobscript.sh"
+    run_utils = RunUtils()
     if "trigger" in psi4_config:
-        write_jobscript(psi4_config)
-        if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang":
-            cmd = "qsub jobscript.sh"
-        else:
-            cmd = "sbatch jobscript.sh"
-        run_bash(cmd=cmd,
-                 basedir=basedir,
-                 rundir=basedir)
-        time.sleep(3)
+        run_utils.write_jobscript(psi4_config)
+        run_utils.run_bash(cmd=cmd)
+        time.sleep(2)
     else:
         for path in os.listdir(basedir):
             if os.path.isdir(basedir + "/" + path):
                 print("at: ", basedir + "/" + path)
                 os.chdir(basedir + "/" + path)
-                with open("psi4_config.json", "w") as fo:
-                    json.dump(psi4_config, fo)
-                write_jobscript(psi4_config)
+                run_utils.write_jobscript(psi4_config)
+                run_utils.run_bash(cmd=cmd)
                 os.chdir(basedir)
-                if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang":
-                    cmd = "qsub jobscript.sh"
-                else:
-                    cmd = "sbatch jobscript.sh"
-                run_bash(cmd=cmd,
-                         basedir=basedir,
-                         rundir=basedir + "/" + path)
-                time.sleep(3)
+                time.sleep(2)
 
 
 def main(args=None):

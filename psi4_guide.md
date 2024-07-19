@@ -19,7 +19,7 @@ In the parent directory, one needs two files:
    - `basis`: The basis set to use for the Psi4 calculations. `lacvps` will use LACVP*, and `def2-tzvp` will first project the LACVP* calculation to def2-SV(P), converge that, and then use that as an initial guess for a def2-TZVP calculation.
    - `charge-spin-info`: The name of the `.json` file in each subfolder that contains the charge, spin, and spin treatment for each structure. Note that this file has to have the same name across all subfolders.
    - `hfx_rescue`: If true, allows for the calculation to be converged at different HFX and then that used as an initial guess for the desired calculation. Should be left as `false` in order to keep the initial guess the same for all functionals.
-   - `wfnfile`: Leave as `../b3lyp/wfn.180.npy`. Gives the name of the Psi4 wavefunction file that all other calculations are initialized from. This should be converged in Psi4 using the specified basis set and B3LYP, and is generated automatically when the workflow is run.
+   - `wfnfile`: Leave as `b3lyp/wfn.180.npy`. Gives the name of the Psi4 wavefunction file that all other calculations are initialized from. This should be converged in Psi4 using the specified basis set and B3LYP, and is generated automatically when the workflow is run.
    - `bashrc`: The user's `.bashrc` file, used to help initialize the conda environment.
    - `conda_env`: The path to the `jobmanager` conda environment.
 
