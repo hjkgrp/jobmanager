@@ -24,7 +24,7 @@ def test_run_bash(tmpdir):
     os.chdir(rundir)
     # Actually execute run_bash
     run_utils = RunUtils()
-    run_utils.run_bash(command, tmpdir, rundir)
+    run_utils.run_bash(command)
     os.chdir(cwd)
     # Check that the command "touch test.txt" was executed
     assert os.path.isfile(rundir / "test.txt")
