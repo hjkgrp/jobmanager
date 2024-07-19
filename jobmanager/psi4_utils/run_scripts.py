@@ -250,3 +250,120 @@ class RunScripts:
                                         success_count=success_count, run_func='run_general',
                                         error_scf=True)
             os.chdir(basedir)
+
+
+    def loop_hfx_jobs(self, rundir='$SGE_O_WORKDIR'):
+        """
+        For each specified functional, calculates the value at each of the HFX percentages specified.
+        Starts each calculation from the converged wavefunction of the previous calculation.
+
+        Parameters:
+            rundir: str
+                Directory where the calculations are run from.
+        """
+        #To deal with bash variable paths
+        if rundir[0] == '$':
+            rundir = os.environ[rundir[1:]]
+
+        with open(rundir + "/../psi4_config.json", "r") as f:
+            psi4_config = json.load(f)
+        b3lyp_wfn_dir = psi4_config['wfnfile']
+        success_count = 0
+        psi4_utils = Psi4Utils(psi4_config)
+        
+        #Run the initial B3LYP calculation from the provided molden
+        print("===b3lyp===")
+        if not os.path.isdir("b3lyp"):
+            success = psi4_utils.run_b3lyp(rundir="b3lyp")
+            print("success: ", success)
+            if success:
+                success_count += 1
+        else:
+            #If B3LYP calculation already attempted, check if converged
+            print("folder exists.")
+            files = os.listdir("b3lyp")
+            resubed = False
+            functional = "b3lyp"
+            #Need to resubmit if output not present or if iterations not reached
+            if not os.path.isfile(functional + "/output.dat"):
+                resubed = True
+            else:
+                with open(functional + "/output.dat", "r") as fo:
+                    txt = "".join(fo.readlines())
+                if "==> Iterations <==" not in txt:
+                    resubed = True
+            if resubed:
+                #Resubmit the B3LYP calculation if it failed
+                print("previous errored out. resubmitting...")
+                success = psi4_utils.run_b3lyp(rundir="b3lyp")
+                print("success: ", success)
+                if success:
+                    success_count += 1
+            else:
+                #If checks above pass, ensure no SCF error in B3LYP calculation and that .wfn written
+                with open(functional + "/output.dat", "r") as fo:
+                    txt = "".join(fo.readlines())
+                if 'PsiException: Could not converge SCF iterations' not in txt and os.path.isfile(functional + "/wfn.180.npy"):
+                    print("success: ", True)
+                    success_count += 1
+
+        #Get and sort the HFX levels desired in the calculation
+        hfx_amounts = sorted(psi4_config['hfx_levels'])
+
+        #for all other functionals
+        for ii, base_functional in enumerate(psi4_config["functional"]):
+            #For each functional, want to start from the B3LYP wfn
+            psi4_config["wfnfile"] = b3lyp_wfn_dir
+            for jj, alpha in enumerate(hfx_amounts):
+                #functional you want to run is base functional plus the HFX level
+                functional = base_functional + '_hfx_' + str(alpha)
+                print("===%d: %s===" % (ii*len(hfx_amounts)+jj, functional))
+                #If the functional does not already have a folder, attempt the calculation
+                if not os.path.isdir(functional.replace("(", "l-").replace(")", "-r")):
+                    os.makedirs(functional.replace("(", "l-").replace(")", "-r"))
+                    success = psi4_utils.run_general(functional, return_wfn=True)
+                    print("success: ", success)
+                    if success:
+                        success_count += 1
+                        #If success, want the next calculation to be run from the wfn of this calculation
+                        #Otherwise, run it from the last converged calculation
+                        psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                        print('Wfn updated!')
+                #If the calculation already attempted, check for convergence
+                else:
+                    print("folder exists.")
+                    files = os.listdir(functional.replace("(", "l-").replace(")", "-r"))
+                    resubed = False
+                    #Need resubmission if no output or iterations not in the text
+                    if not os.path.isfile(functional.replace("(", "l-").replace(")", "-r") + "/output.dat"):
+                        resubed = True
+                    else:
+                        with open(functional.replace("(", "l-").replace(")", "-r") + "/output.dat", "r") as fo:
+                            txt = "".join(fo.readlines())
+                        if "==> Iterations <==" not in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt) or ("@DF-UHF iter" in txt) or ("@DF-RHF iter" in txt))):
+                            resubed = True
+                    if resubed:
+                        #Resubmit job
+                        print("previous errored out. resubmitting...")
+                        success = psi4_utils.run_general(functional)
+                        print("success: ", success)
+                        if success:
+                            success_count += 1
+                            psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                            print('Wfn updated!')
+                    else:
+                        #Check that no SCF exception and that a .wfn file written
+                        with open(functional.replace("(", "l-").replace(")", "-r") + "/output.dat", "r") as fo:
+                            txt = "".join(fo.readlines())
+                        #wfn file will not be written since run_general has default return_wfn=False
+                        if 'PsiException: Could not converge SCF iterations' not in txt: # and os.path.isfile(functional + "/wfn.180.npy"):
+                            print("success: ", True)
+                            success_count += 1
+                            psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                            print('Wfn updated!')
+
+        print("total successful jobs : %d/ %d." %
+            (success_count, len(psi4_config["functional"])*len(psi4_config['hfx_levels']) + 1))
+
+        
+
