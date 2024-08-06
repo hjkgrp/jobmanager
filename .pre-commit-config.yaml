@@ -13,7 +13,7 @@ repos:
         args: ['--autofix', '--indent=4']
     -   id: trailing-whitespace
 -   repo: https://github.com/pycqa/flake8
-    rev: '7.1.0'
+    rev: '7.1.1'
     hooks:
     -   id: flake8
         args: ['--select=E9,F63,F7,F82']
