@@ -595,8 +595,8 @@ def read_configure(home_directory=None, outfile_path=None):
     # If global settings not specified, choose defaults:
     if (not max_jobs) and isinstance(max_jobs, bool):
         max_jobs = 50
-    if not max_resub:
-        max_resub = 5
+    # if not max_resub:
+    #    max_resub = 5
     if not levela:
         levela = 0.25
     if not levelb:
