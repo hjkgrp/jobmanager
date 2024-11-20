@@ -160,6 +160,12 @@ class RunScripts:
         For each specified functional, calculates the value at each of the HFX percentages specified.
         Starts each calculation from the converged wavefunction of the previous calculation.
 
+        Runs multiple sweeps: first a naive sweep where a 20% HFX result is done from the B3LYP wfn,
+        and then the program steps down and up from that calculation to the specified values.
+        Then, attempts several schemes to address points that did not converge:
+        (1) Start from the 0% result and step up, which allows different initial guesses for HFX<20 and retries calculations above.
+        (2) Start from the 100% result and step down, which allows different initial guesses for HFX>100 and retries calculations below.
+
         Parameters:
             rundir: str
                 Directory where the calculations are run from.
@@ -179,8 +185,9 @@ class RunScripts:
         success_count += success
 
         #Get and sort the HFX levels desired in the calculation
-        #Unsorted to allow different orders if desired
-        hfx_amounts = psi4_config['hfx_levels']
+        hfx_amounts = sorted(psi4_config['hfx_levels'])
+        below_20 = [alpha for alpha in hfx_amounts if alpha < 20][::-1] #reversed since you want to step down from 20
+        above_20 = [alpha for alpha in hfx_amounts if alpha > 20]
 
         #for all other functionals
         for ii, base_functional in enumerate(psi4_config["functional"]):
@@ -189,14 +196,60 @@ class RunScripts:
             #psi4_utils to get the right parameters
             psi4_config["wfnfile"] = b3lyp_wfn_dir
             psi4_utils = Psi4Utils(psi4_config)
-            for jj, alpha in enumerate(hfx_amounts):
-                #functional you want to run is base functional plus the HFX level
+            base_20_wfn = '' #to store the path of the 20% result
+            
+            print('Pass 1: Starting from 20 and stepping up/down:')
+            #converge 20% result
+            functional = base_functional + '_hfx_20'
+            success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+            if success:
+                #If success, want the next calculation to be run from the wfn of this calculation
+                #Otherwise, run it from the last converged calculation
+                base_20_wfn = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                psi4_config["wfnfile"] = base_20_wfn
+                psi4_utils = Psi4Utils(psi4_config)
+                print('Wfn updated!')
+            #Converge calculations below 20%
+            for jj, alpha in enumerate(below_20):
                 functional = base_functional + '_hfx_' + str(alpha)
-                success = psi4_utils.run_with_check('run_general', functional)
-                success_count += success
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
                 if success:
-                    #If success, want the next calculation to be run from the wfn of this calculation
-                    #Otherwise, run it from the last converged calculation
+                    psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                    psi4_utils = Psi4Utils(psi4_config)
+                    print('Wfn updated!')
+            #Get 20% wfn for other half of checks (if 20% did not converge, use B3LYP result)
+            psi4_config["wfnfile"] = base_20_wfn if base_20_wfn != '' else b3lyp_wfn_dir
+            psi4_utils = Psi4Utils(psi4_config)
+            #Converge calculations above 20%
+            for jj, alpha in enumerate(above_20):
+                functional = base_functional + '_hfx_' + str(alpha)
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+                if success:
+                    psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                    psi4_utils = Psi4Utils(psi4_config)
+                    print('Wfn updated!')
+
+            print('Pass 2: Starting from 0 and stepping up:')
+            #Start from the B3LYP wavefunction if not converged already
+            psi4_config["wfnfile"] = b3lyp_wfn_dir
+            psi4_utils = Psi4Utils(psi4_config)
+            for jj, alpha in enumerate(hfx_amounts):
+                functional = base_functional + '_hfx_' + str(alpha)
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+                if success:
+                    psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                    psi4_utils = Psi4Utils(psi4_config)
+                    print('Wfn updated!')
+
+            print('Pass 3: Starting from 100 and stepping down:')
+            #Start from the B3LYP wavefunction if not converged already
+            psi4_config["wfnfile"] = b3lyp_wfn_dir
+            psi4_utils = Psi4Utils(psi4_config)
+            for jj, alpha in enumerate(hfx_amounts[::-1]):
+                functional = base_functional + '_hfx_' + str(alpha)
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+                success_count += success #only include on final pass to get accurate count
+                if success:
                     psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
                     psi4_utils = Psi4Utils(psi4_config)
                     print('Wfn updated!')

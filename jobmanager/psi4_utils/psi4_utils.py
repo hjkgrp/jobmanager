@@ -342,7 +342,7 @@ class Psi4Utils:
         return success
 
     def run_general(self, functional="b3lyp", rundir="./", return_wfn=False,
-                    psi4_scr='./', filename='output', verbose=True):
+                    psi4_scr='./', filename='output', verbose=False):
         """
         From a directory, launches calculations with other functionals from the .wfn specified in the functional input.
         Does so in subdirectories with names corresponding to the functional names.
@@ -502,7 +502,8 @@ class Psi4Utils:
                 os.remove(filename)
         return success
     
-    def run_with_check(self, method, functional='b3lyp'):
+    def run_with_check(self, method, functional='b3lyp', rundir="./", return_wfn=False, 
+                       psi4_scr='./', filename='output', verbose=False, retry_scf=False):
         """
         Will run a psi4 calculation using the method specified in method, using the
         functional specified in functional.
@@ -512,6 +513,20 @@ class Psi4Utils:
                 Either run_b3lyp or run_general, depending on what calculation is being run.
             functional: str
                 Name of the functional one wants to use in the calculation.
+            rundir: str
+                Path where functional calculations are run from.
+                Results will be stored in the path rundir+functional.
+            return_wfn: bool
+                Whether or not the wfn file should be written after the calculation.
+            psi4_scr: str
+                Path of the Psi4 scratch directory.
+            filename: str
+                Name out the output .dat file containing results.
+            verbose: bool
+                If true, will print wfn the calculation is started from (for run_general).
+            retry_scf: bool
+                If true, will retry a calculation if it failed due to SCF iterations reached.
+                Should 
 
         Returns:
             success: bool
@@ -536,9 +551,12 @@ class Psi4Utils:
         #If the corresponding folder not present, run function from molden/b3lyp reference
         if not os.path.isdir(functional):
             if functional == 'b3lyp':
-                success = runfunc(rundir='./')
+                success = runfunc(rundir=rundir, return_wfn=return_wfn, 
+                                  psi4_scr=psi4_scr, filename=filename)
             else:
-                success = runfunc(rundir='./', functional=functional)
+                success = runfunc(functional=functional, rundir=rundir,
+                                  return_wfn=return_wfn, psi4_scr=psi4_scr,
+                                  filename=filename, verbose=verbose)
             print(f'Success: {success}')
         else:
             #If calculation already attempted, check for convergence
@@ -555,9 +573,12 @@ class Psi4Utils:
             if resubed:
                 print("previous errored out. resubmitting...")
                 if functional == 'b3lyp':
-                    success = runfunc(rundir="./")
+                    success = runfunc(rundir=rundir, return_wfn=return_wfn,
+                                      psi4_scr=psi4_scr, filename=filename)
                 else:
-                    success = runfunc(rundir='./', functional=functional)
+                    success = runfunc(functional=functional, rundir=rundir,
+                                      return_wfn=return_wfn, psi4_scr=psi4_scr,
+                                      filename=filename, verbose=verbose)
                 print("success: ", success)
             else:
                 #If checks above pass, ensure no SCF error in calculation and that .wfn written
@@ -566,7 +587,19 @@ class Psi4Utils:
                 #Checking for the wfn only for if return_wfn=True, but False by default for run_general
                 if 'PsiException: Could not converge SCF iterations' not in txt: # and os.path.isfile(functional + "/wfn.180.npy"):
                     success = True
-                    print("success: ", success)
+                else: #Did not converge in the given number of SCF iterations
+                    if retry_scf:
+                        if functional == 'b3lyp':
+                            success = runfunc(rundir=rundir, return_wfn=return_wfn,
+                                              psi4_scr=psi4_scr, filename=filename)
+                        else:
+                            success = runfunc(functional=functional, rundir=rundir,
+                                              return_wfn=return_wfn, psi4_scr=psi4_scr,
+                                              filename=filename, verbose=verbose)
+                    else:
+                        success = False
+                print("success: ", success)
+                    
 
         return success
     
@@ -607,7 +640,7 @@ class Psi4Utils:
                 if "==> Iterations <==" not in txt:
                     resubed = True
             #Resubmit calculation using the specified wavefunction
-            if resubed and os.path.isfile(wfn):
+            if resubed and os.path.isfile(wfnpath):
                 print("previously errored out. resubmitting...")
                 success = self.run_general_hfx(functional, hfx=alpha, wfn=wfnpath)
                 print("success: ", success)
