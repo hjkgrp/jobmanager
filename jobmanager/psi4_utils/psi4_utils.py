@@ -501,8 +501,8 @@ class Psi4Utils:
                 print("removing: :", filename)
                 os.remove(filename)
         return success
-    
-    def run_with_check(self, method, functional='b3lyp', rundir="./", return_wfn=False, 
+
+    def run_with_check(self, method, functional='b3lyp', rundir="./", return_wfn=False,
                        psi4_scr='./', filename='output', verbose=False, retry_scf=False):
         """
         Will run a psi4 calculation using the method specified in method, using the
@@ -526,7 +526,7 @@ class Psi4Utils:
                 If true, will print wfn the calculation is started from (for run_general).
             retry_scf: bool
                 If true, will retry a calculation if it failed due to SCF iterations reached.
-                Should 
+                Should
 
         Returns:
             success: bool
@@ -535,7 +535,7 @@ class Psi4Utils:
 
         if method == 'run_b3lyp' and functional != 'b3lyp':
             raise NotImplementedError('Method run_b3lyp can only be used with functional b3lyp.')
-        
+
         if method == 'run_b3lyp':
             runfunc = self.run_b3lyp
         elif method == 'run_general':
@@ -551,7 +551,7 @@ class Psi4Utils:
         #If the corresponding folder not present, run function from molden/b3lyp reference
         if not os.path.isdir(functional):
             if functional == 'b3lyp':
-                success = runfunc(rundir=rundir, return_wfn=return_wfn, 
+                success = runfunc(rundir=rundir, return_wfn=return_wfn,
                                   psi4_scr=psi4_scr, filename=filename)
             else:
                 success = runfunc(functional=functional, rundir=rundir,
@@ -599,16 +599,16 @@ class Psi4Utils:
                     else:
                         success = False
                 print("success: ", success)
-                    
+
 
         return success
-    
+
     def rescue_with_check(self, functional='b3lyp', wfnpath='b3lyp/wfn.180.npy', alpha=20):
         """
         Checks if a calculation is converged. If it is not converged,
         runs a calculation using functional and alpha HFX, starting
         from the wave function in wfnpath.
-        
+
 
         Parameters:
             functional: str

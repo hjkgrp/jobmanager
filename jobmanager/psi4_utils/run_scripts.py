@@ -103,7 +103,7 @@ class RunScripts:
                         success = psi4_utils.rescue_with_check(functional, wfn, alpha)
                         success_count += success
                     #Rescue scheme fails if any calculation in the series fails
-                    else:                    
+                    else:
                         failed = True
                         print(f'Rescue scheme has failed for functional {functional}, on HFX {alphalist[jj-1]}.')
                         break
@@ -179,7 +179,7 @@ class RunScripts:
         b3lyp_wfn_dir = psi4_config['wfnfile']
         success_count = 0
         psi4_utils = Psi4Utils(psi4_config)
-        
+
         #Run the initial B3LYP calculation from the provided molden
         success = psi4_utils.run_with_check('run_b3lyp')
         success_count += success
@@ -197,7 +197,7 @@ class RunScripts:
             psi4_config["wfnfile"] = b3lyp_wfn_dir
             psi4_utils = Psi4Utils(psi4_config)
             base_20_wfn = '' #to store the path of the 20% result
-            
+
             print('Pass 1: Starting from 20 and stepping up/down:')
             #converge 20% result
             functional = base_functional + '_hfx_20'
@@ -257,5 +257,5 @@ class RunScripts:
         print("total successful jobs : %d/ %d." %
             (success_count, len(psi4_config["functional"])*len(psi4_config['hfx_levels']) + 1))
 
-        
+
 
