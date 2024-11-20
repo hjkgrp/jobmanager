@@ -133,9 +133,9 @@ class DerivativeUtils():
         psi4_utils = Psi4Utils(psi4_config)
 
         if run_func == 'run_b3lyp':
-            run_function = psi4_utils.run_b3lyp
+            run_function = psi4_utils.run_b3lyp # type: ignore
         elif run_func == 'run_general':
-            run_function = psi4_utils.run_general
+            run_function = psi4_utils.run_general # type: ignore
 
         #If the B3LYP folder does not exist, run from TC molden
         if not os.path.isdir("b3lyp"):
