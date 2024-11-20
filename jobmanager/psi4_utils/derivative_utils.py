@@ -133,13 +133,13 @@ class DerivativeUtils():
         psi4_utils = Psi4Utils(psi4_config)
 
         if run_func == 'run_b3lyp':
-            run_func = psi4_utils.run_b3lyp
+            run_function = psi4_utils.run_b3lyp
         elif run_func == 'run_general':
-            run_func = psi4_utils.run_general
+            run_function = psi4_utils.run_general
 
         #If the B3LYP folder does not exist, run from TC molden
         if not os.path.isdir("b3lyp"):
-            success = run_func(rundir='./', return_wfn=True)
+            success = run_function(rundir='./', return_wfn=True)
             print("success: ", success)
             if success:
                 success_count += 1
@@ -159,7 +159,7 @@ class DerivativeUtils():
             #Resubmit B3LYP calculation
             if resubed:
                 print("previous errored out. resubmitting...")
-                success = run_func(rundir='./', return_wfn=True)
+                success = run_function(rundir='./', return_wfn=True)
                 print("success: ", success)
                 if success:
                     success_count += 1
