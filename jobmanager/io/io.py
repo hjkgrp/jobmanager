@@ -97,7 +97,8 @@ def read_outfile(outfile_path, short_ouput=False, long_output=True):
                                'finished': False, 'min_energy': None, 'scf_error': False,
                                'thermo_grad_error': False, 'solvation_energy': None, 'optimization_cycles': None,
                                'thermo_vib_energy': None, 'thermo_vib_free_energy': None, 'thermo_suspect': None,
-                               'orbital_occupation': None, 'oscillating_scf_error': False}
+                               'orbital_occupation': None, 'oscillating_scf_error': False,
+                               'terminated': False, 'no_scf': False}
                 return return_dict
 
     output_type = ['TeraChem', 'ORCA'][counter]
@@ -595,8 +596,8 @@ def read_configure(home_directory=None, outfile_path=None):
     # If global settings not specified, choose defaults:
     if (not max_jobs) and isinstance(max_jobs, bool):
         max_jobs = 50
-    if not max_resub:
-        max_resub = 5
+    # if not max_resub:
+    #    max_resub = 5
     if not levela:
         levela = 0.25
     if not levelb:
