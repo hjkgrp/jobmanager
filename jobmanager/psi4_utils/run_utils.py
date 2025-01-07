@@ -38,8 +38,14 @@ class RunUtils():
                 Whether or not the calculation succeeded.
         """
         success = False
+        #only look at the text from the latest computation
+        #Psi4 will call tstart() at the start of each computation
+        txt = ""
         with open(path + '/' + output_name, "r") as fo:
-            txt = "".join(fo.readlines())
+            for idx, line in enumerate(reversed(fo.readlines())):
+                txt += line
+                if 'tstart()' in line:
+                    break
         #Psi4 will write Computation Completed once the calculation finishes.
         if 'Computation Completed' in txt:
             success = True
