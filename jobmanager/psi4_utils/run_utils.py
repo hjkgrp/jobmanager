@@ -21,7 +21,7 @@ class RunUtils():
         if not os.path.isdir(dirpath):
             os.makedirs(dirpath)
 
-    def check_sucess(self, path='./', output_name='output.dat'):
+    def check_success(self, path='./', output_name='output.dat'):
         """
         Checks if a Psi4 calculation is completed.
         Assumes it is being called in the same directory as the Psi4 output file,
