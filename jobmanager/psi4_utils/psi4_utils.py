@@ -320,8 +320,14 @@ class Psi4Utils:
             print("This calculation does not converge.")
         #If using def2-TZVP, did the first calculation in def2-SV(P), so do another calculation to get TZVP.
         if psi4_config["basis"] == "def2-tzvp" and sucess:
-            #allow for more iterations since doing a projection
-            #TODO: seems to not use the converged sv(p) guess, write over the TC guess with the Psi4 result?
+            #Project to def2-TZVP; allow for more iterations since doing a projection
+            
+            #copy the result of the def2-SV(P) calculation to Psi4's expected location
+            #check if this is redundant, i.e., if Psi4 saves the wfn of the last calculation to the default location
+            pid = str(os.getpid())
+            targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
+            shutil.copyfile(rundir + "b3lyp/wfn.180.npy", targetfile)
+
             psi4.set_options({"basis": "def2-tzvp", "maxiter": 200 if "maxiter" not in psi4_config else psi4_config["maxiter"]})
             try:
                 if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
