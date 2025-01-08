@@ -27,6 +27,10 @@ class RunUtils():
         Assumes it is being called in the same directory as the Psi4 output file,
         and that the output file is named output.dat.
 
+        TODO: This does not work for MP2 (and maybe other WFT methods),
+        the MP2 calculation is done after an SCF calculation and the second calculation
+        never prints "Computation Completed". Finding a workaround for this is needed.
+
         Parameters:
             path: str
                 Path where the calculation result is stored.
@@ -54,14 +58,18 @@ class RunUtils():
     def write_jobscript(self, psi4_config):
         """
         From a psi4_config JSON file, writes a jobscript for the appropriate cluster.
-        Memory should be specified in MB.
+        Memory should be specified in MB in the config file.
 
         Parameters:
-            psi4_config: str
-                Path to the psi4_config.json file containing job details.
+            psi4_config: dict
+                Dictionary containing the information in the loaded JSON.
         """
         if "cluster" not in psi4_config or psi4_config["cluster"] == "gibraltar":
             mem = int(psi4_config['memory'].split(" ")[0])/1000
+            if 'base_functional' in psi4_config:
+                base_func = psi4_config['base_functional'].replace("(", "l-").replace(")", "-r")
+            else:
+                base_func = 'b3lyp'
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#$ -S /bin/bash\n")
                 fo.write("#$ -N psi4_dft\n")
@@ -119,7 +127,7 @@ class RunUtils():
 
                 if "trigger" in psi4_config:
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs()'  > $SGE_O_WORKDIR/deriv_nohup1.out 2> $SGE_O_WORKDIR/deriv_nohup1.err\n")
-                    fo.write("rm */*/psi.* */*/dfh.* */*-*/*.npy */b3lyp/*.molden */b3lyp/*1step*\n")
+                    fo.write("rm */*/psi.* */*/dfh.* */*-*/*.npy */" + base_func + "/*.molden */" + base_func + "/*1step*\n")
                 else:
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err\n")
@@ -129,7 +137,7 @@ class RunUtils():
                         fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup1.out\n")
                         fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup2.out\n")
                         fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup3.out\n")
-                    fo.write("rm */psi.* */dfh.* *-*/*.npy b3lyp/*.molden b3lyp/*1step*\n")
+                    fo.write("rm */psi.* */dfh.* *-*/*.npy " + base_func + "/*.molden " + base_func + "/*1step*\n")
                 fo.write("cp -rf * $subdir\n")
         elif psi4_config["cluster"] == "expanse":
             mem = int(psi4_config['memory'].split(" ")[0])/psi4_config['num_threads']/1000

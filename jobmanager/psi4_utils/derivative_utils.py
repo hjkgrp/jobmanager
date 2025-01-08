@@ -91,13 +91,15 @@ class DerivativeUtils():
         jobs = dict(sorted(jobs.items(), key=operator.itemgetter(1)))
         return list(jobs.keys())
 
-    def get_wfn_path(self, jobs, ii):
+    def get_wfn_path(self, psi4_config, jobs, ii):
         """
         Gets the path of the .wfn file from the ii-th item in jobs.
 
         Assumes calculation run from the parent directory.
 
         Parameters:
+            psi4_config:
+                Loaded JSON file giving the settings of the calculation.
             jobs:
                 list of folder names that mark jobs.
             ii: int
@@ -107,13 +109,22 @@ class DerivativeUtils():
                 Path of the wfn file in the specified job.
         """
         assert ii > 0
-        return './' + jobs[ii - 1] + "/b3lyp/wfn.180.npy"
+        #get the base functional
+        if "base_functional" not in psi4_config:
+            #defaults to B3LYP
+            base_func = 'b3lyp'
+        else:
+            #remove parentheses from functional names
+            functional = psi4_config["base_functional"]
+            base_func = functional.replace("(", "l-").replace(")", "-r")
+
+        return './' + jobs[ii - 1] + "/" + base_func + "/wfn.180.npy"
 
     def run_with_check(self, job: str, psi4_config: dict,
                        run_func: str, success_count: int,
                        error_scf: bool = True):
         """
-        Checks if a B3LYP calculation is converged for the specified job.
+        Checks if the initial calculation is converged for the specified job.
         If not converged, will resubmit the calculation.
 
         Parameters:
@@ -122,7 +133,7 @@ class DerivativeUtils():
             psi4_config
                 Loaded JSON file giving the settings of the calculation.
             run_func
-                Either run_b3lyp or run_general, depending on what should be run
+                Either run_initial or run_general, depending on what should be run
             success_count
                 Current number of successes.
             error_scf
@@ -132,23 +143,32 @@ class DerivativeUtils():
         success = False
         psi4_utils = Psi4Utils(psi4_config)
 
-        if run_func == 'run_b3lyp':
-            run_function = psi4_utils.run_b3lyp # type: ignore
+        #get the base functional
+        if "base_functional" not in psi4_config:
+            #defaults to B3LYP
+            base_func = 'b3lyp'
+        else:
+            #remove parentheses from functional names
+            functional = psi4_config["base_functional"]
+            base_func = functional.replace("(", "l-").replace(")", "-r")
+
+        if run_func == 'run_initial':
+            run_function = psi4_utils.run_initial # type: ignore
         elif run_func == 'run_general':
             run_function = psi4_utils.run_general # type: ignore
 
-        #If the B3LYP folder does not exist, run from TC molden
-        if not os.path.isdir("b3lyp"):
+        #If the initial folder does not exist, run calculation
+        if not os.path.isdir(base_func):
             success = run_function(rundir='./', return_wfn=True)
             print("success: ", success)
             if success:
                 success_count += 1
         else:
-            #Check if B3LYP calculation converged
+            #Check if initial calculation converged
             print("folder exists.")
             resubed = False
             #need to resubmit if no output or if no iterations in output
-            functional = "b3lyp"
+            functional = base_func
             if not os.path.isfile(functional + "/output.dat"):
                 resubed = True
             else:
@@ -156,7 +176,7 @@ class DerivativeUtils():
                     txt = "".join(fo.readlines())
                 if "==> Iterations <==" not in txt:
                     resubed = True
-            #Resubmit B3LYP calculation
+            #Resubmit initial calculation
             if resubed:
                 print("previous errored out. resubmitting...")
                 success = run_function(rundir='./', return_wfn=True)
@@ -174,7 +194,7 @@ class DerivativeUtils():
                     success_count += 1
 
         if not success and error_scf:
-            #If the B3LYP calculation fails, raise an error since all subsequent calculations will not work
+            #If the initial calculation fails, raise an error since all subsequent calculations will not work
             raise ValueError(
                 "Failed on the job: %s. Other derivative jobs won't run." % job)
         return success_count
