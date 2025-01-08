@@ -357,7 +357,7 @@ class Psi4Utils:
         #If using def2-TZVP, did the first calculation in def2-SV(P), so do another calculation to get TZVP.
         if psi4_config["basis"] == "def2-tzvp" and success:
             #Project to def2-TZVP; allow for more iterations since doing a projection
-            
+
             #copy the result of the def2-SV(P) calculation to Psi4's expected location
             #check if this is redundant, i.e., if Psi4 saves the wfn of the last calculation to the default location
             pid = str(os.getpid())
