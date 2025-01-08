@@ -278,7 +278,7 @@ class Psi4Utils:
             if "_hfx_" in base_func:
                 #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
                 func = base_func.split('_')[0]
-                hfx = base_func.split('_')[-1]
+                hfx = int(base_func.split('_')[-1])
                 e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
@@ -346,7 +346,7 @@ class Psi4Utils:
             if "_hfx_" in base_func:
                 #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
                 func = base_func.split('_')[0]
-                hfx = base_func.split('_')[-1]
+                hfx = int(base_func.split('_')[-1])
                 e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
@@ -378,7 +378,7 @@ class Psi4Utils:
                 if "_hfx_" in base_func:
                     #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
                     func = base_func.split('_')[0]
-                    hfx = base_func.split('_')[-1]
+                    hfx = int(base_func.split('_')[-1])
                     e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
                 else:
                     e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
