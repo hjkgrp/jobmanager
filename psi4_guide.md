@@ -23,6 +23,10 @@ In the parent directory, one needs two files:
    - `bashrc`: The user's `.bashrc` file, used to help initialize the conda environment.
    - `conda_env`: The path to the `jobmanager` conda environment.
 
+Note that the workflow has been updated so that calculations can be initialized from an arbitrary functional, instead of just B3LYP. In order to use this functionality, add the keyword `base_functional` to the `.json` file outlined above and set it to the name of the functional to be used to initialize other calculations. Then, edit the path in `wfnfile` in the `.json` file to be whatever the name of your base functional is plus `/wfn.180.npy`. The workflow will work exactly the same as above, but now will initialize calculations from the set functional instead of b3lyp.
+
+Another functionality that has been added to this workflow is the HFX workflow. To use this, one adds the keyword `hfx_levels` to the `.json` file above, where the value is a list of integers that represent percentages of Hartree-Fock exchange to include. Then, for each functional specified in the `functional` list, they will be run at each of the HFX levels specified, starting from the nearest converged calculation.
+
 In each subdirectory, one needs three files:
  - A `.xyz` file, matching the naming convention established in the parent directory's `.json` file. This should give the geometry of the structure corresponding to the wavefunction in the `.molden` file, so either the geometry used in a single-point or the final frame of a geometry optimization.
  - A `.molden` file, matching the naming convention established in the parent directory's `.json` file. This should be the converged molden for the structure, calculated using B3LYP/LACVP* (or B3LYP/def2-SV(P)), which is found in the `/scr/` directory of a TeraChem calculation, by default.

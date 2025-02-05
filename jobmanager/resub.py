@@ -39,7 +39,7 @@ def kill_jobs(kill_names, message1='Killing job: ', message2=' early'):
         print(message1 + name + message2)
         if machine in ['gibraltar']:
             tools.call_bash('qdel ' + str(id_))
-        elif machine in ['comet', 'bridges','expanse']:
+        elif machine in ['supercloud', 'comet', 'bridges','expanse']:
             tools.call_bash('scancel '+str(id_))
         else:
             raise ValueError('Sardines.')

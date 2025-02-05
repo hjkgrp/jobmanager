@@ -13,6 +13,18 @@ class Psi4Utils:
     """
 
     def __init__(self, psi4_config):
+        """
+        Stores the dictionary of options for the Psi4 workflow.
+        """
+
+        #define the base functional that other calculations will be started from
+        if "base_functional" not in psi4_config:
+            #defaults to B3LYP
+            psi4_config["base_functional"] = 'b3lyp'
+        else:
+            #remove parentheses from functional names
+            functional = psi4_config["base_functional"]
+            psi4_config["base_functional"] = functional.replace("(", "l-").replace(")", "-r")
         self.config = psi4_config
 
     def lacvps(self, mol, role):
@@ -201,22 +213,24 @@ class Psi4Utils:
         return hfx_func
 
 
-    def run_b3lyp(self, rundir="./b3lyp", return_wfn=True,
+    def run_initial(self, rundir="./", return_wfn=True,
                   psi4_scr = './', filename='output'):
         """
-        Runs a Psi4 single point calculation using B3LYP in Psi4, from a TC molden.
+        Runs a Psi4 single point calculation in Psi4, starting from a TC molden.
+        Will use the functional in psi4_config['base_functional'] if provided, otherwise B3LYP.
 
         Will write three files:
         -wfn-1step.180.npy: wfn file for a 1-step SCF, used only to get a wfn object.
-        -wfn-1step-tc.180.npy: wfn file populated with the coefficients from the molden
+        -wfn-1step-tc.180.npy: wfn file populated with the coefficients from the TC molden.
         -wfn.180.npy: wfn file that has been converged in Psi4 with the requested parameters,
         starting from the TC initial guess.
 
-        Results will be stored in rundir as a subdirectory of the current directory.
+        Results will be stored in 'rundir/' + psi4_config['base_functional'] .
 
         Parameters:
             rundir: str
-                Path where the B3LYP calculation results and wavefunctions will be stored.
+                Path where the calculation will be run from.
+                Results and wavefunctions will be stored in a subdirectory with the name in psi4_config['base_functional'].
             return_wfn: bool
                 Whether or not the wfn file should be written after the calculation.
             psi4_scr: str
@@ -225,6 +239,7 @@ class Psi4Utils:
                 Name out the output .dat file containing results.
         """
         psi4_config = self.config
+        base_func = psi4_config['base_functional']
         #update the Psi4 config with the charge, spin, and method
         #in the charge_spin_info json file.
         with open(psi4_config["charge-spin-info"], "r") as f:
@@ -232,14 +247,14 @@ class Psi4Utils:
         psi4_config.update(d)
         #Ensure that the run directory exists
         run_utils = RunUtils()
-        run_utils.ensure_dir(rundir)
+        run_utils.ensure_dir(rundir + base_func)
         #set up the molecule and calculation parameters
         sym = 'c1' if 'sym' not in psi4_config else psi4_config['sym']
         mol = self.get_molecule(psi4_config["xyzfile"], psi4_config["charge"], psi4_config["spin"], sym)
         self.setup_dft_parameters()
         if os.path.isfile(psi4_config["moldenfile"]):
             #logic to transfer the TC coefficients to Psi4
-            psi4.core.set_output_file(rundir + '/' + filename + '.dat', False)
+            psi4.core.set_output_file(rundir + base_func + '/' + filename + '.dat', False)
             # 1-step SCF
             #run very crudely, only goal is to get the wfn object, will later populate with the molden results
             psi4.set_options({
@@ -250,13 +265,24 @@ class Psi4Utils:
             #If def2-TZVP, converge in def2-SV(P) first, since expecting to project up from def2-SV(P)
             if psi4_config["basis"] == "def2-tzvp":
                 psi4.set_options({"basis": "def2-sv(p)"})
+            '''
+            #Deprecated from when only B3LYP was supported as a base functional, updated to now include other functionals
             #If the initial calculation was done with B3LYP and a HFX not equal to 20, use functional defined in get_hfx_functional
             if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                 print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
                 e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
-            wfn.to_file(rundir + "/wfn-1step.180")
+            wfn.to_file(rundir + "b3lyp/wfn-1step.180")
+            '''
+            if "_hfx_" in base_func:
+                #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
+                func = base_func.split('_')[0]
+                hfx = int(base_func.split('_')[-1])
+                e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
+            else:
+                e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
+            wfn.to_file(rundir + base_func + "/wfn-1step.180")
             # Get converged WFN
             d_molden = load_molden(psi4_config["moldenfile"])
             #if calculation restricted or not, checking for rks or rhf references
@@ -273,18 +299,18 @@ class Psi4Utils:
             else:
                 raise ValueError('Unsuppoorted Basis Set encountered! Please use 6-31G, LACVP*, or def2 basis sets.')
             #populate the 1-step SCF wfn with the coefficients from the molden
-            wfn_minimal_np = np.load(rundir + "/wfn-1step.180.npy", allow_pickle=True)
+            wfn_minimal_np = np.load(rundir + base_func + "/wfn-1step.180.npy", allow_pickle=True)
             wfn_minimal_np[()]['matrix']["Ca"] = Ca
             if not restricted:
                 wfn_minimal_np[()]['matrix']["Cb"] = Cb
             else:
                 wfn_minimal_np[()]['matrix']["Cb"] = Ca
-            np.save(rundir + "/wfn-1step-tc.180.npy", wfn_minimal_np)
+            np.save(rundir + base_func + "/wfn-1step-tc.180.npy", wfn_minimal_np)
             # Copy wfn file to the right place with a right name
             #Psi4 requires format /scratch/output.moleculename.pid.180.npy
             pid = str(os.getpid())
             targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
-            shutil.copyfile(rundir + "/wfn-1step-tc.180.npy", targetfile)
+            shutil.copyfile(rundir + base_func + "/wfn-1step-tc.180.npy", targetfile)
             # Final scf---
             #only allow for 50 iterations since the initial guess should converge quickly
             psi4.set_options({
@@ -294,7 +320,7 @@ class Psi4Utils:
                 "fail_on_maxiter": True})
         else:
             #if no molden provided, allow for more iterations to ensure convergence
-            psi4.core.set_output_file(rundir + '/' + filename + '.dat', False)
+            psi4.core.set_output_file(rundir + base_func + '/' + filename + '.dat', False)
             print("Warning: no Molden file is used to initialize this calculation!")
             psi4.set_options({
                 "maxiter": 250 if "maxiter" not in psi4_config else psi4_config["maxiter"],
@@ -304,35 +330,63 @@ class Psi4Utils:
                 "fail_on_maxiter": True})
             if psi4_config["basis"] == "def2-tzvp":
                 psi4.set_options({"basis": "def2-sv(p)"})
-        sucess = False
+        success = False
         try:
             #final SCF calculation
+            '''
+            #Deprecated, see above deprecated section
             if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                 #if calculation was done with a HFX different from 20, use custom B3LYP
                 print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
                 e, wfn = psi4.energy("scf", self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
-            wfn.to_file(rundir + "/wfn.180")
-            sucess = True
+            wfn.to_file(rundir + "b3lyp/wfn.180")
+            '''
+            if "_hfx_" in base_func:
+                #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
+                func = base_func.split('_')[0]
+                hfx = int(base_func.split('_')[-1])
+                e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
+            else:
+                e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
+            wfn.to_file(rundir + base_func + "/wfn.180")
+            success = True
         except:
             print("This calculation does not converge.")
         #If using def2-TZVP, did the first calculation in def2-SV(P), so do another calculation to get TZVP.
-        if psi4_config["basis"] == "def2-tzvp" and sucess:
-            #allow for more iterations since doing a projection
-            #TODO: seems to not use the converged sv(p) guess, write over the TC guess with the Psi4 result?
+        if psi4_config["basis"] == "def2-tzvp" and success:
+            #Project to def2-TZVP; allow for more iterations since doing a projection
+
+            #copy the result of the def2-SV(P) calculation to Psi4's expected location
+            #check if this is redundant, i.e., if Psi4 saves the wfn of the last calculation to the default location
+            pid = str(os.getpid())
+            targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
+            shutil.copyfile(rundir + base_func + "/wfn.180.npy", targetfile)
+
             psi4.set_options({"basis": "def2-tzvp", "maxiter": 200 if "maxiter" not in psi4_config else psi4_config["maxiter"]})
             try:
+                '''
+                #Deprecated, see above
                 if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
                     print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
                     e, wfn = psi4.energy("scf", self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
                 else:
                     e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
-                wfn.to_file(rundir + "/wfn.180")
+                wfn.to_file(rundir + "b3lyp/wfn.180")
+                '''
+                if "_hfx_" in base_func:
+                    #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
+                    func = base_func.split('_')[0]
+                    hfx = int(base_func.split('_')[-1])
+                    e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
+                else:
+                    e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
+                wfn.to_file(rundir + base_func + "/wfn.180")
             except:
                 print("This calculation does not converge.")
-        #Check if the B3LYP calculation succeeded
-        success = run_utils.check_sucess(path=rundir)
+        #Check if the calculation succeeded
+        success = run_utils.check_success(path=rundir + base_func)
         #remove copied wfn file, psi4 log files
         for filename in os.listdir('./'):
             if ("psi." in filename) or ("default" in filename):
@@ -341,7 +395,7 @@ class Psi4Utils:
         return success
 
     def run_general(self, functional="b3lyp", rundir="./", return_wfn=False,
-                    psi4_scr='./', filename='output'):
+                    psi4_scr='./', filename='output', verbose=False):
         """
         From a directory, launches calculations with other functionals from the .wfn specified in the functional input.
         Does so in subdirectories with names corresponding to the functional names.
@@ -358,6 +412,8 @@ class Psi4Utils:
                 Path of the Psi4 scratch directory.
             filename: str
                 Name out the output .dat file containing results.
+            verbose: bool
+                If true, will print wfn the calculation is started from.
         """
         #Make the subdirectory, load relevant information
         psi4_config = self.config
@@ -367,6 +423,8 @@ class Psi4Utils:
         psi4_config.update(d)
         run_utils = RunUtils()
         run_utils.ensure_dir(rundir)
+        if verbose:
+            print('Wfnfile:', psi4_config['wfnfile'])
 
         #Set up Psi4 parameters
         psi4.core.set_output_file(rundir + '/' + filename + '.dat', False)
@@ -423,7 +481,7 @@ class Psi4Utils:
             if return_wfn:
                 wfn.to_file(rundir + "/wfn.180")
         #Check success, Remove temporary files
-        success = run_utils.check_sucess(path=rundir)
+        success = run_utils.check_success(path=rundir)
         for filename in os.listdir("./"):
             if ("psi." in filename) or ("default" in filename):
                 print("removing: :", filename)
@@ -489,10 +547,178 @@ class Psi4Utils:
             # os.remove(wfn)
         except:
             print("This calculation does not converge.")
-        success = run_utils.check_sucess(path=rundir)
+        success = run_utils.check_success(path=rundir)
         #remove temporary files
         for filename in os.listdir("./"):
             if ("psi." in filename) or ("default" in filename):
                 print("removing: :", filename)
                 os.remove(filename)
+        return success
+
+    def run_with_check(self, method, functional='b3lyp', rundir="./", return_wfn=False,
+                       psi4_scr='./', filename='output', verbose=False, retry_scf=False):
+        """
+        Will run a psi4 calculation using the method specified in method, using the
+        functional specified in functional.
+
+        Note: if using run_initial, will ignore the functional argument, and instead use
+        whatever is specified in psi4_config['base_functional'], or b3lyp if not specified.
+
+        Parameters:
+            method: str
+                Either run_initial or run_general, depending on what calculation is being run.
+            functional: str
+                Name of the functional one wants to use in the calculation.
+            rundir: str
+                Path where functional calculations are run from.
+                Results will be stored in the path rundir+functional.
+            return_wfn: bool
+                Whether or not the wfn file should be written after the calculation.
+            psi4_scr: str
+                Path of the Psi4 scratch directory.
+            filename: str
+                Name out the output .dat file containing results.
+            verbose: bool
+                If true, will print wfn the calculation is started from (for run_general).
+            retry_scf: bool
+                If true, will retry a calculation if it failed due to SCF iterations reached.
+                Should
+
+        Returns:
+            success: bool
+                Whether or not the calculation was successful.
+        """
+
+        psi4_config = self.config
+        base_func = psi4_config['base_functional']
+
+        if method == 'run_initial':
+            print(f'Running initial calculation with base functional {base_func}.')
+            functional = base_func
+            #raise NotImplementedError('Method run_initial can only be used with the base functional specified in the config file.')
+
+        if method == 'run_initial':
+            runfunc = self.run_initial
+        elif method == 'run_general':
+            runfunc = self.run_general
+        else:
+            raise NotImplementedError("Please specify a valid method.")
+
+        print(f"==={functional}===")
+        #Clean name to prevent forbidden characters
+        functional = functional.replace("(", "l-").replace(")", "-r")
+        #If the corresponding folder not present, run the calculation with the functions above
+        if not os.path.isdir(functional):
+            if functional == base_func:
+                success = runfunc(rundir=rundir, return_wfn=return_wfn,
+                                  psi4_scr=psi4_scr, filename=filename)
+            else:
+                success = runfunc(functional=functional, rundir=rundir,
+                                  return_wfn=return_wfn, psi4_scr=psi4_scr,
+                                  filename=filename, verbose=verbose)
+            print(f'Success: {success}')
+        else:
+            #If calculation already attempted, check for convergence
+            print("folder exists.")
+            resubed = False
+            #resubmit if no output file or if iterations not reached
+            if not os.path.isfile(functional + "/output.dat"):
+                resubed = True
+            else:
+                with open(functional + "/output.dat", "r") as fo:
+                    txt = "".join(fo.readlines())
+                if "==> Iterations <==" not in txt or (not (("@DF-UKS iter" in txt) or ("@DF-RKS iter" in txt) or ("@DF-UHF iter" in txt) or ("@DF-RHF iter" in txt))):
+                    resubed = True
+            if resubed:
+                print("previous errored out. resubmitting...")
+                if functional == base_func:
+                    success = runfunc(rundir=rundir, return_wfn=return_wfn,
+                                      psi4_scr=psi4_scr, filename=filename)
+                else:
+                    success = runfunc(functional=functional, rundir=rundir,
+                                      return_wfn=return_wfn, psi4_scr=psi4_scr,
+                                      filename=filename, verbose=verbose)
+                print("success: ", success)
+            else:
+                #If checks above pass, ensure no SCF error in calculation and that .wfn written
+                with open(functional + "/output.dat", "r") as fo:
+                    txt = "".join(fo.readlines())
+                #Checking for the wfn only for if return_wfn=True, but False by default for run_general
+                if 'PsiException: Could not converge SCF iterations' not in txt: # and os.path.isfile(functional + "/wfn.180.npy"):
+                    success = True
+                else: #Did not converge in the given number of SCF iterations
+                    if retry_scf:
+                        if functional == base_func:
+                            success = runfunc(rundir=rundir, return_wfn=return_wfn,
+                                              psi4_scr=psi4_scr, filename=filename)
+                        else:
+                            success = runfunc(functional=functional, rundir=rundir,
+                                              return_wfn=return_wfn, psi4_scr=psi4_scr,
+                                              filename=filename, verbose=verbose)
+                    else:
+                        success = False
+                print("success: ", success)
+
+
+        return success
+
+    def rescue_with_check(self, functional='b3lyp', wfnpath='b3lyp/wfn.180.npy', alpha=20):
+        """
+        Checks if a calculation is converged. If it is not converged,
+        runs a calculation using functional and alpha HFX, starting
+        from the wave function in wfnpath.
+
+
+        Parameters:
+            functional: str
+                Name of the functional one wants to converge.
+            wfnpath: str
+                Path to the wave function one wants the calculation to be run from.
+            alpha: int
+                HFX percentage to use.
+
+        Returns:
+            success: bool
+                Whether or not a calculation succeeded.
+        """
+        #If the calculation at this HFX has not been tried before, run calculation
+        if not os.path.isdir(functional + "-%d" % alpha):
+            os.makedirs(functional + "-%d" % alpha)
+            success = self.run_general_hfx(functional, hfx=alpha, wfn=wfnpath)
+            print("success: ", success)
+        else:
+            #If the calculation (at jj HFX) has been tried before, check for convergence
+            print("attempted rescue: ", functional, 'HFX', str(alpha))
+            resubed = False
+            #Need resubmission if no output or if iterations not reached in output
+            if not os.path.isfile(functional + "-%d" % alpha + "/output.dat"):
+                resubed = True
+            else:
+                with open(functional + "-%d" % alpha + "/output.dat", "r") as fo:
+                    txt = "".join(fo.readlines())
+                if "==> Iterations <==" not in txt:
+                    resubed = True
+            #Resubmit calculation using the specified wavefunction
+            if resubed and os.path.isfile(wfnpath):
+                print("previously errored out. resubmitting...")
+                success = self.run_general_hfx(functional, hfx=alpha, wfn=wfnpath)
+                print("success: ", success)
+            #If the error was not due to SCF error and no wfn file written
+            elif ('PsiException: Could not converge SCF iterations') not in txt and (not os.path.isfile(functional + "-%d" % alpha + "/wfn.180.npy")):
+                #Try running the calculation again, move the old output to -timeout so it can be checked later if desired
+                _functional = functional + "-%d" % alpha
+                if not os.path.isfile(_functional + "/output-timeout.dat"):
+                    shutil.copy(_functional + "/output.dat",
+                                _functional + "/output-timeout.dat")
+                    print("Time out, direct resub...")
+                    success = self.run_general_hfx(functional, hfx=alpha, wfn=wfnpath)
+                    print("success: ", success)
+                else:
+                    #Only try resubmission due to SCF errors once, if already tried, give up
+                    print("Already submit once for timeout.")
+                    success = False
+            else:
+                print("give up resubmission.")
+                success = False
+
         return success
