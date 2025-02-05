@@ -322,6 +322,7 @@ def SLURM_list_active_jobs(ids=False, home_directory=False,):
     username = get_username()
     cmd = 'squeue -o "%.18i %.9P %.50j %.8u %.2t %.10M %.6D %R" -u '+username
     job_report.lines = call_bash(cmd, version=2)
+    username = username[:8] #since only the first eight characters of the username are displayed
     names = job_report.wordgrab(username, 2)[0]
     names = [i for i in names if i]  # filters out NoneTypes
     if ids:
@@ -449,7 +450,11 @@ def get_total_queue_usage():
                          version=2)
     else:
         raise ValueError('Job manager does not know this machine!')
-    jobs = [i for i in jobs if get_username() in i.split()]
+    username = get_username()
+    if len(username) > 8:
+        #by default, only the first 8 characters of usernames are displayed
+        username = username[:8]
+    jobs = [i for i in jobs if username in i.split()]
 
     return len(jobs)
 
