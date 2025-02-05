@@ -346,11 +346,27 @@ def resub(directory=None, verbose=False, dryrun=False):
 
 def resub_psi4(psi4_config):
     basedir = os.getcwd()
+    njobs = tools.get_total_queue_usage()
+    active = tools.list_active_jobs()
+    nactive = len([x for x in active if x in set(os.listdir(basedir))])
+    configure_dict = io.read_configure(basedir)
+    hard_limit = configure_dict['hard_job_limit']
+    maxjobs = configure_dict['max_jobs']
+    nsubmitted = 0
+    hit_queue_limit = False
+    print(f'The number of active jobs is {nactive}.')
+    print(f'The total number of jobs is {njobs}.')
+    if njobs >= hard_limit or nactive >= maxjobs:
+        #do not submit anything if you are over the queue limit
+        hit_queue_limit = True
+        return nsubmitted, int(nactive), hit_queue_limit
     if "cluster" not in psi4_config or psi4_config["cluster"] == "mustang" or psi4_config["cluster"] == "gibraltar":
         cmd = "qsub jobscript.sh"
     else:
         cmd = "sbatch jobscript.sh"
     run_utils = RunUtils()
+    if "base_functional" not in psi4_config:
+        psi4_config['base_functional'] = 'b3lyp'
     if "trigger" in psi4_config:
         run_utils.write_jobscript(psi4_config)
         run_utils.run_bash(cmd=cmd)
@@ -358,12 +374,22 @@ def resub_psi4(psi4_config):
     else:
         for path in os.listdir(basedir):
             if os.path.isdir(basedir + "/" + path):
+                if os.path.isfile(basedir + "/" + path + "/" + psi4_config['base_functional'] + "/" + "wfn-1step-tc.180.npy") or \
+                path in active:
+                    #skip over calculations that have already been run or are currently running
+                    continue
                 print("at: ", basedir + "/" + path)
                 os.chdir(basedir + "/" + path)
                 run_utils.write_jobscript(psi4_config)
                 run_utils.run_bash(cmd=cmd)
                 os.chdir(basedir)
                 time.sleep(2)
+                nsubmitted += 1
+                if njobs + nsubmitted >= hard_limit or nactive + nsubmitted >= maxjobs:
+                    #if you reach the queue limit, stop running jobs
+                    hit_queue_limit = True
+                    return nsubmitted, int(nactive + nsubmitted), hit_queue_limit
+        return nsubmitted, int(nactive + nsubmitted), hit_queue_limit
 
 
 def main(args=None):
@@ -415,8 +441,39 @@ def main(args=None):
         with open('complete', 'w') as fil:
             fil.write('True')
     else:
-        resub_psi4(configure_dict["psi4_config"])
+        while True:
+            print('**********************************')
+            print("****** Assessing Job Status ******")
+            print('**********************************')
+            sys.stdout.flush()
+            time1 = time.time()
+            with open('complete', 'w') as fil:
+                fil.write('Active')
+            number_resubmitted, number_active, hit_queue_limit = resub_psi4(configure_dict["psi4_config"])
 
+            print('**********************************')
+            print(("******** " + str(number_resubmitted) + " Jobs Submitted ********"))
+            print('**********************************')
+
+            print(('job cycle took: ' + str(time.time() - time1)))
+            print(('sleeping for: ' + str(configure_dict['sleep'])))
+            sys.stdout.flush()
+            time.sleep(configure_dict[
+                           'sleep'])  # sleep for time specified in configure. If not specified, default to 7200 seconds (2 hours)
+
+            # Terminate the script if it is no longer submitting jobs
+            if number_resubmitted == 0 and number_active == 0 and not hit_queue_limit:
+                counter += 1
+            else:
+                counter = 0
+            if counter >= 3:
+                break
+
+        print('**********************************')
+        print("****** Normal Terminatation ******")
+        print('**********************************')
+        with open('complete', 'w') as fil:
+            fil.write('True')
 
 if __name__ == '__main__':
     main()
