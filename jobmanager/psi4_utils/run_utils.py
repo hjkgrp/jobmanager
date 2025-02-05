@@ -91,7 +91,7 @@ class RunUtils():
 
                 if "trigger" in psi4_config:
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs()'  > $SGE_O_WORKDIR/deriv_nohup1.out 2> $SGE_O_WORKDIR/deriv_nohup1.err\n")
-                elif "hfx_levels" in psi4_config:
+                if "hfx_levels" in psi4_config:
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_hfx_jobs()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                 else:
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
@@ -105,6 +105,7 @@ class RunUtils():
                 fo.write("cp -rf * $SGE_O_WORKDIR\n")
                 fo.write("sleep 30\n")
         elif psi4_config["cluster"] == "supercloud":
+            #TODO: Update
             mem = int(psi4_config['memory'].split(" ")[0])/1000
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#!/bin/bash\n")
@@ -142,7 +143,7 @@ class RunUtils():
                     fo.write("rm */psi.* */dfh.* *-*/*.npy " + base_func + "/*.molden " + base_func + "/*1step*\n")
                 fo.write("cp -rf * $subdir\n")
         elif psi4_config["cluster"] == "expanse":
-            mem = int(psi4_config['memory'].split(" ")[0])/psi4_config['num_threads']/1000
+            mem = int(psi4_config['memory'].split(" ")[0])/1000
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#!/bin/sh\n")
                 fo.write("#SBATCH -A mit136\n")
@@ -154,24 +155,26 @@ class RunUtils():
                 fo.write("#SBATCH --error=job.%J.err\n")
                 fo.write("#SBATCH --output=job.%J.out\n")
                 fo.write("#SBATCH --export=ALL\n")
-                fo.write("#SBATCH --mem=64G\n")
+                fo.write("#SBATCH --mem=%dG\n\n" % mem)
 
-                fo.write("source /home/crduan/.bashrc\n")
-                fo.write("conda activate mols_psi4\n")
+                fo.write(f"source {psi4_config['bashrc']}\n")
+                fo.write(f"source activate {psi4_config['conda_env']}\n")
                 fo.write("export PSI_SCRATCH='./'\n")
                 fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
 
                 if "trigger" in psi4_config:
-                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs()'  > $SGE_O_WORKDIR/deriv_nohup1.out 2> $SGE_O_WORKDIR/deriv_nohup1.err\n")
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/deriv_nohup1.out 2> $SLURM_SUBMIT_DIR/deriv_nohup1.err\n""")
+                if "hfx_levels" in psi4_config:
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_hfx_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                 else:
-                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
-                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup1.err\n")
-                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup3.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup2.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup3.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                     if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
                         fo.write("echo rescuing...\n")
-                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup1.out\n")
-                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup2.out\n")
-                        fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup3.out\n")
+                        fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup1.out\n""")
+                        fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup2.out\n""")
+                        fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup3.out\n""")
         elif psi4_config["cluster"] == "mustang":
             #TODO: Update
             with open("./jobscript.sh", "w") as fo:
