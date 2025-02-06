@@ -64,6 +64,8 @@ class RunUtils():
             psi4_config: dict
                 Dictionary containing the information in the loaded JSON.
         """
+        #get the directory name so the job name matches
+        jobname = os.getcwd().split('/')[-1]
         if "cluster" not in psi4_config or psi4_config["cluster"] == "gibraltar":
             mem = int(psi4_config['memory'].split(" ")[0])/1000
             if 'base_functional' in psi4_config:
@@ -72,7 +74,7 @@ class RunUtils():
                 base_func = 'b3lyp'
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#$ -S /bin/bash\n")
-                fo.write("#$ -N psi4_dft\n")
+                fo.write(f"#$ -N {jobname}\n")
                 fo.write("#$ -R y\n")
                 fo.write("#$ -cwd\n")
                 fo.write("#$ -l h_rt=240:00:00\n")
@@ -145,7 +147,7 @@ class RunUtils():
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#!/bin/sh\n")
                 fo.write("#SBATCH -A mit136\n")
-                fo.write("#SBATCH --job-name=psi4_multiDFA\n")
+                fo.write(f"#SBATCH --job-name={jobname}\n")
                 fo.write("#SBATCH --partition=shared\n")
                 fo.write("#SBATCH -t 48:00:00\n")
                 fo.write("#SBATCH --nodes=1\n")
