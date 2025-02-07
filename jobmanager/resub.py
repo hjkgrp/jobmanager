@@ -122,7 +122,8 @@ def resub(directory=None, verbose=False, dryrun=False):
     bad_geos = completeness['Bad_geos']  # These are jobs which finished, but converged to a bad geometry.
     finished = completeness['Finished']
     molscontrol_kills = completeness['molscontrol_kills']
-    nactive = tools.get_number_active()  # number of active jobs, counting bundled jobs as a single job
+    active = tools.list_active_jobs()
+    nactive = len([x for x in active if x in set(os.listdir(directory))])
     # Kill SCF errors in progress, which are wasting computational resources
     all_scf_errors = completeness['SCF_Errors_Including_Active']  # These are all jobs which appear to have scf error, including active ones
     scf_errors_to_kill = [scf_err for scf_err in all_scf_errors if scf_err not in scf_errors]
@@ -146,7 +147,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Resub unidentified errors
     for error in errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         resub_tmp = recovery.simple_resub(error)
@@ -158,7 +159,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Resub oscillating_scf convergence errors
     for error in oscillating_scf_errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = io.read_configure(directory, None)
@@ -173,7 +174,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Resub scf convergence errors
     for error in scf_errors:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = io.read_configure(directory, None)
@@ -188,7 +189,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Resub jobs which converged to bad geometries with additional constraints
     for error in bad_geos:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = io.read_configure(directory, None)
@@ -203,7 +204,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Resub spin contaminated cases
     for error in spin_contaminated:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = io.read_configure(directory, None)
@@ -218,7 +219,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Resub jobs with atypical parameters used to aid convergence
     for error in need_resub:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         resub_tmp = recovery.clean_resub(error)
@@ -230,7 +231,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Create a job with a tighter convergence threshold for failed thermo jobs
     for error in thermo_grad_error:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         local_configure = io.read_configure(directory, None)
@@ -246,7 +247,7 @@ def resub(directory=None, verbose=False, dryrun=False):
     # Currently, this should only ever be thermo jobs waiting for an ultratight job
     for waiting_dict in waiting:
         if ((nactive + np.sum(resubmitted)) >= max_jobs) or (
-                (tools.get_total_queue_usage() + np.sum(resubmitted)) >= hard_job_limit):
+                tools.get_total_queue_usage() >= hard_job_limit):
             hit_queue_limit = True
             continue
         if len(list(waiting_dict.keys())) > 1:
@@ -267,7 +268,7 @@ def resub(directory=None, verbose=False, dryrun=False):
 
     # Submit jobs which haven't yet been submitted
     if (((nactive + np.sum(resubmitted)) < max_jobs) and (
-            (tools.get_total_queue_usage() + np.sum(resubmitted)) < hard_job_limit)):
+            tools.get_total_queue_usage() < hard_job_limit)):
         to_submit = []
         jobscripts = tools.find('*_jobscript')
         active_jobs = tools.list_active_jobs(home_directory=directory, parse_bundles=True)
@@ -296,11 +297,15 @@ def resub(directory=None, verbose=False, dryrun=False):
             # update the number of running + submitted jobs (from this instance of jobmanager)
             dynamic_nactive = (len(submitted) + nactive + np.sum(resubmitted))
             # update the number of jobs the user is currently running
-            user_nactive = tools.get_total_queue_usage() + len(submitted) + np.sum(resubmitted)
+            user_nactive = tools.get_total_queue_usage()
             # make sure we don't exceed set job limits
             if (dynamic_nactive >= max_jobs) or (user_nactive >= hard_job_limit):
                 hit_queue_limit = True
-                continue
+                if dynamic_nactive >= max_jobs:
+                    print("The maximum number of jobs specified for this jobmanager instance has been reached.")
+                else:
+                    print("The total number of jobs submitted for this user is at the hard job limit.")
+                break
 
             #get the path to input file
             inp_file_path = job.rsplit('_',1)[0]+'.in'
