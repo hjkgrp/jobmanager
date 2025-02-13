@@ -1,4 +1,4 @@
-name: updated_jobmanager
+name: jobmanager
 channels:
   - conda-forge
 dependencies:
