@@ -17,10 +17,12 @@ FILE_ENDINGS = {
     '.out': 'output'
 }
 
+#engaging has orcd login
 MACHINES = {
     'gibraltar': {'scheduler': 'SGE'},
     'supercloud': {'scheduler': 'SLURM'},
-    'expanse': {'scheduler': 'SLURM'}
+    'expanse': {'scheduler': 'SLURM'},
+    'orcd': {'scheduler': 'SLURM'}
 }
 
 
