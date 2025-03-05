@@ -172,6 +172,36 @@ class RunUtils():
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup1.out\n""")
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup2.out\n""")
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup3.out\n""")
+        elif psi4_config["cluster"] == "engaging":
+            with open("./jobscript.sh", "w") as fo:
+                fo.write("#!/bin/sh\n")
+                fo.write(f"#SBATCH --job-name={jobname}\n")
+                fo.write("#SBATCH --partition=mit_preemptable\n")
+                fo.write("#SBATCH -t 48:00:00\n")
+                fo.write("#SBATCH --cpus-per-task=16\n")
+                fo.write("#SBATCH --error=job.%J.err\n")
+                fo.write("#SBATCH --output=job.%J.out\n")
+                fo.write("#SBATCH --export=ALL\n")
+                fo.write("#SBATCH --mem=%dG\n\n" % mem)
+
+                fo.write(f"source {psi4_config['bashrc']}\n")
+                fo.write(f"source activate {psi4_config['conda_env']}\n")
+                fo.write("export PSI_SCRATCH='./'\n")
+                fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
+
+                if "trigger" in psi4_config:
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/deriv_nohup1.out 2> $SLURM_SUBMIT_DIR/deriv_nohup1.err\n""")
+                if "hfx_levels" in psi4_config:
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_hfx_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
+                else:
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup2.out 2> $SLURM_SUBMIT_DIR/nohup2.err\n""")
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup3.out 2> $SLURM_SUBMIT_DIR/nohup3.err\n""")
+                    if "hfx_rescue" in psi4_config and psi4_config["hfx_rescue"]:
+                        fo.write("echo rescuing...\n")
+                        fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup1.out\n""")
+                        fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup2.out\n""")
+                        fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup3.out\n""")
         elif psi4_config["cluster"] == "mustang":
             #TODO: Update
             with open("./jobscript.sh", "w") as fo:
