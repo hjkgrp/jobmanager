@@ -17,12 +17,13 @@ FILE_ENDINGS = {
     '.out': 'output'
 }
 
-#engaging has orcd login
+#engaging has orcd login, inband nodes
 MACHINES = {
     'gibraltar': {'scheduler': 'SGE'},
     'supercloud': {'scheduler': 'SLURM'},
     'expanse': {'scheduler': 'SLURM'},
-    'orcd': {'scheduler': 'SLURM'}
+    'orcd': {'scheduler': 'SLURM'},
+    'inband': {'scheduler': 'SLURM'}
 }
 
 
@@ -446,7 +447,7 @@ def get_total_queue_usage():
     # gets the number of jobs in the queue for this user, regardless of where they originate
     if get_machine() == 'gibraltar':
         jobs = call_bash("qstat -u '" + get_username() + "'", version=2)
-    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse', 'orcd']:
+    elif get_machine() in ['comet', 'bridges', "mustang", "supercloud",'expanse', 'orcd', 'inband']:
         jobs = call_bash('squeue -o "%i %P %j %u %t %M %D %R" -u ' + get_username(),
                          version=2)
     else:
@@ -699,7 +700,7 @@ def qsub(jobscript_list):
         if get_machine() in ['gibraltar']:
             stdout, stderr = call_bash('qsub ' + jobscript, error=True)
             stdouts.append(stdout)
-        elif get_machine() in ['supercloud','bridges', 'comet', 'expanse', 'orcd']:
+        elif get_machine() in ['supercloud','bridges', 'comet', 'expanse', 'orcd', 'inband']:
             stdout, stderr = call_bash('sbatch ' + jobscript, error=True)
             stdouts.append(stdout)
         if len(stderr) > 0:
