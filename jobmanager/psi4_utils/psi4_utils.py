@@ -312,9 +312,9 @@ class Psi4Utils:
             targetfile = psi4_scr + filename + '.default.' + pid + '.180.npy'
             shutil.copyfile(rundir + base_func + "/wfn-1step-tc.180.npy", targetfile)
             # Final scf---
-            #only allow for 50 iterations since the initial guess should converge quickly
+            #by default allow 50 iterations since the initial guess should converge quickly
             psi4.set_options({
-                "maxiter": 50,
+                "maxiter": 50 if "init_maxiter" not in psi4_config else psi4_config["init_maxiter"],
                 "D_CONVERGENCE": 3e-5,
                 "E_CONVERGENCE": 3e-5,
                 "fail_on_maxiter": True})
