@@ -343,7 +343,7 @@ class Psi4Utils:
                 if type(psi4_config["partial_charge_scheme"]) == str:
                     psi4.oeprop(wfn, psi4_config["partial_charge_scheme"])
                 else:
-                    psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"]) 
+                    psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"])
             success = True
         except:
             print("This calculation does not converge.")
