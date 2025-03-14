@@ -265,16 +265,6 @@ class Psi4Utils:
             #If def2-TZVP, converge in def2-SV(P) first, since expecting to project up from def2-SV(P)
             if psi4_config["basis"] == "def2-tzvp":
                 psi4.set_options({"basis": "def2-sv(p)"})
-            '''
-            #Deprecated from when only B3LYP was supported as a base functional, updated to now include other functionals
-            #If the initial calculation was done with B3LYP and a HFX not equal to 20, use functional defined in get_hfx_functional
-            if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
-                print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
-                e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
-            else:
-                e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
-            wfn.to_file(rundir + "b3lyp/wfn-1step.180")
-            '''
             if "_hfx_" in base_func:
                 #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
                 func = base_func.split('_')[0]
@@ -315,8 +305,8 @@ class Psi4Utils:
             #only allow for 50 iterations since the initial guess should converge quickly
             psi4.set_options({
                 "maxiter": 50,
-                "D_CONVERGENCE": 3e-5,
-                "E_CONVERGENCE": 3e-5,
+                "D_CONVERGENCE": 3e-5 if "D_CONVERGENCE" not in psi4_config else psi4_config["D_CONVERGENCE"],
+                "E_CONVERGENCE": 3e-5 if "E_CONVERGENCE" not in psi4_config else psi4_config["E_CONVERGENCE"],
                 "fail_on_maxiter": True})
         else:
             #if no molden provided, allow for more iterations to ensure convergence
@@ -325,24 +315,14 @@ class Psi4Utils:
             psi4.set_options({
                 "maxiter": 250 if "maxiter" not in psi4_config else psi4_config["maxiter"],
                 # "guess": "GWH",
-                "D_CONVERGENCE": 3e-5,
-                "E_CONVERGENCE": 3e-5,
+                "D_CONVERGENCE": 3e-5 if "D_CONVERGENCE" not in psi4_config else psi4_config["D_CONVERGENCE"],
+                "E_CONVERGENCE": 3e-5 if "E_CONVERGENCE" not in psi4_config else psi4_config["E_CONVERGENCE"],
                 "fail_on_maxiter": True})
             if psi4_config["basis"] == "def2-tzvp":
                 psi4.set_options({"basis": "def2-sv(p)"})
         success = False
         try:
             #final SCF calculation
-            '''
-            #Deprecated, see above deprecated section
-            if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
-                #if calculation was done with a HFX different from 20, use custom B3LYP
-                print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
-                e, wfn = psi4.energy("scf", self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
-            else:
-                e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
-            wfn.to_file(rundir + "b3lyp/wfn.180")
-            '''
             if "_hfx_" in base_func:
                 #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
                 func = base_func.split('_')[0]
@@ -351,6 +331,19 @@ class Psi4Utils:
             else:
                 e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
             wfn.to_file(rundir + base_func + "/wfn.180")
+            #write a molden file if desired, do not do for def2-TZVP since we want to write for the final calculation
+            if "write_molden_base" in psi4_config and psi4_config["write_molden_base"] == True and psi4_config["basis"] != 'def2-tzvp':
+                if "write_molden_name" in psi4_config:
+                    name = psi4_config["write_molden_name"]
+                else:
+                    name = "geo_psi4.molden"
+                wfn.write_molden(rundir + base_func + '/' + name)
+            #write one electron properties like the partial charge if desired, do not do for def2-TZVP since this is the SV(P) step
+            if "partial_charge_base" in psi4_config and psi4_config["partial_charge_base"] == True and psi4_config["basis"] != 'def2-tzvp':
+                if type(psi4_config["partial_charge_scheme"]) == str:
+                    psi4.oeprop(wfn, psi4_config["partial_charge_scheme"])
+                else:
+                    psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"]) 
             success = True
         except:
             print("This calculation does not converge.")
@@ -366,15 +359,6 @@ class Psi4Utils:
 
             psi4.set_options({"basis": "def2-tzvp", "maxiter": 200 if "maxiter" not in psi4_config else psi4_config["maxiter"]})
             try:
-                '''
-                #Deprecated, see above
-                if "b3lyp_hfx" in psi4_config and psi4_config["b3lyp_hfx"] != 20:
-                    print("customized b3lyp with different HFX: ", psi4_config["b3lyp_hfx"])
-                    e, wfn = psi4.energy("scf", self.get_hfx_functional('b3lyp', psi4_config["b3lyp_hfx"]),  molecule=mol, return_wfn=True)
-                else:
-                    e, wfn = psi4.energy('b3lyp', molecule=mol, return_wfn=True)
-                wfn.to_file(rundir + "b3lyp/wfn.180")
-                '''
                 if "_hfx_" in base_func:
                     #if hfx in functional, expects in the form functional_hfx_XX, where XX is the percent of HFX included.
                     func = base_func.split('_')[0]
@@ -383,6 +367,19 @@ class Psi4Utils:
                 else:
                     e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
                 wfn.to_file(rundir + base_func + "/wfn.180")
+                #write a molden file if desired
+                if "write_molden_base" in psi4_config and psi4_config["write_molden_base"] == True:
+                    if "write_molden_name" in psi4_config:
+                        name = psi4_config["write_molden_name"]
+                    else:
+                        name = "geo_psi4.molden"
+                    wfn.write_molden(rundir + base_func + '/' + name)
+                #write one electron properties like the partial charge if desired
+                if "partial_charge_base" in psi4_config and psi4_config["partial_charge_base"] == True:
+                    if type(psi4_config["partial_charge_scheme"]) == str:
+                        psi4.oeprop(wfn, psi4_config["partial_charge_scheme"])
+                    else:
+                        psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"])
             except:
                 print("This calculation does not converge.")
         #Check if the calculation succeeded
@@ -443,8 +440,8 @@ class Psi4Utils:
         # Final scf---
         psi4.set_options({
             "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
-            "D_CONVERGENCE": 3e-5,
-            "E_CONVERGENCE": 3e-5,
+            "D_CONVERGENCE": 3e-5 if "D_CONVERGENCE" not in psi4_config else psi4_config["D_CONVERGENCE"],
+            "E_CONVERGENCE": 3e-5 if "E_CONVERGENCE" not in psi4_config else psi4_config["E_CONVERGENCE"],
             "fail_on_maxiter": True})
 
         if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
@@ -459,6 +456,23 @@ class Psi4Utils:
                     e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
                     if return_wfn:
                         wfn.to_file(rundir + "/wfn.180")
+                #write a molden file if desired
+                if "write_molden" in psi4_config and psi4_config["write_molden"] == True:
+                    if "write_molden_name" in psi4_config:
+                        name = psi4_config["write_molden_name"]
+                    else:
+                        name = "geo_psi4.molden"
+                    wfn.write_molden(rundir + '/' + name)
+                #write one electron properties like the partial charge if desired
+                if "partial_charge" in psi4_config and psi4_config["partial_charge"] == True:
+                    if type(psi4_config["partial_charge_scheme"]) == str:
+                        print('In if statement')
+                        print(psi4_config['partial_charge_scheme'])
+                        psi4.oeprop(wfn, psi4_config["partial_charge_scheme"])
+                    else:
+                        print('In else statement')
+                        print(psi4_config['partial_charge_scheme'])
+                        psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"])
             except:
                 print("This calculation does not converge.")
         else:
@@ -467,9 +481,9 @@ class Psi4Utils:
             print("running CC: ", functional)
             psi4.set_options({
                 'reference': d['ref'].replace("ks", "hf"),
-                'R_CONVERGENCE': 1e-5,
-                'E_CONVERGENCE': 5e-5,
-                'D_CONVERGENCE': 5e-5,
+                'R_CONVERGENCE': 1e-5 if "R_CONVERGENCE" not in psi4_config else psi4_config["R_CONVERGENCE"],
+                'E_CONVERGENCE': 5e-5 if "E_CONVERGENCE" not in psi4_config else psi4_config["E_CONVERGENCE"],
+                'D_CONVERGENCE': 5e-5 if "D_CONVERGENCE" not in psi4_config else psi4_config["D_CONVERGENCE"],
                 "mp2_type": "df",
                 "cc_type": "conv",
                 "scf_type": "df",
@@ -480,6 +494,19 @@ class Psi4Utils:
             e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
             if return_wfn:
                 wfn.to_file(rundir + "/wfn.180")
+            #write a molden file if desired
+            if "write_molden" in psi4_config and psi4_config["write_molden"] == True:
+                if "write_molden_name" in psi4_config:
+                    name = psi4_config["write_molden_name"]
+                else:
+                    name = "geo_psi4.molden"
+                wfn.write_molden(rundir + '/' + name)
+            #write one electron properties like the partial charge if desired
+            if "partial_charge" in psi4_config and psi4_config["partial_charge"] == True:
+                if type(psi4_config["partial_charge_scheme"]) == str:
+                    psi4.oeprop(wfn, psi4_config["partial_charge_scheme"])
+                else:
+                    psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"])
         #Check success, Remove temporary files
         success = run_utils.check_success(path=rundir)
         for filename in os.listdir("./"):
@@ -537,13 +564,26 @@ class Psi4Utils:
         # Final scf---
         psi4.set_options({
             "maxiter": 50 if "maxiter" not in psi4_config else psi4_config["maxiter"],
-            "D_CONVERGENCE": 3e-5,
-            "E_CONVERGENCE": 3e-5,
+            "D_CONVERGENCE": 3e-5 if "D_CONVERGENCE" not in psi4_config else psi4_config["D_CONVERGENCE"],
+            "E_CONVERGENCE": 3e-5 if "E_CONVERGENCE" not in psi4_config else psi4_config["E_CONVERGENCE"],
             "fail_on_maxiter": True})
         try:
             e, wfn_o = psi4.energy("scf", molecule=mol, return_wfn=True, dft_functional=self.get_hfx_functional(functional, hfx))
             if return_wfn:
                 wfn_o.to_file(rundir + "/wfn.180")
+            #write a molden file if desired
+            if "write_molden" in psi4_config and psi4_config["write_molden"] == True:
+                if "write_molden_name" in psi4_config:
+                    name = psi4_config["write_molden_name"]
+                else:
+                    name = "geo_psi4.molden"
+                wfn.write_molden(rundir + '/' + name)
+            #write one electron properties like the partial charge if desired
+            if "partial_charge" in psi4_config and psi4_config["partial_charge"] == True:
+                if type(psi4_config["partial_charge_scheme"]) == str:
+                    psi4.oeprop(wfn, psi4_config["partial_charge_scheme"])
+                else:
+                    psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"])
             # os.remove(wfn)
         except:
             print("This calculation does not converge.")
