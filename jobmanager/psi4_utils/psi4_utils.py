@@ -466,12 +466,8 @@ class Psi4Utils:
                 #write one electron properties like the partial charge if desired
                 if "partial_charge" in psi4_config and psi4_config["partial_charge"] == True:
                     if type(psi4_config["partial_charge_scheme"]) == str:
-                        print('In if statement')
-                        print(psi4_config['partial_charge_scheme'])
                         psi4.oeprop(wfn, psi4_config["partial_charge_scheme"])
                     else:
-                        print('In else statement')
-                        print(psi4_config['partial_charge_scheme'])
                         psi4.oeprop(wfn, *psi4_config["partial_charge_scheme"])
             except:
                 print("This calculation does not converge.")
