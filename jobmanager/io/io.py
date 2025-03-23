@@ -57,6 +57,8 @@ def spinchargeChecker(tc_dict, path):
     #count electrons
     electron_count = -charge
     for line in xyz_lines:
+        if not line.strip(): # For when the comment line in XYZ is empty
+            continue
         if line.split()[0] in elementsbynum:
             electron_count += elementsbynum[line.split()[0]]
 
