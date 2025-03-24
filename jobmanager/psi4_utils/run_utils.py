@@ -176,8 +176,8 @@ class RunUtils():
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#!/bin/sh\n")
                 fo.write(f"#SBATCH --job-name={jobname}\n")
-                fo.write("#SBATCH --partition=mit_preemptable\n")
-                fo.write("#SBATCH -t 48:00:00\n")
+                fo.write("#SBATCH --partition=mit_normal\n")
+                fo.write("#SBATCH -t 12:00:00\n")
                 fo.write("#SBATCH --cpus-per-task=16\n")
                 fo.write("#SBATCH --error=job.%J.err\n")
                 fo.write("#SBATCH --output=job.%J.out\n")
