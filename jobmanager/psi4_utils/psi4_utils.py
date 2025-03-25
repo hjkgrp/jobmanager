@@ -277,22 +277,33 @@ class Psi4Utils:
             d_molden = load_molden(psi4_config["moldenfile"])
             #if calculation restricted or not, checking for rks or rhf references
             restricted = True if any(x in psi4_config["ref"] for x in ["r", "R"]) else False
+            #note: by default assumes that the molden is run with the same reference as the Psi4 calculation
+            #this will lead to errors when using a restricted molden for unrestricted calculations. All other scenarios work.
+            #handle the restricted molden to unrestricted psi4 case:
+            if "restricted_molden" in psi4_config and not restricted:
+                restricted_molden = psi4_config['restricted_molden']
+            else:
+                restricted_molden = restricted
             #initialize TCtoPsi4 class and use to convert molden to wfn
             if psi4_config["basis"] == "lacvps" or '6-31g' in psi4_config['basis']:
                 #currently only support Cartesian calculation in Psi4 with 6-31g*
                 converter = TCtoPsi4(psi4_config['basis'], 'Cartesian')
-                Ca, Cb, mapping = converter.tcmolden2psi4wfn_ao_mapping(d_molden, restricted=restricted)
+                Ca, Cb, mapping = converter.tcmolden2psi4wfn_ao_mapping(d_molden, restricted=restricted_molden)
             elif 'def2' in psi4_config['basis']:
                 #currrently only support Spherical calculation in Psi4 with def2 basis sets
                 converter = TCtoPsi4(psi4_config['basis'], 'Spherical')
-                Ca, Cb, mapping = converter.tcmolden2psi4wfn_ao_mapping(d_molden, restricted=restricted)
+                Ca, Cb, mapping = converter.tcmolden2psi4wfn_ao_mapping(d_molden, restricted=restricted_molden)
             else:
-                raise ValueError('Unsuppoorted Basis Set encountered! Please use 6-31G, LACVP*, or def2 basis sets.')
+                raise ValueError('Unsupported Basis Set encountered! Please use 6-31G, LACVP*, or def2 basis sets.')
             #populate the 1-step SCF wfn with the coefficients from the molden
             wfn_minimal_np = np.load(rundir + base_func + "/wfn-1step.180.npy", allow_pickle=True)
             wfn_minimal_np[()]['matrix']["Ca"] = Ca
             if not restricted:
                 wfn_minimal_np[()]['matrix']["Cb"] = Cb
+                #account for the case where we use a restricted molden as an initial guess for an unrestricted calculation
+                if "restricted_molden" in psi4_config:
+                    if psi4_config['restricted_molden']:
+                        wfn_minimal_np[()]['matrix']["Cb"] = Ca
             else:
                 wfn_minimal_np[()]['matrix']["Cb"] = Ca
             np.save(rundir + base_func + "/wfn-1step-tc.180.npy", wfn_minimal_np)
