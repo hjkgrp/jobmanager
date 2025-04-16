@@ -149,7 +149,6 @@ class RunUtils():
                 #fo.write("#SBATCH -t 48:00:00\n")
                 fo.write("#SBATCH -t 6:00:00\n")
                 fo.write("#SBATCH --nodes=1\n")
-                fo.write("#SBATCH --nodes=1\n")
                 fo.write("#SBATCH --ntasks-per-node=16\n")
                 fo.write("#SBATCH --error=job.%J.err\n")
                 fo.write("#SBATCH --output=job.%J.out\n")
