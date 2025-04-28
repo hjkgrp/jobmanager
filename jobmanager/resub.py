@@ -379,7 +379,7 @@ def resub_psi4(psi4_config):
     else:
         for path in os.listdir(basedir):
             if os.path.isdir(basedir + "/" + path):
-                if os.path.isfile(basedir + "/" + path + "/" + psi4_config['base_functional'] + "/" + "wfn-1step-tc.180.npy") or \
+                if os.path.isfile(basedir + "/" + path + "/nohup1.out") or \
                 path in active:
                     #skip over calculations that have already been run or are currently running
                     continue
