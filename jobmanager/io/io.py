@@ -963,12 +963,12 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                 '#SBATCH --job-name=' + name + '\n',
                 '#SBATCH --partition=mit_normal_gpu\n',
                 '#SBATCH --gres=gpu:1\n',
-                '#SBATCH --cpus-per-task=2\n,'
+                '#SBATCH --cpus-per-task=2\n',
                 '#SBATCH --mem=72G\n',
                 '#SBATCH --time=' + time_limit + '\n',
                 'module purge\n',
                 'module use /orcd/pool/004/hjkulik_shared/modulefiles\n',
-                'module load community-modules\n,'
+                'module load community-modules\n',
                 'module load gcc/12.2.0\n',
                 'module load openmpi/5.0.6\n',
                 'module load intel/2024.2.1\n',
