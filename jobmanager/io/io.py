@@ -992,7 +992,7 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             text += ["wait\n"]
             text += ["mv *.log $SGE_O_WORKDIR\n"]
             text += ["mv features.json $SGE_O_WORKDIR/dyanmic_features.json\n"]
-    elif terachem_line and machine in ['bridges', 'comet', 'engaging']:
+    elif terachem_line and machine in ['bridges', 'comet', 'inband']:
         text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
     if custom_line:
         if type(custom_line) == list:
