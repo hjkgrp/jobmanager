@@ -330,7 +330,7 @@ def clean_resub(outfile_path):
     infile_dict['coordinates'] = coordinates
     infile_dict['method'] = configure_dict['method']
     infile_dict['levelshifta'], infile_dict['levelshiftb'] = configure_dict['levela'], configure_dict['levelb']
-    infile_dict['dispersion'] = configure_dict['dispersion']
+    # infile_dict['dispersion'] = configure_dict['dispersion']
     infile_dict['constraints'] = False
     infile_dict['machine'] = machine
 
