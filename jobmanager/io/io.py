@@ -487,143 +487,84 @@ def read_infile(outfile_path):
 # The global configure file should be in the same directory where resub() is called
 # The local configure file should be in the same directory as the .out file
 def read_configure(home_directory=None, outfile_path=None):
-    def load_configure_file(directory):
-        def strip_new_line(string):
-            if string[-1] == '\n':
-                return string[:-1]
-            else:
-                return string
-
-        if directory is None:
-            directory = os.getcwd()
-
-        configure = os.path.join(directory, 'configure')
-        if os.path.isfile(configure):
-            with open(configure, 'r') as f:
-                configure = f.readlines()
-            configure = list(map(strip_new_line, configure))
-            return configure
-        else:
-            return []
-    home_configure = load_configure_file(home_directory)
+    home_configure = json.load(os.path.join(home_directory, 'configure.json'))
     if outfile_path:
-        local_configure = load_configure_file(os.path.split(outfile_path)[0])
+        local_configure = json.load(os.path.join(os.path.split(outfile_path)[0]), 'configure.json')
     else:
-        local_configure = []
-    # Determine which derivative jobs are requested
-    solvent, vertEA, vertIP, thermo, dissociation, hfx_resample, functionalsSP, mbe, spinSplitting = False, False, False, False, False, False, False, False, False
-    for line in home_configure + local_configure:
-        if 'spinSplitting' in line:
-            spinSplitting = True
-        if 'solvent' in line or 'Solvent' in line:
-            solvent = [float(p) for p in line.split()[1:]]
-        if 'vertEA' in line or 'VertEA' in line:
-            vertEA = True
-        if 'vertIP' in line or 'VertIP' in line:
-            vertIP = True
-        if 'functionalsSP' in line or 'FunctionalsSP' in line:
-            functionalsSP = [str(p) for p in line.split()[1:]]
-        if ('thermo' in line and 'thermo_grad_error' not in line) or ('Thermo' in line and 'Thermo_grad_error' not in line):
-            thermo = True
-        if 'dissociation' in line or 'Dissociation' in line:
-            dissociation = True
-        if 'hfx_resample' in line or 'HFX_resample' in line:
-            hfx_resample = True
-        if 'mbe' in line or "MBE" in line:
-            mbe = True
+        local_configure = {}
+    configure = home_configure.update(local_configure)
 
-    # Determine global settings for this run
-    max_jobs, max_resub, levela, levelb, method, hfx, geo_check, sleep, job_recovery, dispersion = False, False, False, False, False, False, False, False, [], False
-    ss_cutoff, hard_job_limit, use_molscontrol, general_sp = False, False, False, False
-    run_psi4, psi4_config = False, {}
-    dissociated_ligand_charges, dissociated_ligand_spinmults = {}, {}
-    for configure in [home_configure, local_configure]:
-        for line in configure:
-            if 'max_jobs' in line.split(':'):
-                max_jobs = int(line.split(':')[-1])
-            if 'max_resub' in line.split(':'):
-                max_resub = int(line.split(':')[-1])
-            if 'levela' in line.split(':'):
-                levela = float(line.split(':')[-1])
-            if 'levelb' in line.split(':'):
-                levelb = float(line.split(':')[-1])
-            if 'method' in line.split(':'):
-                method = line.split(':')[-1]
-            if 'hfx' in line.split(':'):
-                hfx = float(line.split(':')[-1])
-            if 'geo_check' in line.split(':'):
-                geo_check = line.split(':')[-1]
-            if 'sleep' in line.split(':'):
-                sleep = int(line.split(':')[-1])
-            if 'job_recovery' in line.split(':'):
-                job_recovery = line.split(':')[-1]
-                # convert the string form of a python list to an actual list
-                job_recovery = job_recovery[1:-1]
-                job_recovery = job_recovery.split(',')
-            if 'dispersion' in line.split(':'):
-                dispersion = line.split(':')[-1]
-            if 'ss_cutoff' in line.split(':'):
-                ss_cutoff = float(line.split(':')[-1])
-            if 'hard_job_limit' in line.split(':'):
-                hard_job_limit = int(line.split(':')[-1])
-            if 'dissociated_ligand_charge' in line.split(':'):
-                dissociated_ligand_charges[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
-            if 'dissociated_ligand_spinmult' in line.split(':'):
-                dissociated_ligand_spinmults[line.split(':')[-1].split()[0]] = int(line.split(':')[-1].split()[1])
-            if "use_molscontrol" in line.split(':'):
-                use_molscontrol = bool(int(line.split(":")[-1]))
-            if "general_sp" in line.split(':'):
-                print("general SP jobs activated.")
-                localpath = line.split(":")[-1].replace(" ", "")
-                if os.path.isfile(localpath):
-                    with open(os.getcwd() + "/" + localpath, "r") as f:
-                        try:
-                            general_sp = json.load(f)
-                        except json.JSONDecodeError:
-                            raise ValueError("%s is not a valid json file." % localpath)
-                else:
-                    raise ValueError("%s does not exits." % localpath)
-            if "run_psi4" in line.split(':'):
-                print("Psi4 jobs activated.")
-                run_psi4 = True
-                localpath = line.split(":")[-1].replace(" ", "")
-                if os.path.isfile(localpath):
-                    with open(os.getcwd() + "/" + localpath, "r") as f:
-                        try:
-                            psi4_config = json.load(f)
-                        except json.JSONDecodeError:
-                            raise ValueError("%s is not a valid json file." % localpath)
-                else:
-                    raise ValueError("%s does not exits." % localpath)
-    # If global settings not specified, choose defaults:
-    if (not max_jobs) and isinstance(max_jobs, bool):
-        max_jobs = 50
-    # if not max_resub:
-    #    max_resub = 5
-    if not levela:
-        levela = 0.25
-    if not levelb:
-        levelb = 0.25
-    if not method:
-        method = 'b3lyp'
-    if not hfx:
-        hfx = 0.20
-    if not sleep:
-        sleep = 7200
-    if not ss_cutoff:
-        ss_cutoff = 1.0
-    if (not hard_job_limit):
-        hard_job_limit = 190
+    #derivative job types and their expected data types
+    # spinSplitting: boolean, solvent: list of floats, vertEA: boolean, vertIP: boolean, functionalsSP: list of strings, thermo: boolean,
+    # dissociation: boolean, hfx_resample: boolean, mbe: boolean
+    derivative_dict = {
+      'spinSplitting': False,
+      'solvent': False,
+      'vertEA': False,
+      'vertIP': False,
+      'functionalsSP': False,
+      'thermo': False,
+      'dissociation': False,
+      'hfx_resample': False,
+      'mbe': False
+    }
+    
+    #global settings for the run, expected data types
+    # max_jobs: int, max_resub: int, levela: float, levelb: float, method: str, hfx: float, geo_check: str, sleep: int, 
+    # job_recovery: list of str, dispersion: str
+    # ss_cutoff: float, hard_job_limit: int
+    # dissociated_ligand_charge: dict[str]: int, dissociated_ligand_spinmult: dict[str]: int
+    # use_molscontrol: boolean
+    settings_dict = {
+      'max_jobs': 50,
+      'max_resub': False,
+      'levela': 0.25,
+      'levelb': 0.25,
+      'method': 'b3lyp',
+      'hfx': 0.20,
+      'geo_check': False,
+      'sleep': 7200,
+      'job_recovery': [],
+      'dispersion': False,
+      'ss_cutoff': 1.0,
+      'hard_job_limit': 190,
+      'use_molscontrol': False,
+      'general_sp': False,
+      'run_psi4': False,
+      'psi4_config': {},
+      'dissociated_ligand_charges': {},
+      'dissociated_ligand_spinmults': {}
+    }
 
-    return {'solvent': solvent, 'vertEA': vertEA, 'vertIP': vertIP, 'thermo': thermo, 'dissociation': dissociation,
-            'hfx_resample': hfx_resample, 'max_jobs': max_jobs, 'max_resub': max_resub, 'levela': levela,
-            'levelb': levelb, 'method': method, 'hfx': hfx, 'geo_check': geo_check, 'sleep': sleep,
-            'job_recovery': job_recovery, 'dispersion': dispersion, 'functionalsSP': functionalsSP,
-            'ss_cutoff': ss_cutoff, 'hard_job_limit': hard_job_limit,
-            'dissociated_ligand_spinmults': dissociated_ligand_spinmults,
-            'dissociated_ligand_charges': dissociated_ligand_charges,
-            "use_molscontrol": use_molscontrol, "general_sp": general_sp,
-            "run_psi4": run_psi4, "psi4_config": psi4_config, 'mbe': mbe, 'spinSplitting': spinSplitting}
+    default_dict = derivative_dict.update(settings_dict)
+    configure_dict = default_dict.update(configure)
+
+    # If different functionality specified
+    if "general_sp" in configure_dict:
+        print("general SP jobs activated.")
+        localpath = configure_dict['general_sp'].replace(" ", "")
+        if os.path.isfile(localpath):
+            with open(os.getcwd() + "/" + localpath, "r") as f:
+                try:
+                    general_sp = json.load(f)
+                except json.JSONDecodeError:
+                    raise ValueError("%s is not a valid json file." % localpath)
+        else:
+            raise ValueError("%s does not exits." % localpath)
+    if "run_psi4" in configure_dict:
+        print("Psi4 jobs activated.")
+        configure_dict["run_psi4"] = True
+        localpath = configure_dict['run_psi4'].replace(" ", "")
+        if os.path.isfile(localpath):
+            with open(os.getcwd() + "/" + localpath, "r") as f:
+                try:
+                    psi4_config = json.load(f)
+                    configure_dict["psi4_config"] = psi4_config
+                except json.JSONDecodeError:
+                    raise ValueError("%s is not a valid json file." % localpath)
+        else:
+            raise ValueError("%s does not exits." % localpath)
+    return default_dict.update(configure_dict)
 
 
 def read_charges(PATH):
