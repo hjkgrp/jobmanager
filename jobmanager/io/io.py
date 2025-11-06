@@ -956,6 +956,29 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
                 'export OPENMM_LIB_PATH=$OpenMM/lib\n',
                 'export OPENMM_PLUGIN_DIR=$OpenMM/lib/plugins\n'
                 ]
+    elif machine == 'inband': # engaging has inband in the node names
+        if int(time_limit.split(':')[0]) > 6:
+            time_limit = '6:00:00'
+        text = ['#!/bin/bash\n',
+                '#SBATCH --job-name=' + name + '\n',
+                '#SBATCH --partition=mit_normal_gpu\n',
+                '#SBATCH --gres=gpu:1\n',
+                '#SBATCH --cpus-per-task=2\n',
+                '#SBATCH --mem=72G\n',
+                '#SBATCH --time=' + time_limit + '\n',
+                'module purge\n',
+                'module use /orcd/pool/004/hjkulik_shared/modulefiles\n',
+                'module load community-modules\n',
+                'module load gcc/12.2.0\n',
+                'module load openmpi/5.0.6\n',
+                'module load intel/2024.2.1\n',
+                'module load cuda/12.4.0\n',
+                'module load cudnn/9.8.0.87-cuda12\n',
+                'module load nvhpc\n',
+                'module load terachem_cuda12/v1.9-2025.06-dev\n',
+                'export KMP_WARNINGS="off"\n',
+                ]
+
     else:
         raise ValueError('Job manager does not know how to run Terachem on this machine!')
     if terachem_line and machine == 'gibraltar':
@@ -969,9 +992,9 @@ def write_terachem_jobscript(name, custom_line=None, time_limit='96:00:00', tera
             text += ["wait\n"]
             text += ["mv *.log $SGE_O_WORKDIR\n"]
             text += ["mv features.json $SGE_O_WORKDIR/dyanmic_features.json\n"]
-    elif terachem_line and machine in ['bridges', 'comet']:
+    elif terachem_line and machine in ['bridges', 'comet', 'inband']:
         text += ['terachem ' + name + '.in ' + '> ' + name + '.out\n']
-    if custom_line:
+    if custom_line and not(custom_line == '# -fin inscr/' and machine != 'gibraltar'):
         if type(custom_line) == list:
             text = text[:12] + custom_line + text[12:]
         else:
