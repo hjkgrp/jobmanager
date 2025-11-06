@@ -109,7 +109,7 @@ class RunUtils():
                 fo.write("#!/bin/bash\n")
                 fo.write(f"#SBATCH --job-name={jobname}\n")
                 fo.write("#SBATCH --nodes=1\n")
-                fo.write("#SBATCH --time=96:00:00\n")
+                fo.write("#SBATCH --time=24:00:00\n")
                 fo.write("#SBATCH --ntasks-per-node=%d\n" % psi4_config['num_threads'])
                 if "queue" in psi4_config and psi4_config["queue"] == "normal":
                     fo.write("#SBATCH --partition=normal\n")
