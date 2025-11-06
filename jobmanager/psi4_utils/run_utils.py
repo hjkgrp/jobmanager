@@ -157,7 +157,8 @@ class RunUtils():
 
                 fo.write(f"source {psi4_config['bashrc']}\n")
                 fo.write(f"source activate {psi4_config['conda_env']}\n")
-                fo.write("export PSI_SCRATCH='./'\n")
+                # fo.write("export PSI_SCRATCH='./'\n")
+                fo.write("export PSI_SCRATCH=/scratch/$USER/job_$SLURM_JOBID\n")
                 fo.write("echo 'psi4 scr: ' $PSI_SCRATCH\n")
 
                 if "trigger" in psi4_config:
