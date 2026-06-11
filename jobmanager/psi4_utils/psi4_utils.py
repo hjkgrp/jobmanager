@@ -212,6 +212,39 @@ class Psi4Utils:
             raise ValueError("This functional has not been implemented with HFX resampling yet: ", functional)
         return hfx_func
 
+    def get_rshw_functional(self, functional, a, b, w):
+        """
+        Returns a functional with specified alpha, beta, and omega values.
+
+        Supported functionals: wPBE
+
+        Parameters:
+            functional: str
+                Functional one is adjusting RSH parameters for.
+            a: int
+                Percentage of short-range exchange to use in the functional.
+            b: int
+                a+b gives the long-range exchange to use in the functional. As a percentage.
+            w: int
+                Range separation parameter times 100 (as to remove decimals in names).
+        Outputs:
+            rshw_func: dict
+                Functional with adjusted RSH parameters in the format desired for Psi4.
+        """
+        alpha = a/100
+        beta = b/100
+        omega = w/100
+        if functional.lower() == 'wpbe':
+            rshw_func = {
+                "name": "rshw_func",
+                "x_functionals": {"GGA_X_HJS_PBE": {"omega": omega, "alpha": 1-alpha}},
+                "x_hf": {"alpha": alpha, "beta": beta, "omega": omega},
+                "c_functionals": {"GGA_C_PBE":{}}
+            }
+        else:
+            raise ValueError("This functional has not been implemented with RSH w tuning yet:", functional)
+        return rshw_func
+
 
     def run_initial(self, rundir="./", return_wfn=True,
                   psi4_scr = './', filename='output'):
@@ -270,6 +303,14 @@ class Psi4Utils:
                 func = base_func.split('_')[0]
                 hfx = int(base_func.split('_')[-1])
                 e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
+            elif "_a" in base_func and "_b" in base_func and "_w" in base_func:
+                #if functional in format dfa_aXX_bYY_wZZ, interpret XX, YY, ZZ as a, b, w times 100, respectively, for adjusting dfa.
+                items = base_func.split('_')
+                func = items[0]
+                a = int([x for x in items[1:] if x.startswith('a')][0][1:])
+                b = int([x for x in items[1:] if x.startswith('b')][0][1:])
+                w = int([x for x in items[1:] if x.startswith('w')][0][1:])
+                e, wfn = psi4.energy("scf", dft_functional=self.get_rshw_functional(func, a, b, w), molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
             wfn.to_file(rundir + base_func + "/wfn-1step.180")
@@ -328,6 +369,15 @@ class Psi4Utils:
                 func = base_func.split('_')[0]
                 hfx = int(base_func.split('_')[-1])
                 e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
+
+            elif "_a" in base_func and "_b" in base_func and "_w" in base_func:
+                #if functional in format dfa_aXX_bYY_wZZ, interpret XX, YY, ZZ as a, b, w times 100, respectively, for adjusting dfa.
+                items = base_func.split('_')
+                func = items[0]
+                a = int([x for x in items[1:] if x.startswith('a')][0][1:])
+                b = int([x for x in items[1:] if x.startswith('b')][0][1:])
+                w = int([x for x in items[1:] if x.startswith('w')][0][1:])
+                e, wfn = psi4.energy("scf", dft_functional=self.get_rshw_functional(func, a, b, w), molecule=mol, return_wfn=True)
             else:
                 e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
             wfn.to_file(rundir + base_func + "/wfn.180")
@@ -364,6 +414,15 @@ class Psi4Utils:
                     func = base_func.split('_')[0]
                     hfx = int(base_func.split('_')[-1])
                     e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(func, hfx),  molecule=mol, return_wfn=True)
+
+                elif "_a" in base_func and "_b" in base_func and "_w" in base_func:
+                    #if functional in format dfa_aXX_bYY_wZZ, interpret XX, YY, ZZ as a, b, w times 100, respectively, for adjusting dfa.
+                    items = base_func.split('_')
+                    func = items[0]
+                    a = int([x for x in items[1:] if x.startswith('a')][0][1:])
+                    b = int([x for x in items[1:] if x.startswith('b')][0][1:])
+                    w = int([x for x in items[1:] if x.startswith('w')][0][1:])
+                    e, wfn = psi4.energy("scf", dft_functional=self.get_rshw_functional(func, a, b, w), molecule=mol, return_wfn=True)
                 else:
                     e, wfn = psi4.energy(base_func, molecule=mol, return_wfn=True)
                 wfn.to_file(rundir + base_func + "/wfn.180")
@@ -446,16 +505,25 @@ class Psi4Utils:
 
         if not (("ccsd" in functional) or ("mp2" in functional) or ("scf" in functional)):
             try:
-                if "hfx_" not in functional:
-                    #Run Psi4 calculation without HFX adjustment
-                    e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
-                else:
+                if "_hfx_" in functional:
                     #Define custom functional with adjusted HFX
                     basefunc, hfx = functional.split("_")[0], int(functional.split("_")[-1])
                     print("HFX sampling: ", basefunc, hfx)
                     e, wfn = psi4.energy("scf", dft_functional=self.get_hfx_functional(basefunc, hfx),  molecule=mol, return_wfn=True)
-                    if return_wfn:
-                        wfn.to_file(rundir + "/wfn.180")
+                elif "_a" in functional and "_b" in functional and "_w" in functional:
+                    #if functional in format dfa_aXX_bYY_wZZ, interpret XX, YY, ZZ as a, b, w times 100, respectively, for adjusting dfa.
+                    items = functional.split('_')
+                    func = items[0]
+                    a = int([x for x in items[1:] if x.startswith('a')][0][1:])
+                    b = int([x for x in items[1:] if x.startswith('b')][0][1:])
+                    w = int([x for x in items[1:] if x.startswith('w')][0][1:])
+                    print("RSH sampling:", func, a, b, w)
+                    e, wfn = psi4.energy("scf", dft_functional=self.get_rshw_functional(func, a, b, w), molecule=mol, return_wfn=True)
+                else:
+                    #Run Psi4 calculation without adjustment
+                    e, wfn = psi4.energy(functional, molecule=mol, return_wfn=True)
+                if return_wfn:
+                    wfn.to_file(rundir + "/wfn.180")
                 #write a molden file if desired
                 if "write_molden" in psi4_config and psi4_config["write_molden"] == True:
                     if "write_molden_name" in psi4_config:

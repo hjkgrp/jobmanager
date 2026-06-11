@@ -275,4 +275,137 @@ class RunScripts:
             (success_count, len(psi4_config["functional"])*len(psi4_config['hfx_levels']) + 1))
 
 
+    def loop_rshw_jobs(self, rundir='$SGE_O_WORKDIR'):
+        """
+        For each specified functional, calculates the value at each of the RSH w values specified.
+        Starts each calculation from the converged wavefunction of the previous calculation.
+
+        Runs multiple sweeps: first, a calculation is done with the same w as the base functional,
+        and then the program steps down and up from that calculation to the specified values.
+        Then, attempts several schemes to address points that did not converge:
+        (1) Start from the smallest w result and step up
+        (2) Start from the largest w result and step down
+
+        Parameters:
+            rundir: str
+                Directory where the calculations are run from.
+        """
+        #To deal with bash variable paths
+        if rundir[0] == '$':
+            rundir = os.environ[rundir[1:]]
+
+        with open(rundir + "/../psi4_config.json", "r") as f:
+            psi4_config = json.load(f)
+        orig_wfn_dir = psi4_config['wfnfile']
+        success_count = 0
+        psi4_utils = Psi4Utils(psi4_config)
+        #get the base functional (called original functional here since the unmodified functionals called base below)
+        if "base_functional" not in psi4_config:
+            #defaults to PBE0
+            orig_func = 'pbe0'
+        else:
+            #remove parentheses from functional names
+            functional = psi4_config["base_functional"]
+            orig_func = functional.replace("(", "l-").replace(")", "-r")
+
+        #Run the initial calculation from the provided molden
+        success = psi4_utils.run_with_check('run_initial')
+        success_count += success
+
+        #Determine the RSH w used in the original functional
+        if orig_func == 'pbe0':
+            orig_w = 0
+        elif orig_func == 'pbe':
+            orig_w = 0
+        elif orig_func.startswith('pbe_hfx_'):
+            orig_w = 0
+        elif orig_func == 'wpbe':
+            orig_w = 0.4
+        elif orig_func == 'wpbe0':
+            orig_w = 0.3
+        else:
+            raise ValueError("Base functional not yet supported for the RSH w workflow.")
+
+        #Get and sort the w levels desired in the calculation
+        w_amounts = sorted(psi4_config['w_levels'])
+        below = [w for w in w_amounts if w < orig_w][::-1] #reversed since you want to step down from original
+        above = [w for w in w_amounts if w > orig_w]
+
+        #for all other functionals (i.e., not the original functional)
+        for ii, base_functional in enumerate(psi4_config["functional"]):
+            # set the SR exchange fractions
+            # only supports wPBE family at the moment, need to specify alpha and beta
+            if base_functional.startswith('wpbe') and '_a' in base_functional and '_b' in base_functional:
+                items = base_functional.split('_')
+                a = int([x for x in items[1:] if x.startswith('a')][0][1:])
+                b = int([x for x in items[1:] if x.startswith('b')][0][1:])
+            else:
+                raise ValueError(f"Functional {base_functional} not supported for RSH w workflow.")
+            #For each functional, want to start from the original wfn
+            #Note: after updating psi4_config, have to reinitialize psi4_utils to get the right parameters
+            psi4_config["wfnfile"] = orig_wfn_dir
+            psi4_utils = Psi4Utils(psi4_config)
+            base_wfn = '' #to store the path of the result with w matching the original functional
+
+            print(f'Pass 1: Starting from {orig_w} and stepping up/down:')
+            #converge result with w matching the original functional
+            functional = base_functional + f'_w{orig_w*100:1.0f}'
+            success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+            if success:
+                #If success, want the next calculation to be run from the wfn of this calculation
+                #Otherwise, run it from the last converged calculation
+                base_wfn = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                psi4_config["wfnfile"] = base_wfn
+                psi4_utils = Psi4Utils(psi4_config)
+                print('Wfn updated!')
+            #Converge calculations below the original w
+            for jj, w in enumerate(below):
+                functional = base_functional + f'_w{w*100:1.0f}'
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+                if success:
+                    psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                    psi4_utils = Psi4Utils(psi4_config)
+                    print('Wfn updated!')
+            #Get orig_w wfn for other half of checks (if orig_hfx did not converge, use original functional result)
+            psi4_config["wfnfile"] = base_wfn if base_wfn != '' else orig_wfn_dir
+            psi4_utils = Psi4Utils(psi4_config)
+            #Converge calculations above orig_hfx
+            for jj, w in enumerate(above):
+                functional = base_functional + f'_w{w*100:1.0f}'
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+                if success:
+                    psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                    psi4_utils = Psi4Utils(psi4_config)
+                    print('Wfn updated!')
+
+            print(f'Pass 2: Starting from {w_amounts[0]} and stepping up:')
+            #Start from the original functional wavefunction if not converged already
+            psi4_config["wfnfile"] = orig_wfn_dir
+            psi4_utils = Psi4Utils(psi4_config)
+            for jj, w in enumerate(w_amounts):
+                functional = base_functional + f'_w{w*100:1.0f}'
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+                if success:
+                    psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                    psi4_utils = Psi4Utils(psi4_config)
+                    print('Wfn updated!')
+
+            print(f'Pass 3: Starting from {w_amounts[-1]} and stepping down:')
+            #Start from the original functional wavefunction if not converged already
+            psi4_config["wfnfile"] = orig_wfn_dir
+            psi4_utils = Psi4Utils(psi4_config)
+            for jj, w in enumerate(w_amounts[::-1]):
+                functional = base_functional + f'_w{w*100:1.0f}'
+                success = psi4_utils.run_with_check('run_general', functional, return_wfn=True, verbose=True, retry_scf=True)
+                success_count += success #only include on final pass to get accurate count
+                if success:
+                    psi4_config["wfnfile"] = functional.replace("(", "l-").replace(")", "-r") + '/wfn.180.npy'
+                    psi4_utils = Psi4Utils(psi4_config)
+                    print('Wfn updated!')
+
+        print("total successful jobs : %d/ %d." %
+            (success_count, len(psi4_config["functional"])*len(psi4_config['w_levels']) + 1))
+
+
+
 

@@ -93,6 +93,8 @@ class RunUtils():
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs()'  > $SGE_O_WORKDIR/deriv_nohup1.out 2> $SGE_O_WORKDIR/deriv_nohup1.err\n")
                 if "hfx_levels" in psi4_config:
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_hfx_jobs()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
+                if "w_levels" in psi4_config:
+                    fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rshw_jobs()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                 else:
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup1.out 2> $SGE_O_WORKDIR/nohup1.err\n")
                     fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run()'  > $SGE_O_WORKDIR/nohup2.out 2> $SGE_O_WORKDIR/nohup2.err\n")
@@ -109,7 +111,7 @@ class RunUtils():
                 fo.write("#!/bin/bash\n")
                 fo.write(f"#SBATCH --job-name={jobname}\n")
                 fo.write("#SBATCH --nodes=1\n")
-                fo.write("#SBATCH --time=24:00:00\n")
+                fo.write("#SBATCH --time=6:00:00\n")
                 fo.write("#SBATCH --ntasks-per-node=%d\n" % psi4_config['num_threads'])
                 if "queue" in psi4_config and psi4_config["queue"] == "normal":
                     fo.write("#SBATCH --partition=normal\n")
@@ -130,6 +132,8 @@ class RunUtils():
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/deriv_nohup1.out 2> $SLURM_SUBMIT_DIR/deriv_nohup1.err\n""")
                 if "hfx_levels" in psi4_config:
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_hfx_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
+                if "w_levels" in psi4_config:
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rshw_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                 else:
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup2.out 2> $SLURM_SUBMIT_DIR/nohup2.err\n""")
@@ -165,6 +169,8 @@ class RunUtils():
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/deriv_nohup1.out 2> $SLURM_SUBMIT_DIR/deriv_nohup1.err\n""")
                 if "hfx_levels" in psi4_config:
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_hfx_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
+                if "w_levels" in psi4_config:
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rshw_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                 else:
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup2.out 2> $SLURM_SUBMIT_DIR/nohup2.err\n""")
@@ -195,6 +201,8 @@ class RunUtils():
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_derivative_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/deriv_nohup1.out 2> $SLURM_SUBMIT_DIR/deriv_nohup1.err\n""")
                 if "hfx_levels" in psi4_config:
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_hfx_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
+                if "w_levels" in psi4_config:
+                    fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rshw_jobs(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                 else:
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup1.out 2> $SLURM_SUBMIT_DIR/nohup1.err\n""")
                     fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_run(rundir="$SLURM_SUBMIT_DIR")'  > $SLURM_SUBMIT_DIR/nohup2.out 2> $SLURM_SUBMIT_DIR/nohup2.err\n""")
