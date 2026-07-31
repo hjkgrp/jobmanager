@@ -105,7 +105,7 @@ class RunUtils():
                         fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup2.out\n")
                         fo.write("python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue()' > $SGE_O_WORKDIR/rescue_nohup3.out\n")
                 fo.write("cp -rf * $SGE_O_WORKDIR\n")
-                fo.write("rm $SGE_O_WORKDIR/*/wfn.180.npy\n") #remove all wave function files to save space
+                fo.write("rm $SGE_O_WORKDIR/wpbe_*/wfn.180.npy\n") #remove all wave function files to save space
                 fo.write("sleep 30\n")
         elif psi4_config["cluster"] == "supercloud":
             with open("./jobscript.sh", "w") as fo:
@@ -145,7 +145,7 @@ class RunUtils():
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup2.out\n""")
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup3.out\n""")
                 fo.write("cp -rf * $subdir\n")
-                fo.write("rm $SLURM_SUBMIT_DIR/*/wfn.180.npy\n") #remove wave function files to save space.
+                fo.write("rm $SLURM_SUBMIT_DIR/wpbe_*/wfn.180.npy\n") #remove wave function files to save space.
         elif psi4_config["cluster"] == "expanse":
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#!/bin/sh\n")
@@ -182,7 +182,7 @@ class RunUtils():
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup1.out\n""")
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup2.out\n""")
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup3.out\n""")
-                fo.write("rm $SLURM_SUBMIT_DIR/*/wfn.180.npy\n") #remove wave function files to save space.
+                fo.write("rm $SLURM_SUBMIT_DIR/wpbe_*/wfn.180.npy\n") #remove wave function files to save space.
         elif psi4_config["cluster"] == "engaging":
             with open("./jobscript.sh", "w") as fo:
                 fo.write("#!/bin/sh\n")
@@ -215,7 +215,7 @@ class RunUtils():
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup1.out\n""")
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup2.out\n""")
                         fo.write("""python -c 'from jobmanager.psi4_utils.run_scripts import RunScripts; RunScripts().loop_rescue(rundir="$SLURM_SUBMIT_DIR")' > $SLURM_SUBMIT_DIR/rescue_nohup3.out\n""")
-                fo.write("rm $SLURM_SUBMIT_DIR/*/wfn.180.npy\n") #remove wave function files to save space.
+                fo.write("rm $SLURM_SUBMIT_DIR/wpbe_*/wfn.180.npy\n") #remove wave function files to save space.
         elif psi4_config["cluster"] == "mustang":
             #TODO: Update
             with open("./jobscript.sh", "w") as fo:
