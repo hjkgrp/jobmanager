@@ -199,6 +199,8 @@ class RunScripts:
             orig_hfx = 20
         elif orig_func == 'pbe0':
             orig_hfx = 25
+        elif orig_func == 'tpssh':
+            orig_hfx = 10
         else:
             raise ValueError("Base functional not yet supported for the HFX workflow.")
 
@@ -319,9 +321,9 @@ class RunScripts:
             orig_w = 0
         elif orig_func.startswith('pbe_hfx_'):
             orig_w = 0
-        elif orig_func == 'wpbe':
+        elif orig_func == 'wpbe' or orig_func == 'lc-wpbe':
             orig_w = 0.4
-        elif orig_func == 'wpbe0':
+        elif orig_func == 'wpbe0' or orig_func == 'lc-wpbe0':
             orig_w = 0.3
         else:
             raise ValueError("Base functional not yet supported for the RSH w workflow.")
@@ -335,7 +337,7 @@ class RunScripts:
         for ii, base_functional in enumerate(psi4_config["functional"]):
             # set the SR exchange fractions
             # only supports wPBE family at the moment, need to specify alpha and beta
-            if base_functional.startswith('wpbe') and '_a' in base_functional and '_b' in base_functional:
+            if (base_functional.startswith('wpbe') or base_functional.startswith('lc-wpbe')) and '_a' in base_functional and '_b' in base_functional:
                 items = base_functional.split('_')
                 a = int([x for x in items[1:] if x.startswith('a')][0][1:])
                 b = int([x for x in items[1:] if x.startswith('b')][0][1:])

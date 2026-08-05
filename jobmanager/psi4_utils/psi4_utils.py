@@ -241,6 +241,14 @@ class Psi4Utils:
                 "x_hf": {"alpha": alpha, "beta": beta, "omega": omega},
                 "c_functionals": {"GGA_C_PBE":{}}
             }
+        elif functional.lower() == 'lc-wpbe':
+            rshw_func = {
+                "name": "rshw_func",
+                "x_functionals": {"GGA_X_HJS_PBE": {"omega": omega, "alpha": 1-alpha}},
+                "x_hf": {"alpha": alpha, "beta": beta, "omega": omega},
+                "c_functionals": {"GGA_C_PBE":{}}
+            }
+
         else:
             raise ValueError("This functional has not been implemented with RSH w tuning yet:", functional)
         return rshw_func
